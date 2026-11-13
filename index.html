@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Pengurusan & Papan Pemuka Pendaftaran Majlis Anugerah</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome untuk Ikon Antara Muka -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- HTML5-QRCode Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .badge-pulse {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .6; }
+    }
+    #reader video {
+      border-radius: 0.75rem;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header & Bar Navigasi Sistem -->
+  <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700/60 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+          <i class="fa-solid fa-trophy text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-white tracking-wide">MAJLIS ANUGERAH PERDANA 2026</h1>
+          <p class="text-xs text-slate-400">Pusat Kawalan Pendaftaran & Live Floor Management</p>
+        </div>
+      </div>
+
+      <!-- Pemilih Paparan Jawatankuasa (Role Switcher) -->
+      <div class="flex items-center bg-slate-950 p-1.5 rounded-xl border border-slate-700">
+        <button id="btnRoleAll" onclick="switchRole('all')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition">
+          <i class="fa-solid fa-layer-group mr-1.5"></i>Floor Manager
+        </button>
+        <button id="btnRoleAward" onclick="switchRole('awardee')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-medal mr-1.5"></i>Pengurus Peserta
+        </button>
+        <button id="btnRoleEmcee" onclick="switchRole('emcee')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-microphone mr-1.5"></i>Stage & Emcee
+        </button>
+        <button id="btnRoleScan" onclick="switchRole('scanner')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-qrcode mr-1.5"></i>Kaunter Imbas
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Kandungan Utama -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- Bar Tetapan Integrasi & Import Data -->
+    <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2 text-slate-300">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+        <span>Status Sambungan: <b id="syncStatusBadge" class="text-emerald-400">Penyimpanan Tempatan (Offline Ready)</b></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+        <button onclick="document.getElementById('csvFileInput').click()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition font-medium">
+          <i class="fa-solid fa-file-arrow-up mr-1 text-amber-400"></i> Muat Naik CSV RSVP
+        </button>
+        <button onclick="resetAllDataConfirmation()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-rose-900/60 border border-slate-700 text-slate-400 hover:text-rose-200 rounded-lg transition font-medium">
+          <i class="fa-solid fa-arrows-rotate mr-1"></i> Set Semula Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Kad Statistik Masa Nyata (Live Stats) -->
+    <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60 shadow-lg">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Jumlah Jemputan</span>
+          <i class="fa-solid fa-users text-sm"></i>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="statTotal" class="text-2xl sm:text-3xl font-extrabold text-white">0</span>
+          <span class="text-xs text-slate-400">orang</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-800/80 p-4 rounded-2xl border border-emerald-500/30 shadow-lg">
+        <div class="flex items-center justify-between text-emerald-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Telah Hadir</span>
+          <i class="fa-solid fa-circle-check text-sm"></i>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="statPresent" class="text-2xl sm:text-3xl font-extrabold text-emerald-400">0</span>
+          <span id="statPresentPercent" class="text-xs text-emerald-500 font-bold">(0%)</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-800/80 p-4 rounded-2xl border border-rose-500/30 shadow-lg">
+        <div class="flex items-center justify-between text-rose-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Belum Tiba</span>
+          <i class="fa-solid fa-clock text-sm"></i>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="statAbsent" class="text-2xl sm:text-3xl font-extrabold text-rose-400">0</span>
+          <span class="text-xs text-slate-400">orang</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-800/80 p-4 rounded-2xl border border-amber-500/30 shadow-lg">
+        <div class="flex items-center justify-between text-amber-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Dihadiri Wakil</span>
+          <i class="fa-solid fa-user-tag text-sm"></i>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="statProxy" class="text-2xl sm:text-3xl font-extrabold text-amber-400">0</span>
+          <span class="text-xs text-amber-500 font-medium">Perlu perhatian emcee</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- BAHAGIAN PENGIMBAS QR (Dipaparkan apabila di tab Scanner atau dibuka) -->
+    <section id="scannerSection" class="hidden bg-slate-800 p-5 rounded-2xl border border-amber-500/40 shadow-xl">
+      <div class="flex flex-wrap items-center justify-between pb-3 mb-4 border-b border-slate-700 gap-2">
+        <div class="flex items-center space-x-2">
+          <span class="w-3 h-3 rounded-full bg-emerald-500 badge-pulse"></span>
+          <h2 class="text-sm font-bold tracking-wide uppercase text-amber-400">Kamera Pengimbas Kod QR (Foyer)</h2>
+        </div>
+        <button onclick="toggleScanner()" id="btnToggleCamera" class="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition">
+          <i class="fa-solid fa-camera mr-1"></i> Mulakan / Hentikan Kamera
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        <!-- Kotak Kamera -->
+        <div class="relative bg-slate-950 rounded-xl overflow-hidden min-h-[240px] flex flex-col items-center justify-center border border-slate-700">
+          <div id="reader" class="w-full"></div>
+          <p id="scannerPlaceholder" class="text-xs text-slate-500 p-4 text-center">
+            Tekan 'Mulakan Kamera' untuk mengaktifkan pengimbasan kod pas digital atau gunakan carian manual di sebelah.
+          </p>
+        </div>
+
+        <!-- Ujian Pantas Kod QR & Carian Manual -->
+        <div class="space-y-4">
+          <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-700">
+            <label class="block text-xs font-semibold text-slate-300 mb-2">
+              <i class="fa-solid fa-barcode mr-1 text-amber-400"></i> Imbas Kod Manual / Kod Bar / ID:
+            </label>
+            <div class="flex gap-2">
+              <input type="text" id="manualInput" placeholder="Contoh: AW-001, AW-002..." class="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500">
+              <button onclick="handleManualCheckIn()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition">
+                Daftar
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">
+              Tip Ujian Cepat: Masukkan ID contoh seperti <code>AW-001</code>, <code>AW-002</code>, <code>VIP-001</code>.
+            </p>
+          </div>
+
+          <div id="scanResultBox" class="hidden p-4 rounded-xl border transition duration-300">
+            <!-- Keputusan pendaftaran dipaparkan di sini -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Papan Pemuka Senarai Kehadiran Bersepadu -->
+    <section class="bg-slate-800/90 rounded-2xl border border-slate-700/60 shadow-xl overflow-hidden flex flex-col">
+      <!-- Bar Alat (Filter & Search) -->
+      <div class="p-4 sm:p-5 border-b border-slate-700 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <h2 id="tableHeading" class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-amber-400"></i> Papan Pemuka Utama
+          </h2>
+          <span id="recordCount" class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">0 rekod</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- Carian Nama -->
+          <div class="relative flex-1 sm:w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-400"></i>
+            <input type="text" id="searchInput" oninput="filterData()" placeholder="Cari nama, ID, atau meja..." class="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+
+          <!-- Tapis Kategori -->
+          <select id="categoryFilter" onchange="filterData()" class="px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+            <option value="ALL">Semua Kategori</option>
+            <option value="Penerima Anugerah">Penerima Anugerah Sahaja</option>
+            <option value="VVIP">VVIP Sahaja</option>
+            <option value="VIP">VIP Sahaja</option>
+            <option value="Jemputan Khas">Jemputan Khas</option>
+          </select>
+
+          <!-- Tapis Status -->
+          <select id="statusFilter" onchange="filterData()" class="px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+            <option value="ALL">Semua Status</option>
+            <option value="Hadir">Telah Hadir (Sendiri & Wakil)</option>
+            <option value="Belum Hadir">Belum Hadir</option>
+            <option value="Hadir Wakil">Wakil Sahaja</option>
+          </select>
+
+          <button onclick="exportCSV()" title="Muat turun fail CSV kehadiran" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-medium text-slate-200 transition">
+            <i class="fa-solid fa-file-excel mr-1 text-emerald-400"></i> Eksport
+          </button>
+        </div>
+      </div>
+
+      <!-- Jadual Data Kehadiran -->
+      <div class="overflow-x-auto flex-1">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-950/60 uppercase font-semibold text-slate-400 border-b border-slate-700/60">
+            <tr>
+              <th class="py-3.5 px-4">ID & Nama Tetamu</th>
+              <th class="py-3.5 px-3">Kategori & Anugerah</th>
+              <th class="py-3.5 px-3">Zon / Kerusi</th>
+              <th class="py-3.5 px-3 text-center">Status Kehadiran</th>
+              <th class="py-3.5 px-3">Masa / Wakil</th>
+              <th class="py-3.5 px-4 text-right">Tindakan Kaunter</th>
+            </tr>
+          </thead>
+          <tbody id="guestTableBody" class="divide-y divide-slate-700/40">
+            <!-- Kandungan jadual dijanakan melalui JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Pendaftaran Wakil (Proxy Modal) -->
+  <div id="proxyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-user-tag text-amber-400"></i> Pendaftaran Hadir Melalui Wakil
+        </h3>
+        <button onclick="closeProxyModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-300">
+        Penerima Sebenar: <span id="modalOriginalName" class="font-bold text-amber-400"></span><br>
+        <span class="text-slate-400">Kategori: <span id="modalOriginalCategory"></span></span>
+      </div>
+
+      <div class="space-y-3 pt-2">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Nama Penuh Wakil (Untuk Sebutan Emcee):</label>
+          <input type="text" id="proxyNameInput" placeholder="Contoh: Encik Ahmad Razali (Naib Presiden)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Hubungan / Jawatan Wakil:</label>
+          <input type="text" id="proxyRelationInput" placeholder="Contoh: Pasangan / Wakil Syarikat" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
+        <button onclick="closeProxyModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-semibold text-slate-200">Batal</button>
+        <button onclick="submitProxyCheckIn()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded-lg text-xs font-bold text-slate-950">Sahkan Kehadiran Wakil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Papan Notifikasi Ringkas (Toast) -->
+  <div id="toastBox" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none"></div>
+
+  <!-- JavaScript Logik Sistem & Dashboard -->
+  <script>
+    // Pangkalan Data Utama (Mock Data yang mensimulasikan data RSVP sebenar majlis anugerah)
+    let attendees = [
+      { id: "VIP-001", name: "YAB Menteri Besar Pahang", category: "VVIP", award: "Tetamu Kehormat", session: "Perasmian", seat: "Meja Utama 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan LO 1" },
+      { id: "VIP-002", name: "YB Setiausaha Kerajaan Negeri", category: "VIP", award: "Tetamu Khas", session: "Perasmian", seat: "Meja Utama 2", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan LO 2" },
+      { id: "AW-001", name: "Prof. Dr. Siti Aminah binti Yusof", category: "Penerima Anugerah", award: "Anugerah Inovasi Sains", session: "Sesi 1 (Naik Pentas #1)", seat: "Zon A - Baris 1, No 3", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Perlu naik pentas awal" },
+      { id: "AW-002", name: "Ir. Ts. Kamaruddin bin Mansor", category: "Penerima Anugerah", award: "Anugerah Tokoh Industri", session: "Sesi 1 (Naik Pentas #2)", seat: "Zon A - Baris 1, No 4", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "AW-003", name: "Datin Hajah Zarina binti Daud", category: "Penerima Anugerah", award: "Anugerah Ikon Usahawan", session: "Sesi 2 (Naik Pentas #3)", seat: "Zon A - Baris 2, No 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "AW-004", name: "Encik Muhammad Farhan bin Zulkifli", category: "Penerima Anugerah", award: "Anugerah Harapan Belia", session: "Sesi 2 (Naik Pentas #4)", seat: "Zon A - Baris 2, No 2", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "AW-005", name: "Puan Noor Azlin binti Abdul Jalil", category: "Penerima Anugerah", award: "Anugerah Perkhidmatan Bakti", session: "Sesi 2 (Naik Pentas #5)", seat: "Zon A - Baris 2, No 3", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "JM-101", name: "Dato' Sri Dr. Hj. Mohd Zaki", category: "Jemputan Khas", award: "Penaja Utama", session: "Perasmian", seat: "Meja Penaja 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "JM-102", name: "Puan Sri Linda Cheong", category: "Jemputan Khas", award: "Wakil Industri", session: "Perasmian", seat: "Meja Penaja 2", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" }
+    ];
+
+    let currentRole = 'all'; // all, awardee, emcee, scanner
+    let html5QrScanner = null;
+    let isScannerRunning = false;
+    let activeTargetIdForProxy = null;
+
+    // Muatkan data tersimpan dari LocalStorage jika ada
+    function loadSavedData() {
+      const saved = localStorage.getItem('ANUGERAH_ATTENDEES_DATA');
+      if (saved) {
+        try {
+          attendees = JSON.parse(saved);
+        } catch(e) {
+          console.warn("Gagal memuatkan data tempatan", e);
+        }
+      }
+    }
+
+    function persistData() {
+      localStorage.setItem('ANUGERAH_ATTENDEES_DATA', JSON.stringify(attendees));
+    }
+
+    // Inisialisasi Aplikasi Semasa Halaman Dimuatkan
+    window.onload = function() {
+      loadSavedData();
+      
+      // Semak URL Parameter cth: index.html?role=awardee
+      const urlParams = new URLSearchParams(window.location.search);
+      const roleParam = urlParams.get('role');
+      if (roleParam && ['all', 'awardee', 'emcee', 'scanner'].includes(roleParam)) {
+        switchRole(roleParam);
+      } else {
+        updateDashboardStats();
+        renderTable();
+      }
+    };
+
+    // Fungsi Muat Naik Fail CSV Data Tetamu
+    function handleCSVUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split('\n').filter(line => line.trim() !== '');
+        if (lines.length <= 1) {
+          showToast('Fail CSV kosong atau tidak sah!', 'error');
+          return;
+        }
+
+        const newAttendees = [];
+        // Mengabaikan baris pertama (Header)
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+          if (cols.length >= 2) {
+            newAttendees.push({
+              id: cols[0] || `ID-${i}`,
+              name: cols[1] || 'Nama Tetamu',
+              category: cols[2] || 'Tetamu Umum',
+              award: cols[3] || '-',
+              session: cols[4] || 'Sesi 1',
+              seat: cols[5] || 'Zon Umum',
+              status: cols[6] || 'Belum Hadir',
+              proxyName: cols[7] || '',
+              checkInTime: cols[8] || '',
+              notes: cols[9] || ''
+            });
+          }
+        }
+
+        if (newAttendees.length > 0) {
+          attendees = newAttendees;
+          persistData();
+          updateDashboardStats();
+          filterData();
+          showToast(`Berjaya mengimport ${newAttendees.length} rekod jemputan!`, 'success');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetAllDataConfirmation() {
+      if (window.confirm("Adakah anda pasti ingin menetapkan semula semua rekod kehadiran kembali ke status 'Belum Hadir'?")) {
+        attendees.forEach(g => {
+          g.status = 'Belum Hadir';
+          g.proxyName = '';
+          g.checkInTime = '';
+        });
+        persistData();
+        updateDashboardStats();
+        filterData();
+        showToast('Semua status kehadiran telah ditetapkan semula.', 'info');
+      }
+    }
+
+    // Fungsi Tukar Peranan Jawatankuasa (Role Switcher)
+    function switchRole(role) {
+      currentRole = role;
+      document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.remove('bg-amber-500', 'text-slate-950');
+        btn.classList.add('text-slate-400');
+      });
+
+      const scannerSection = document.getElementById('scannerSection');
+      const tableHeading = document.getElementById('tableHeading');
+      const catFilter = document.getElementById('categoryFilter');
+
+      if (role === 'all') {
+        document.getElementById('btnRoleAll').classList.add('bg-amber-500', 'text-slate-950');
+        scannerSection.classList.add('hidden');
+        tableHeading.innerHTML = `<i class="fa-solid fa-layer-group text-amber-400"></i> Papan Pemuka Floor Manager (Semua Data)`;
+        catFilter.value = 'ALL';
+      } else if (role === 'awardee') {
+        document.getElementById('btnRoleAward').classList.add('bg-amber-500', 'text-slate-950');
+        scannerSection.classList.add('hidden');
+        tableHeading.innerHTML = `<i class="fa-solid fa-medal text-amber-400"></i> Senarai Penerima Anugerah (Holding & Stage Cue)`;
+        catFilter.value = 'Penerima Anugerah';
+      } else if (role === 'emcee') {
+        document.getElementById('btnRoleEmcee').classList.add('bg-amber-500', 'text-slate-950');
+        scannerSection.classList.add('hidden');
+        tableHeading.innerHTML = `<i class="fa-solid fa-microphone text-amber-400"></i> Panduan Juruacara / Stage Manager (Semakan Wakil & Hadir)`;
+        catFilter.value = 'ALL';
+      } else if (role === 'scanner') {
+        document.getElementById('btnRoleScan').classList.add('bg-amber-500', 'text-slate-950');
+        scannerSection.classList.remove('hidden');
+        tableHeading.innerHTML = `<i class="fa-solid fa-qrcode text-amber-400"></i> Mod Pendaftaran & Kaunter Foyer`;
+      }
+
+      filterData();
+    }
+
+    // Fungsi Mengira Statistik Papan Pemuka
+    function updateDashboardStats() {
+      const total = attendees.length;
+      const presentSelf = attendees.filter(a => a.status === 'Hadir').length;
+      const presentProxy = attendees.filter(a => a.status === 'Hadir Wakil').length;
+      const totalPresent = presentSelf + presentProxy;
+      const absent = total - totalPresent;
+      const percent = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
+
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statPresent').innerText = totalPresent;
+      document.getElementById('statPresentPercent').innerText = `(${percent}%)`;
+      document.getElementById('statAbsent').innerText = absent;
+      document.getElementById('statProxy').innerText = presentProxy;
+    }
+
+    // Render Jadual Tetamu
+    function renderTable(dataToRender = attendees) {
+      const tbody = document.getElementById('guestTableBody');
+      const recordCount = document.getElementById('recordCount');
+      tbody.innerHTML = '';
+      recordCount.innerText = `${dataToRender.length} rekod`;
+
+      if (dataToRender.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-8 text-slate-500">
+              <i class="fa-solid fa-folder-open text-2xl mb-2 block"></i>
+              Tiada rekod ditemui mengikut tapisan semasa.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      dataToRender.forEach(guest => {
+        let statusBadge = '';
+        if (guest.status === 'Hadir') {
+          statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Hadir Sendiri
+          </span>`;
+        } else if (guest.status === 'Hadir Wakil') {
+          statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Hadir Wakil
+          </span>`;
+        } else {
+          statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Belum Tiba
+          </span>`;
+        }
+
+        const isAwardee = guest.category === 'Penerima Anugerah';
+        const tr = document.createElement('tr');
+        tr.className = `hover:bg-slate-800/60 transition ${guest.status !== 'Belum Hadir' ? 'bg-slate-800/20' : ''}`;
+
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-amber-400 border border-slate-700">${guest.id}</span>
+              <div>
+                <p class="font-bold text-slate-100 text-xs sm:text-sm">${guest.name}</p>
+                ${guest.notes ? `<p class="text-[10px] text-amber-300/80"><i class="fa-solid fa-circle-info mr-1"></i>${guest.notes}</p>` : ''}
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-3">
+            <p class="font-semibold text-slate-200">${guest.award}</p>
+            <p class="text-[11px] text-slate-400">${guest.category} • <span class="text-amber-400/90">${guest.session}</span></p>
+          </td>
+          <td class="py-3 px-3">
+            <span class="px-2 py-1 rounded bg-slate-900/80 border border-slate-700 font-medium text-slate-300">
+              <i class="fa-solid fa-chair text-slate-400 mr-1"></i>${guest.seat}
+            </span>
+          </td>
+          <td class="py-3 px-3 text-center">
+            ${statusBadge}
+          </td>
+          <td class="py-3 px-3">
+            ${guest.checkInTime ? `<p class="font-mono text-slate-300 text-[11px]"><i class="fa-regular fa-clock mr-1 text-slate-400"></i>${guest.checkInTime}</p>` : `<span class="text-slate-500">-</span>`}
+            ${guest.proxyName ? `<p class="text-[11px] text-amber-400 font-semibold mt-0.5"><i class="fa-solid fa-user-pen mr-1"></i>Wakil: ${guest.proxyName}</p>` : ''}
+          </td>
+          <td class="py-3 px-4 text-right">
+            <div class="flex justify-end gap-1.5">
+              ${guest.status === 'Belum Hadir' ? `
+                <button onclick="markSelfPresent('${guest.id}')" title="Sahkan Hadir Sendiri" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-semibold text-[11px] transition">
+                  <i class="fa-solid fa-check mr-1"></i>Hadir
+                </button>
+                <button onclick="openProxyModal('${guest.id}')" title="Daftar Wakil" class="px-2.5 py-1 bg-slate-700 hover:bg-amber-600 text-slate-200 hover:text-white rounded font-medium text-[11px] transition">
+                  <i class="fa-solid fa-user-tag mr-1"></i>Wakil
+                </button>
+              ` : `
+                <button onclick="resetStatus('${guest.id}')" title="Set Semula Status" class="px-2 py-1 bg-slate-800 hover:bg-rose-900/50 text-slate-400 hover:text-rose-300 rounded text-[11px] transition border border-slate-700">
+                  <i class="fa-solid fa-rotate-left"></i> Batal
+                </button>
+              `}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Penapisan Data Carian & Dropdown
+    function filterData() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const catFilter = document.getElementById('categoryFilter').value;
+      const statFilter = document.getElementById('statusFilter').value;
+
+      const filtered = attendees.filter(guest => {
+        // Carian perkataan
+        const matchQuery = guest.name.toLowerCase().includes(query) ||
+                           guest.id.toLowerCase().includes(query) ||
+                           guest.seat.toLowerCase().includes(query) ||
+                           guest.award.toLowerCase().includes(query) ||
+                           (guest.proxyName && guest.proxyName.toLowerCase().includes(query));
+
+        // Tapis Kategori
+        let matchCat = true;
+        if (catFilter !== 'ALL') {
+          matchCat = guest.category === catFilter;
+        }
+
+        // Tapis Status
+        let matchStat = true;
+        if (statFilter === 'Hadir') {
+          matchStat = guest.status === 'Hadir' || guest.status === 'Hadir Wakil';
+        } else if (statFilter === 'Belum Hadir') {
+          matchStat = guest.status === 'Belum Hadir';
+        } else if (statFilter === 'Hadir Wakil') {
+          matchStat = guest.status === 'Hadir Wakil';
+        }
+
+        return matchQuery && matchCat && matchStat;
+      });
+
+      renderTable(filtered);
+    }
+
+    // Sahkan Kehadiran Sendiri
+    function markSelfPresent(guestId) {
+      const guest = attendees.find(a => a.id === guestId);
+      if (!guest) return;
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      guest.status = 'Hadir';
+      guest.proxyName = '';
+      guest.checkInTime = timeStr;
+
+      persistData();
+      updateDashboardStats();
+      filterData();
+      showToast(`Pendaftaran Berjaya: ${guest.name} (${guest.seat})`, 'success');
+      showScanFeedback(guest, true);
+    }
+
+    // Buka Modal Wakil
+    function openProxyModal(guestId) {
+      const guest = attendees.find(a => a.id === guestId);
+      if (!guest) return;
+
+      activeTargetIdForProxy = guestId;
+      document.getElementById('modalOriginalName').innerText = guest.name;
+      document.getElementById('modalOriginalCategory').innerText = `${guest.category} (${guest.award})`;
+      document.getElementById('proxyNameInput').value = '';
+      document.getElementById('proxyRelationInput').value = '';
+      document.getElementById('proxyModal').classList.remove('hidden');
+    }
+
+    function closeProxyModal() {
+      activeTargetIdForProxy = null;
+      document.getElementById('proxyModal').classList.add('hidden');
+    }
+
+    // Hantar Borang Wakil
+    function submitProxyCheckIn() {
+      if (!activeTargetIdForProxy) return;
+      const guest = attendees.find(a => a.id === activeTargetIdForProxy);
+      const proxyName = document.getElementById('proxyNameInput').value.trim();
+      const proxyRel = document.getElementById('proxyRelationInput').value.trim();
+
+      if (!proxyName) {
+        showToast('Sila masukkan nama wakil penerima!', 'error');
+        return;
+      }
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      guest.status = 'Hadir Wakil';
+      guest.proxyName = proxyRel ? `${proxyName} (${proxyRel})` : proxyName;
+      guest.checkInTime = timeStr;
+
+      persistData();
+      closeProxyModal();
+      updateDashboardStats();
+      filterData();
+      showToast(`Wakil Disahkan: ${proxyName} menggantikan ${guest.name}`, 'warning');
+      showScanFeedback(guest, true);
+    }
+
+    // Batal Status (Reset)
+    function resetStatus(guestId) {
+      const guest = attendees.find(a => a.id === guestId);
+      if (!guest) return;
+
+      guest.status = 'Belum Hadir';
+      guest.proxyName = '';
+      guest.checkInTime = '';
+
+      persistData();
+      updateDashboardStats();
+      filterData();
+      showToast(`Status kehadiran ${guest.name} telah dikembalikan.`, 'info');
+    }
+
+    // Pengendalian Kod Manual
+    function handleManualCheckIn() {
+      const input = document.getElementById('manualInput');
+      const id = input.value.trim().toUpperCase();
+      if (!id) return;
+
+      const guest = attendees.find(a => a.id.toUpperCase() === id);
+      if (guest) {
+        markSelfPresent(guest.id);
+        input.value = '';
+      } else {
+        showToast(`ID ${id} tidak ditemui dalam senarai jemputan!`, 'error');
+        showScanFeedback(null, false, id);
+      }
+    }
+
+    // Peti Maklum Balas Imbasan
+    function showScanFeedback(guest, isSuccess, queryId = '') {
+      const resultBox = document.getElementById('scanResultBox');
+      resultBox.classList.remove('hidden', 'bg-emerald-950/60', 'border-emerald-500', 'bg-rose-950/60', 'border-rose-500');
+
+      if (isSuccess && guest) {
+        resultBox.classList.add('bg-emerald-950/60', 'border-emerald-500');
+        resultBox.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-emerald-300">PENGESAHAN DITERIMA</p>
+              <h4 class="text-sm font-extrabold text-white">${guest.name}</h4>
+              <p class="text-[11px] text-slate-300">${guest.award} • <b>${guest.seat}</b></p>
+            </div>
+          </div>
+        `;
+      } else {
+        resultBox.classList.add('bg-rose-950/60', 'border-rose-500');
+        resultBox.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-rose-300">KOD TIDAK SAH</p>
+              <p class="text-[11px] text-slate-300">Kod '${queryId}' tiada dalam pangkalan data. Sila rujuk Kaunter Bantuan.</p>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Pengendalian Kamera Pengimbas (HTML5-QRCode)
+    function toggleScanner() {
+      if (isScannerRunning) {
+        stopScanner();
+      } else {
+        startScanner();
+      }
+    }
+
+    function startScanner() {
+      const readerElem = document.getElementById('reader');
+      const placeholder = document.getElementById('scannerPlaceholder');
+      const btn = document.getElementById('btnToggleCamera');
+
+      if (!html5QrScanner) {
+        html5QrScanner = new Html5Qrcode("reader");
+      }
+
+      placeholder.classList.add('hidden');
+      btn.innerHTML = `<i class="fa-solid fa-stop mr-1 text-rose-400"></i> Hentikan Kamera`;
+
+      const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+      html5QrScanner.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+          // Apabila QR berjaya dikesan
+          handleScannedData(decodedText);
+        },
+        (errorMessage) => {
+          // Kegagalan bacaan frame berterusan diabaikan
+        }
+      ).then(() => {
+        isScannerRunning = true;
+      }).catch(err => {
+        placeholder.classList.remove('hidden');
+        placeholder.innerText = "Kamera tidak dapat diakses atau disekat oleh pelayar.";
+        btn.innerHTML = `<i class="fa-solid fa-camera mr-1"></i> Mulakan Kamera`;
+        isScannerRunning = false;
+        showToast("Gagal mengakses kamera peranti.", "error");
+      });
+    }
+
+    function stopScanner() {
+      if (html5QrScanner && isScannerRunning) {
+        html5QrScanner.stop().then(() => {
+          isScannerRunning = false;
+          document.getElementById('btnToggleCamera').innerHTML = `<i class="fa-solid fa-camera mr-1"></i> Mulakan Kamera`;
+          document.getElementById('scannerPlaceholder').classList.remove('hidden');
+        }).catch(err => console.error(err));
+      }
+    }
+
+    function handleScannedData(qrText) {
+      const cleanId = qrText.trim();
+      const guest = attendees.find(a => a.id.toUpperCase() === cleanId.toUpperCase());
+      if (guest) {
+        if (guest.status === 'Belum Hadir') {
+          markSelfPresent(guest.id);
+        } else {
+          showToast(`Tetamu ${guest.name} sudah pun mendaftar sebelum ini!`, 'info');
+          showScanFeedback(guest, true);
+        }
+      } else {
+        showScanFeedback(null, false, cleanId);
+      }
+    }
+
+    // Muat Turun Data CSV untuk Laporan Akhir
+    function exportCSV() {
+      let csv = "ID,Nama,Kategori,Anugerah,Sesi,Kerusi_Meja,Status,Wakil,Masa_Daftar,Nota\n";
+      attendees.forEach(row => {
+        csv += `"${row.id}","${row.name}","${row.category}","${row.award}","${row.session}","${row.seat}","${row.status}","${row.proxyName}","${row.checkInTime}","${row.notes}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Laporan_Kehadiran_Majlis_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Kotak Pesanan Toast Ringkas
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toastBox');
+      let bgColor = 'bg-slate-800 border-slate-600 text-slate-100';
+      let icon = '<i class="fa-solid fa-bell text-amber-400 mr-2"></i>';
+
+      if (type === 'success') {
+        bgColor = 'bg-emerald-900 border-emerald-500 text-emerald-100';
+        icon = '<i class="fa-solid fa-circle-check text-emerald-400 mr-2"></i>';
+      } else if (type === 'error') {
+        bgColor = 'bg-rose-900 border-rose-500 text-rose-100';
+        icon = '<i class="fa-solid fa-circle-xmark text-rose-400 mr-2"></i>';
+      } else if (type === 'warning') {
+        bgColor = 'bg-amber-900 border-amber-500 text-amber-100';
+        icon = '<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-2"></i>';
+      }
+
+      toast.className = `fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl border shadow-2xl flex items-center text-xs font-semibold transform transition-all duration-300 pointer-events-none ${bgColor}`;
+      toast.innerHTML = `${icon}<span>${message}</span>`;
+      toast.classList.remove('opacity-0', 'translate-y-20');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-20');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
