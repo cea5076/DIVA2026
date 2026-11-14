@@ -46,35 +46,35 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
-  <!-- Banner Rasmi Program DIVA 2026 (PPD Pekan) - Fit Kemas Tanpa Terpotong -->
-  <div id="topProgramBanner" class="w-full bg-[#020a24] border-b border-amber-500/30 shadow-xl">
-    <div class="max-w-7xl mx-auto flex items-center justify-center">
-      <img 
-        id="programBannerImg" 
-        src="banner_diva_2026.jpg" 
-        data-attempt="0"
-        alt="DIVA - Digital Innovations And Visionaries Awards 2026 (PPD Pekan)" 
-        class="w-full h-auto max-h-28 sm:max-h-36 md:max-h-44 object-contain block mx-auto"
-        onerror="tryNextBannerExtension(this)"
-      >
-      <!-- Paparan Sandaran Elegan Jika Fail Banner Belum Dimuat Naik ke GitHub -->
-      <div id="bannerFallbackBox" class="hidden w-full py-5 px-4 text-center bg-gradient-to-r from-[#020b2c] via-[#061d66] to-[#020b2c] border-y border-blue-500/20 relative">
-        <p class="text-[10px] sm:text-xs font-bold tracking-widest text-slate-200 uppercase">Kementerian Pendidikan • Pejabat Pendidikan Daerah Pekan</p>
-        <h2 class="text-2xl sm:text-4xl font-black tracking-wider text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] my-1">DIVA 2026</h2>
-        <p class="text-xs sm:text-sm font-extrabold tracking-widest text-amber-400 uppercase">Digital Innovations And Visionaries Awards</p>
-        <p class="text-[10px] text-blue-300/70 mt-1.5 italic">*Tip: Muat naik gambar banner anda ke GitHub sebagai <code>banner_diva_2026.jpg</code> untuk paparan grafik penuh.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Header & Bar Navigasi Sistem -->
-  <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700/60 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center space-x-3">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-600/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-inner">
-          <i class="fa-solid fa-trophy text-xl"></i>
+  <!-- Header & Bar Navigasi Sistem (Logo Banner DIVA 2026 Diletakkan Kemas di Sebelah Tajuk) -->
+  <header class="bg-slate-950/95 backdrop-blur border-b border-amber-500/30 sticky top-0 z-50 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <!-- Bingkai Khas Logo Banner DIVA 2026 (Nisbah Tepat Dengan Gambar Asal) -->
+        <div class="h-14 sm:h-16 aspect-[21/8] rounded-xl overflow-hidden border border-amber-500/40 bg-[#020a24] shadow-md flex items-center justify-center shrink-0">
+          <img 
+            id="programBannerImg" 
+            src="banner_diva_2026.jpg" 
+            data-attempt="0"
+            alt="Logo DIVA 2026" 
+            class="w-full h-full object-cover"
+            onerror="tryNextBannerExtension(this)"
+          >
+          <div id="bannerFallbackBox" class="hidden w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400/20 to-amber-600/20 text-amber-400">
+            <i class="fa-solid fa-trophy text-xl"></i>
+          </div>
         </div>
         <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold text-white tracking-wide">DIVA 2026</h1>
+            <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-blue-950 text-blue-300 border border-blue-700/50">PPD Pekan</span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-amber-400/90 font-medium">Digital Innovations And Visionaries Awards</p>
+        </div>
+      </div>
+
+      <!-- Pemilih Paparan Jawatankuasa (Role Switcher) -->
+      <div id="roleSwitcherBar" class="flex flex-wrap items-center bg-slate-900 p-1.5 rounded-xl border border-slate-700 gap-1">
           <h1 class="text-base sm:text-lg font-extrabold text-white tracking-wide">DIVA 2026</h1>
           <p class="text-[11px] sm:text-xs text-amber-400/90 font-medium">Digital Innovations And Visionaries Awards</p>
         </div>
