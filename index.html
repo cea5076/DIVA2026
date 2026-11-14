@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Pengurusan & Papan Pemuka Pendaftaran Majlis Anugerah</title>
+  <title>DIVA 2026 - Digital Innovations And Visionaries Awards</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Font Awesome untuk Ikon Antara Muka -->
@@ -22,9 +22,13 @@
       0%, 100% { opacity: 1; }
       50% { opacity: .6; }
     }
-    #reader video {
+    #reader video, #photoboothVideo {
       border-radius: 0.75rem;
       object-fit: cover;
+    }
+    /* Efek cermin untuk kamera selfie photobooth */
+    .mirror-video {
+      transform: scaleX(-1);
     }
   </style>
 </head>
@@ -34,17 +38,17 @@
   <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700/60 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-600/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-inner">
           <i class="fa-solid fa-trophy text-xl"></i>
         </div>
         <div>
-          <h1 class="text-lg font-bold text-white tracking-wide">MAJLIS ANUGERAH PERDANA 2026</h1>
-          <p class="text-xs text-slate-400">Pusat Kawalan Pendaftaran & Live Floor Management</p>
+          <h1 class="text-base sm:text-lg font-extrabold text-white tracking-wide">DIVA 2026</h1>
+          <p class="text-[11px] sm:text-xs text-amber-400/90 font-medium">Digital Innovations And Visionaries Awards</p>
         </div>
       </div>
 
       <!-- Pemilih Paparan Jawatankuasa (Role Switcher) -->
-      <div class="flex items-center bg-slate-950 p-1.5 rounded-xl border border-slate-700">
+      <div class="flex flex-wrap items-center bg-slate-950 p-1.5 rounded-xl border border-slate-700 gap-1">
         <button id="btnRoleAll" onclick="switchRole('all')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition">
           <i class="fa-solid fa-layer-group mr-1.5"></i>Floor Manager
         </button>
@@ -57,6 +61,9 @@
         <button id="btnRoleScan" onclick="switchRole('scanner')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
           <i class="fa-solid fa-qrcode mr-1.5"></i>Kaunter Imbas
         </button>
+        <button id="btnRolePhotobooth" onclick="switchRole('photobooth')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-camera-retro mr-1.5 text-amber-400"></i>Photobooth Digital
+        </button>
       </div>
     </div>
   </header>
@@ -64,25 +71,28 @@
   <!-- Kandungan Utama -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
 
-    <!-- Bar Tetapan Integrasi & Import Data -->
+    <!-- Bar Tetapan Auto-Sync Cloud & Import Data -->
     <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-      <div class="flex items-center gap-2 text-slate-300">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-        <span>Status Sambungan: <b id="syncStatusBadge" class="text-emerald-400">Penyimpanan Tempatan (Offline Ready)</b></span>
+      <div class="flex items-center gap-2.5 text-slate-300">
+        <span id="syncIndicatorDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 badge-pulse"></span>
+        <span>Status Auto-Sync AJK: <b id="syncStatusBadge" class="text-amber-400">Mod Tempatan (Klik Tetapan Sync untuk AJK)</b></span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="openCloudConfigModal()" class="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 rounded-lg text-amber-300 transition font-semibold">
+          <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Tetapan Auto-Sync AJK
+        </button>
         <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
         <button onclick="document.getElementById('csvFileInput').click()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition font-medium">
           <i class="fa-solid fa-file-arrow-up mr-1 text-amber-400"></i> Muat Naik CSV RSVP
         </button>
-        <button onclick="resetAllDataConfirmation()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-rose-900/60 border border-slate-700 text-slate-400 hover:text-rose-200 rounded-lg transition font-medium">
-          <i class="fa-solid fa-arrows-rotate mr-1"></i> Set Semula Data
+        <button onclick="openResetModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-rose-900/60 border border-slate-700 text-slate-400 hover:text-rose-200 rounded-lg transition font-medium">
+          <i class="fa-solid fa-arrows-rotate mr-1"></i> Set Semula
         </button>
       </div>
     </div>
 
     <!-- Kad Statistik Masa Nyata (Live Stats) -->
-    <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <section id="statsSection" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60 shadow-lg">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="text-xs font-medium uppercase tracking-wider">Jumlah Jemputan</span>
@@ -128,12 +138,12 @@
       </div>
     </section>
 
-    <!-- BAHAGIAN PENGIMBAS QR (Dipaparkan apabila di tab Scanner atau dibuka) -->
+    <!-- BAHAGIAN PENGIMBAS QR -->
     <section id="scannerSection" class="hidden bg-slate-800 p-5 rounded-2xl border border-amber-500/40 shadow-xl">
       <div class="flex flex-wrap items-center justify-between pb-3 mb-4 border-b border-slate-700 gap-2">
         <div class="flex items-center space-x-2">
           <span class="w-3 h-3 rounded-full bg-emerald-500 badge-pulse"></span>
-          <h2 class="text-sm font-bold tracking-wide uppercase text-amber-400">Kamera Pengimbas Kod QR (Foyer)</h2>
+          <h2 class="text-sm font-bold tracking-wide uppercase text-amber-400">Kamera Pengimbas Kod QR (Foyer DIVA 2026)</h2>
         </div>
         <button onclick="toggleScanner()" id="btnToggleCamera" class="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition">
           <i class="fa-solid fa-camera mr-1"></i> Mulakan / Hentikan Kamera
@@ -141,7 +151,6 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-        <!-- Kotak Kamera -->
         <div class="relative bg-slate-950 rounded-xl overflow-hidden min-h-[240px] flex flex-col items-center justify-center border border-slate-700">
           <div id="reader" class="w-full"></div>
           <p id="scannerPlaceholder" class="text-xs text-slate-500 p-4 text-center">
@@ -149,49 +158,148 @@
           </p>
         </div>
 
-        <!-- Ujian Pantas Kod QR & Carian Manual -->
         <div class="space-y-4">
           <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-700">
             <label class="block text-xs font-semibold text-slate-300 mb-2">
-              <i class="fa-solid fa-barcode mr-1 text-amber-400"></i> Imbas Kod Manual / Kod Bar / ID:
+              <i class="fa-solid fa-barcode mr-1 text-amber-400"></i> Imbas Kod Manual / ID Tetamu:
             </label>
             <div class="flex gap-2">
-              <input type="text" id="manualInput" placeholder="Contoh: AW-001, AW-002..." class="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500">
+              <input type="text" id="manualInput" placeholder="Contoh: DIVA-001, VIP-001..." class="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500">
               <button onclick="handleManualCheckIn()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition">
                 Daftar
               </button>
             </div>
             <p class="text-[11px] text-slate-400 mt-2">
-              Tip Ujian Cepat: Masukkan ID contoh seperti <code>AW-001</code>, <code>AW-002</code>, <code>VIP-001</code>.
+              Tip Ujian Cepat: Masukkan ID contoh seperti <code>DIVA-001</code>, <code>DIVA-002</code>, <code>VIP-001</code>.
             </p>
           </div>
 
-          <div id="scanResultBox" class="hidden p-4 rounded-xl border transition duration-300">
-            <!-- Keputusan pendaftaran dipaparkan di sini -->
+          <div id="scanResultBox" class="hidden p-4 rounded-xl border transition duration-300"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BAHAGIAN RUANG PHOTOBOOTH DIGITAL DIVA 2026 -->
+    <section id="photoboothSection" class="hidden bg-slate-800/95 p-5 sm:p-6 rounded-2xl border border-amber-500/40 shadow-2xl space-y-6">
+      <div class="flex flex-wrap items-center justify-between pb-4 border-b border-slate-700 gap-3">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-widest border border-amber-500/30">Red Carpet Experience</span>
+          <h2 class="text-lg sm:text-xl font-extrabold text-white mt-1 flex items-center gap-2">
+            <i class="fa-solid fa-camera-retro text-amber-400"></i> Ruang Photobooth Digital DIVA 2026
+          </h2>
+          <p class="text-xs text-slate-400">Rakam detik eksklusif anda bersama bingkai rasmi Digital Innovations And Visionaries Awards 2026</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="startPhotoboothCamera()" id="btnStartBooth" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition shadow-lg">
+            <i class="fa-solid fa-video mr-1.5"></i> Aktifkan Kamera Booth
+          </button>
+          <button onclick="stopPhotoboothCamera()" id="btnStopBooth" class="hidden px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold text-xs rounded-xl transition">
+            <i class="fa-solid fa-video-slash mr-1.5"></i> Tutup Kamera
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Kawalan Tetamu & Bingkai -->
+        <div class="lg:col-span-5 space-y-4 bg-slate-900/80 p-4 rounded-2xl border border-slate-700/80">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">1. Pilih / Masukkan Nama Tetamu atau Penerima:</label>
+            <input type="text" id="boothGuestName" list="guestNameSuggestions" placeholder="Taip nama anda untuk tertera di bingkai..." class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
+            <datalist id="guestNameSuggestions"></datalist>
           </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">2. Gelaran / Kategori Anugerah (Pilihan):</label>
+            <input type="text" id="boothGuestTitle" placeholder="Contoh: Penerima Anugerah Inovasi / Tetamu Kehormat" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">3. Pilih Tema Bingkai Rasmi DIVA 2026:</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="selectBoothFrame('gold')" id="frameBtnGold" class="frame-select-btn p-2.5 rounded-xl border-2 border-amber-500 bg-slate-800 text-left transition">
+                <p class="text-xs font-bold text-amber-400">Royal Gold Gala</p>
+                <p class="text-[10px] text-slate-400">Bingkai Emas Eksklusif</p>
+              </button>
+              <button type="button" onclick="selectBoothFrame('cyber')" id="frameBtnCyber" class="frame-select-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-left transition">
+                <p class="text-xs font-bold text-cyan-400">Digital Visionary</p>
+                <p class="text-[10px] text-slate-400">Bingkai Futuristik Moden</p>
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button onclick="capturePhotobooth()" id="btnCapturePhoto" class="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-camera text-base"></i> TANGKAP GAMBAR SEKARANG (3s)
+            </button>
+          </div>
+        </div>
+
+        <!-- Paparan Kamera Langsung & Pratonton Hasil -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="relative bg-slate-950 rounded-2xl overflow-hidden border-2 border-slate-700 aspect-video flex items-center justify-center shadow-inner">
+            <video id="photoboothVideo" autoplay playsinline class="w-full h-full object-cover mirror-video hidden"></video>
+            <canvas id="photoboothCanvas" class="w-full h-full object-contain hidden"></canvas>
+            
+            <!-- Kiraan Masa (Countdown Overlay) -->
+            <div id="boothCountdown" class="hidden absolute inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-20">
+              <span id="countdownNumber" class="text-7xl font-black text-amber-400 drop-shadow-lg">3</span>
+            </div>
+
+            <!-- Placeholder sebelum kamera dibuka -->
+            <div id="boothPlaceholder" class="text-center p-6 space-y-2">
+              <div class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto text-amber-400">
+                <i class="fa-solid fa-sparkles text-2xl"></i>
+              </div>
+              <p class="text-sm font-bold text-slate-200">Sedia untuk Sesi Fotografi Karpet Merah?</p>
+              <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik butang <b>"Aktifkan Kamera Booth"</b> di atas untuk memulakan pratonton langsung dengan bingkai rasmi DIVA 2026.</p>
+            </div>
+          </div>
+
+          <!-- Butang Muat Turun & Kongsi Hasil Gambar -->
+          <div id="boothResultActions" class="hidden flex flex-wrap items-center justify-between gap-3 bg-slate-900 p-3.5 rounded-xl border border-emerald-500/40">
+            <div class="flex items-center gap-2 text-xs text-emerald-400 font-semibold">
+              <i class="fa-solid fa-circle-check text-base"></i>
+              <span>Gambar berbingkai DIVA 2026 sedia dimuat turun!</span>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="retakePhotobooth()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-semibold transition">
+                <i class="fa-solid fa-rotate-right mr-1"></i> Ambil Semula
+              </button>
+              <button onclick="downloadPhotoboothImage()" class="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg text-xs font-bold transition shadow">
+                <i class="fa-solid fa-download mr-1"></i> Simpan Gambar (PNG)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Galeri Mini Sesi Semasa -->
+      <div class="pt-4 border-t border-slate-700/70">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-images text-amber-400"></i> Galeri Sesi Photobooth Hari Ini
+        </h3>
+        <div id="boothGalleryGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <p id="emptyGalleryText" class="col-span-full text-xs text-slate-500 italic">Belum ada gambar dirakam dalam sesi ini.</p>
         </div>
       </div>
     </section>
 
     <!-- Papan Pemuka Senarai Kehadiran Bersepadu -->
-    <section class="bg-slate-800/90 rounded-2xl border border-slate-700/60 shadow-xl overflow-hidden flex flex-col">
-      <!-- Bar Alat (Filter & Search) -->
+    <section id="dashboardTableSection" class="bg-slate-800/90 rounded-2xl border border-slate-700/60 shadow-xl overflow-hidden flex flex-col">
       <div class="p-4 sm:p-5 border-b border-slate-700 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div class="flex items-center space-x-2">
           <h2 id="tableHeading" class="text-base font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-list-check text-amber-400"></i> Papan Pemuka Utama
+            <i class="fa-solid fa-list-check text-amber-400"></i> Papan Pemuka Utama DIVA 2026
           </h2>
           <span id="recordCount" class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">0 rekod</span>
         </div>
 
         <div class="flex flex-wrap items-center gap-2.5">
-          <!-- Carian Nama -->
           <div class="relative flex-1 sm:w-64">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-400"></i>
             <input type="text" id="searchInput" oninput="filterData()" placeholder="Cari nama, ID, atau meja..." class="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
 
-          <!-- Tapis Kategori -->
           <select id="categoryFilter" onchange="filterData()" class="px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amber-500">
             <option value="ALL">Semua Kategori</option>
             <option value="Penerima Anugerah">Penerima Anugerah Sahaja</option>
@@ -200,7 +308,6 @@
             <option value="Jemputan Khas">Jemputan Khas</option>
           </select>
 
-          <!-- Tapis Status -->
           <select id="statusFilter" onchange="filterData()" class="px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amber-500">
             <option value="ALL">Semua Status</option>
             <option value="Hadir">Telah Hadir (Sendiri & Wakil)</option>
@@ -214,7 +321,6 @@
         </div>
       </div>
 
-      <!-- Jadual Data Kehadiran -->
       <div class="overflow-x-auto flex-1">
         <table class="w-full text-left text-xs">
           <thead class="bg-slate-950/60 uppercase font-semibold text-slate-400 border-b border-slate-700/60">
@@ -227,13 +333,69 @@
               <th class="py-3.5 px-4 text-right">Tindakan Kaunter</th>
             </tr>
           </thead>
-          <tbody id="guestTableBody" class="divide-y divide-slate-700/40">
-            <!-- Kandungan jadual dijanakan melalui JavaScript -->
-          </tbody>
+          <tbody id="guestTableBody" class="divide-y divide-slate-700/40"></tbody>
         </table>
       </div>
     </section>
   </main>
+
+  <!-- Modal Tetapan Auto-Sync Firebase (Merentas Semua AJK) -->
+  <div id="cloudConfigModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-cloud-bolt text-amber-400"></i> Sambungan Auto-Sync AJK (Firebase Realtime)
+        </h3>
+        <button onclick="closeCloudConfigModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-300 space-y-2 leading-relaxed">
+        <p>Masukkan <b>Firebase Realtime Database URL</b> anda di bawah supaya semua AJK (Pendaftaran, Pengurus Peserta, Stage Manager & Emcee) berkongsi data kehadiran secara langsung.</p>
+        <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 text-[11px] text-slate-400">
+          <p class="font-semibold text-amber-400 mb-1">Contoh Format URL Firebase:</p>
+          <code>https://diva-awards-2026-default-rtdb.asia-southeast1.firebasedatabase.app</code>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">URL Firebase Realtime Database:</label>
+          <input type="url" id="firebaseUrlInput" placeholder="https://nama-projek-anda.firebasedatabase.app" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+        </div>
+      </div>
+
+      <div class="flex flex-wrap justify-between items-center gap-2 pt-3 border-t border-slate-700">
+        <button onclick="disconnectCloudSync()" class="px-3 py-2 bg-slate-900 hover:bg-rose-950 text-rose-400 border border-slate-700 rounded-lg text-xs font-semibold">
+          Putuskan Sync
+        </button>
+        <div class="flex gap-2">
+          <button onclick="closeCloudConfigModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-semibold text-slate-200">Tutup</button>
+          <button onclick="saveCloudConfig()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded-lg text-xs font-bold text-slate-950">Simpan & Aktifkan Sync</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Pengesahan Set Semula Data (Ganti window.confirm) -->
+  <div id="resetConfirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center gap-3 text-rose-400">
+        <div class="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center">
+          <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+        </div>
+        <h3 class="text-sm font-bold text-white">Sahkan Set Semula Kehadiran?</h3>
+      </div>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Tindakan ini akan menukar semula status semua tetamu kepada <b>"Belum Hadir"</b> di semua peranti AJK yang bersambung.
+      </p>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeResetModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-semibold text-slate-200">Batal</button>
+        <button onclick="executeResetAllData()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 rounded-lg text-xs font-bold text-white">Ya, Set Semula</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal Pendaftaran Wakil (Proxy Modal) -->
   <div id="proxyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -255,11 +417,11 @@
       <div class="space-y-3 pt-2">
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Nama Penuh Wakil (Untuk Sebutan Emcee):</label>
-          <input type="text" id="proxyNameInput" placeholder="Contoh: Encik Ahmad Razali (Naib Presiden)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+          <input type="text" id="proxyNameInput" placeholder="Contoh: Encik Ahmad Razali (Ketua Pegawai Teknologi)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Hubungan / Jawatan Wakil:</label>
-          <input type="text" id="proxyRelationInput" placeholder="Contoh: Pasangan / Wakil Syarikat" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+          <input type="text" id="proxyRelationInput" placeholder="Contoh: Wakil Syarikat / Pasangan" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
         </div>
       </div>
 
@@ -273,29 +435,159 @@
   <!-- Papan Notifikasi Ringkas (Toast) -->
   <div id="toastBox" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none"></div>
 
-  <!-- JavaScript Logik Sistem & Dashboard -->
+  <!-- JavaScript Logik Sistem, Cloud Auto-Sync & Photobooth -->
   <script>
-    // Pangkalan Data Utama (Mock Data yang mensimulasikan data RSVP sebenar majlis anugerah)
+    // =========================================================================
+    // KONFIGURASI DEFAULT FIREBASE REALTIME DATABASE (Boleh isi terus di sini)
+    // =========================================================================
+    // Jika anda masukkan URL Firebase anda di bawah, semua AJK yang buka pautan GitHub
+    // akan terus bersambung secara automatik tanpa perlu tetapan manual.
+    const DEFAULT_FIREBASE_DB_URL = "https://diva-awards-2026-default-rtdb.asia-southeast1.firebasedatabase.app/"; 
+
+    let firebaseDbUrl = localStorage.getItem('DIVA_FIREBASE_URL') || DEFAULT_FIREBASE_DB_URL;
+    let syncInterval = null;
+    let lastSyncedHash = "";
+
+    // Pangkalan Data Utama DIVA 2026
     let attendees = [
-      { id: "VIP-001", name: "YAB Menteri Besar Pahang", category: "VVIP", award: "Tetamu Kehormat", session: "Perasmian", seat: "Meja Utama 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan LO 1" },
-      { id: "VIP-002", name: "YB Setiausaha Kerajaan Negeri", category: "VIP", award: "Tetamu Khas", session: "Perasmian", seat: "Meja Utama 2", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan LO 2" },
-      { id: "AW-001", name: "Prof. Dr. Siti Aminah binti Yusof", category: "Penerima Anugerah", award: "Anugerah Inovasi Sains", session: "Sesi 1 (Naik Pentas #1)", seat: "Zon A - Baris 1, No 3", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Perlu naik pentas awal" },
-      { id: "AW-002", name: "Ir. Ts. Kamaruddin bin Mansor", category: "Penerima Anugerah", award: "Anugerah Tokoh Industri", session: "Sesi 1 (Naik Pentas #2)", seat: "Zon A - Baris 1, No 4", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "AW-003", name: "Datin Hajah Zarina binti Daud", category: "Penerima Anugerah", award: "Anugerah Ikon Usahawan", session: "Sesi 2 (Naik Pentas #3)", seat: "Zon A - Baris 2, No 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "AW-004", name: "Encik Muhammad Farhan bin Zulkifli", category: "Penerima Anugerah", award: "Anugerah Harapan Belia", session: "Sesi 2 (Naik Pentas #4)", seat: "Zon A - Baris 2, No 2", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "AW-005", name: "Puan Noor Azlin binti Abdul Jalil", category: "Penerima Anugerah", award: "Anugerah Perkhidmatan Bakti", session: "Sesi 2 (Naik Pentas #5)", seat: "Zon A - Baris 2, No 3", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "JM-101", name: "Dato' Sri Dr. Hj. Mohd Zaki", category: "Jemputan Khas", award: "Penaja Utama", session: "Perasmian", seat: "Meja Penaja 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "JM-102", name: "Puan Sri Linda Cheong", category: "Jemputan Khas", award: "Wakil Industri", session: "Perasmian", seat: "Meja Penaja 2", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" }
+      { id: "VIP-001", name: "YAB Dato' Sri Menteri Besar", category: "VVIP", award: "Tetamu Kehormat Utama", session: "Perasmian", seat: "Meja VVIP 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 1" },
+      { id: "VIP-002", name: "YB Menteri Digital Malaysia", category: "VVIP", award: "Perasmi Majlis DIVA 2026", session: "Perasmian", seat: "Meja VVIP 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 2" },
+      { id: "DIVA-001", name: "Prof. Dr. Siti Aminah binti Yusof", category: "Penerima Anugerah", award: "Visionary Tech Leader Award", session: "Sesi 1 (Giliran #1)", seat: "Zon A - Baris 1, No 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Sedia di Holding Room 15 minit awal" },
+      { id: "DIVA-002", name: "Ir. Ts. Kamaruddin bin Mansor", category: "Penerima Anugerah", award: "Digital Transformation Excellence", session: "Sesi 1 (Giliran #2)", seat: "Zon A - Baris 1, No 2", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "DIVA-003", name: "Datin Hajah Zarina binti Daud", category: "Penerima Anugerah", award: "Woman Innovator of The Year", session: "Sesi 2 (Giliran #3)", seat: "Zon A - Baris 2, No 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "DIVA-004", name: "Encik Muhammad Farhan bin Zulkifli", category: "Penerima Anugerah", award: "Emerging AI Startup Award", session: "Sesi 2 (Giliran #4)", seat: "Zon A - Baris 2, No 2", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "DIVA-005", name: "Puan Noor Azlin binti Abdul Jalil", category: "Penerima Anugerah", award: "Smart Sustainability Pioneer", session: "Sesi 2 (Giliran #5)", seat: "Zon A - Baris 2, No 3", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "JM-101", name: "Dato' Sri Dr. Hj. Mohd Zaki", category: "Jemputan Khas", award: "Rakan Strategik Utama", session: "Perasmian", seat: "Meja Penaja 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" }
     ];
 
-    let currentRole = 'all'; // all, awardee, emcee, scanner
+    let currentRole = 'all';
     let html5QrScanner = null;
     let isScannerRunning = false;
     let activeTargetIdForProxy = null;
 
-    // Muatkan data tersimpan dari LocalStorage jika ada
+    // Pembolehubah Photobooth
+    let boothStream = null;
+    let selectedBoothFrame = 'gold';
+    let capturedPhotos = [];
+
+    // =========================================================================
+    // ENJIN AUTO-SYNC AWAN (FIREBASE REST REALTIME SYNC)
+    // =========================================================================
+    function updateSyncUI(state, message) {
+      const dot = document.getElementById('syncIndicatorDot');
+      const badge = document.getElementById('syncStatusBadge');
+      if (state === 'connected') {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 badge-pulse';
+        badge.className = 'text-emerald-400';
+        badge.innerText = message || 'Auto-Sync Aktif (Semua AJK Selari)';
+      } else if (state === 'error') {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+        badge.className = 'text-rose-400';
+        badge.innerText = message || 'Ralat Sambungan Cloud (Mod Sandaran)';
+      } else {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
+        badge.className = 'text-amber-400';
+        badge.innerText = message || 'Mod Tempatan (Klik Tetapan Sync untuk AJK)';
+      }
+    }
+
+    async function pushDataToCloud() {
+      localStorage.setItem('DIVA_ATTENDEES_DATA', JSON.stringify(attendees));
+      if (!firebaseDbUrl) return;
+
+      const cleanUrl = firebaseDbUrl.replace(/\/$/, '') + '/diva2026_attendees.json';
+      try {
+        const res = await fetch(cleanUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(attendees)
+        });
+        if (res.ok) {
+          lastSyncedHash = JSON.stringify(attendees);
+          updateSyncUI('connected', 'Auto-Sync Aktif (Data Dikemas Kini)');
+        } else {
+          updateSyncUI('error', 'Gagal Hantar ke Cloud (Semak Rules Firebase)');
+        }
+      } catch (err) {
+        updateSyncUI('error', 'Tiada Internet (Disimpan Secara Tempatan)');
+      }
+    }
+
+    async function pullDataFromCloud(isInitial = false) {
+      if (!firebaseDbUrl) return;
+      const cleanUrl = firebaseDbUrl.replace(/\/$/, '') + '/diva2026_attendees.json';
+      try {
+        const res = await fetch(cleanUrl);
+        if (!res.ok) throw new Error('Network error');
+        const cloudData = await res.json();
+
+        if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
+          const incomingHash = JSON.stringify(cloudData);
+          if (incomingHash !== lastSyncedHash) {
+            attendees = cloudData;
+            lastSyncedHash = incomingHash;
+            localStorage.setItem('DIVA_ATTENDEES_DATA', incomingHash);
+            updateDashboardStats();
+            filterData();
+            populateBoothGuestSuggestions();
+          }
+          updateSyncUI('connected', 'Auto-Sync Aktif (Live Semua AJK)');
+        } else if (isInitial) {
+          // Jika pangkalan data awan masih kosong, muat naik data awal
+          await pushDataToCloud();
+        }
+      } catch (err) {
+        updateSyncUI('error', 'Gangguan Rangkaian (Menggunakan Cache)');
+      }
+    }
+
+    function startCloudAutoSync() {
+      if (syncInterval) clearInterval(syncInterval);
+      if (!firebaseDbUrl) {
+        updateSyncUI('local');
+        return;
+      }
+      pullDataFromCloud(true);
+      // Semak perubahan dari peranti AJK lain setiap 2.5 saat
+      syncInterval = setInterval(() => pullDataFromCloud(false), 2500);
+    }
+
+    function openCloudConfigModal() {
+      document.getElementById('firebaseUrlInput').value = firebaseDbUrl || '';
+      document.getElementById('cloudConfigModal').classList.remove('hidden');
+    }
+
+    function closeCloudConfigModal() {
+      document.getElementById('cloudConfigModal').classList.add('hidden');
+    }
+
+    function saveCloudConfig() {
+      const url = document.getElementById('firebaseUrlInput').value.trim();
+      if (!url || !url.startsWith('https://')) {
+        showToast('Sila masukkan URL Firebase yang sah bermula dengan https://', 'error');
+        return;
+      }
+      firebaseDbUrl = url;
+      localStorage.setItem('DIVA_FIREBASE_URL', url);
+      closeCloudConfigModal();
+      showToast('Auto-Sync AJK diaktifkan! Menyelaras data...', 'success');
+      startCloudAutoSync();
+    }
+
+    function disconnectCloudSync() {
+      firebaseDbUrl = '';
+      localStorage.removeItem('DIVA_FIREBASE_URL');
+      if (syncInterval) clearInterval(syncInterval);
+      updateSyncUI('local');
+      closeCloudConfigModal();
+      showToast('Sambungan Cloud diputuskan. Kembali ke mod tempatan.', 'info');
+    }
+
+    // =========================================================================
+    // INISIALISASI & PENGURUSAN DATA
+    // =========================================================================
     function loadSavedData() {
-      const saved = localStorage.getItem('ANUGERAH_ATTENDEES_DATA');
+      const saved = localStorage.getItem('DIVA_ATTENDEES_DATA');
       if (saved) {
         try {
           attendees = JSON.parse(saved);
@@ -305,18 +597,22 @@
       }
     }
 
-    function persistData() {
-      localStorage.setItem('ANUGERAH_ATTENDEES_DATA', JSON.stringify(attendees));
-    }
-
-    // Inisialisasi Aplikasi Semasa Halaman Dimuatkan
     window.onload = function() {
       loadSavedData();
-      
-      // Semak URL Parameter cth: index.html?role=awardee
+      populateBoothGuestSuggestions();
+
+      // Semak parameter URL cth: ?role=awardee atau ?sync=URL_FIREBASE
       const urlParams = new URLSearchParams(window.location.search);
+      const syncParam = urlParams.get('sync');
+      if (syncParam && syncParam.startsWith('https://')) {
+        firebaseDbUrl = syncParam;
+        localStorage.setItem('DIVA_FIREBASE_URL', syncParam);
+      }
+
+      startCloudAutoSync();
+
       const roleParam = urlParams.get('role');
-      if (roleParam && ['all', 'awardee', 'emcee', 'scanner'].includes(roleParam)) {
+      if (roleParam && ['all', 'awardee', 'emcee', 'scanner', 'photobooth'].includes(roleParam)) {
         switchRole(roleParam);
       } else {
         updateDashboardStats();
@@ -324,7 +620,6 @@
       }
     };
 
-    // Fungsi Muat Naik Fail CSV Data Tetamu
     function handleCSVUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -339,14 +634,13 @@
         }
 
         const newAttendees = [];
-        // Mengabaikan baris pertama (Header)
         for (let i = 1; i < lines.length; i++) {
           const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
           if (cols.length >= 2) {
             newAttendees.push({
-              id: cols[0] || `ID-${i}`,
+              id: cols[0] || `DIVA-${i}`,
               name: cols[1] || 'Nama Tetamu',
-              category: cols[2] || 'Tetamu Umum',
+              category: cols[2] || 'Jemputan Khas',
               award: cols[3] || '-',
               session: cols[4] || 'Sesi 1',
               seat: cols[5] || 'Zon Umum',
@@ -360,30 +654,40 @@
 
         if (newAttendees.length > 0) {
           attendees = newAttendees;
-          persistData();
+          pushDataToCloud();
           updateDashboardStats();
           filterData();
-          showToast(`Berjaya mengimport ${newAttendees.length} rekod jemputan!`, 'success');
+          populateBoothGuestSuggestions();
+          showToast(`Berjaya memuat naik ${newAttendees.length} rekod & diselaraskan ke semua AJK!`, 'success');
         }
       };
       reader.readAsText(file);
     }
 
-    function resetAllDataConfirmation() {
-      if (window.confirm("Adakah anda pasti ingin menetapkan semula semua rekod kehadiran kembali ke status 'Belum Hadir'?")) {
-        attendees.forEach(g => {
-          g.status = 'Belum Hadir';
-          g.proxyName = '';
-          g.checkInTime = '';
-        });
-        persistData();
-        updateDashboardStats();
-        filterData();
-        showToast('Semua status kehadiran telah ditetapkan semula.', 'info');
-      }
+    function openResetModal() {
+      document.getElementById('resetConfirmModal').classList.remove('hidden');
     }
 
-    // Fungsi Tukar Peranan Jawatankuasa (Role Switcher)
+    function closeResetModal() {
+      document.getElementById('resetConfirmModal').classList.add('hidden');
+    }
+
+    function executeResetAllData() {
+      attendees.forEach(g => {
+        g.status = 'Belum Hadir';
+        g.proxyName = '';
+        g.checkInTime = '';
+      });
+      pushDataToCloud();
+      closeResetModal();
+      updateDashboardStats();
+      filterData();
+      showToast('Semua status kehadiran telah ditetapkan semula.', 'info');
+    }
+
+    // =========================================================================
+    // PENUKARAN MOD PERANAN AJK & PHOTOBOOTH
+    // =========================================================================
     function switchRole(role) {
       currentRole = role;
       document.querySelectorAll('.role-btn').forEach(btn => {
@@ -392,34 +696,45 @@
       });
 
       const scannerSection = document.getElementById('scannerSection');
+      const photoboothSection = document.getElementById('photoboothSection');
+      const statsSection = document.getElementById('statsSection');
+      const dashboardTableSection = document.getElementById('dashboardTableSection');
       const tableHeading = document.getElementById('tableHeading');
       const catFilter = document.getElementById('categoryFilter');
 
+      // Tetapan lalai paparan
+      scannerSection.classList.add('hidden');
+      photoboothSection.classList.add('hidden');
+      statsSection.classList.remove('hidden');
+      dashboardTableSection.classList.remove('hidden');
+
       if (role === 'all') {
         document.getElementById('btnRoleAll').classList.add('bg-amber-500', 'text-slate-950');
-        scannerSection.classList.add('hidden');
-        tableHeading.innerHTML = `<i class="fa-solid fa-layer-group text-amber-400"></i> Papan Pemuka Floor Manager (Semua Data)`;
+        tableHeading.innerHTML = `<i class="fa-solid fa-layer-group text-amber-400"></i> Papan Pemuka Floor Manager DIVA 2026`;
         catFilter.value = 'ALL';
       } else if (role === 'awardee') {
         document.getElementById('btnRoleAward').classList.add('bg-amber-500', 'text-slate-950');
-        scannerSection.classList.add('hidden');
         tableHeading.innerHTML = `<i class="fa-solid fa-medal text-amber-400"></i> Senarai Penerima Anugerah (Holding & Stage Cue)`;
         catFilter.value = 'Penerima Anugerah';
       } else if (role === 'emcee') {
         document.getElementById('btnRoleEmcee').classList.add('bg-amber-500', 'text-slate-950');
-        scannerSection.classList.add('hidden');
-        tableHeading.innerHTML = `<i class="fa-solid fa-microphone text-amber-400"></i> Panduan Juruacara / Stage Manager (Semakan Wakil & Hadir)`;
+        tableHeading.innerHTML = `<i class="fa-solid fa-microphone text-amber-400"></i> Panduan Stage Manager & Emcee (Semakan Wakil)`;
         catFilter.value = 'ALL';
       } else if (role === 'scanner') {
         document.getElementById('btnRoleScan').classList.add('bg-amber-500', 'text-slate-950');
         scannerSection.classList.remove('hidden');
         tableHeading.innerHTML = `<i class="fa-solid fa-qrcode text-amber-400"></i> Mod Pendaftaran & Kaunter Foyer`;
+      } else if (role === 'photobooth') {
+        document.getElementById('btnRolePhotobooth').classList.add('bg-amber-500', 'text-slate-950');
+        photoboothSection.classList.remove('hidden');
+        statsSection.classList.add('hidden');
+        dashboardTableSection.classList.add('hidden');
+        return;
       }
 
       filterData();
     }
 
-    // Fungsi Mengira Statistik Papan Pemuka
     function updateDashboardStats() {
       const total = attendees.length;
       const presentSelf = attendees.filter(a => a.status === 'Hadir').length;
@@ -435,7 +750,6 @@
       document.getElementById('statProxy').innerText = presentProxy;
     }
 
-    // Render Jadual Tetamu
     function renderTable(dataToRender = attendees) {
       const tbody = document.getElementById('guestTableBody');
       const recordCount = document.getElementById('recordCount');
@@ -470,7 +784,6 @@
           </span>`;
         }
 
-        const isAwardee = guest.category === 'Penerima Anugerah';
         const tr = document.createElement('tr');
         tr.className = `hover:bg-slate-800/60 transition ${guest.status !== 'Belum Hadir' ? 'bg-slate-800/20' : ''}`;
 
@@ -521,27 +834,20 @@
       });
     }
 
-    // Penapisan Data Carian & Dropdown
     function filterData() {
       const query = document.getElementById('searchInput').value.toLowerCase().trim();
       const catFilter = document.getElementById('categoryFilter').value;
       const statFilter = document.getElementById('statusFilter').value;
 
       const filtered = attendees.filter(guest => {
-        // Carian perkataan
         const matchQuery = guest.name.toLowerCase().includes(query) ||
                            guest.id.toLowerCase().includes(query) ||
                            guest.seat.toLowerCase().includes(query) ||
                            guest.award.toLowerCase().includes(query) ||
                            (guest.proxyName && guest.proxyName.toLowerCase().includes(query));
 
-        // Tapis Kategori
-        let matchCat = true;
-        if (catFilter !== 'ALL') {
-          matchCat = guest.category === catFilter;
-        }
+        let matchCat = catFilter === 'ALL' ? true : guest.category === catFilter;
 
-        // Tapis Status
         let matchStat = true;
         if (statFilter === 'Hadir') {
           matchStat = guest.status === 'Hadir' || guest.status === 'Hadir Wakil';
@@ -557,7 +863,6 @@
       renderTable(filtered);
     }
 
-    // Sahkan Kehadiran Sendiri
     function markSelfPresent(guestId) {
       const guest = attendees.find(a => a.id === guestId);
       if (!guest) return;
@@ -569,14 +874,13 @@
       guest.proxyName = '';
       guest.checkInTime = timeStr;
 
-      persistData();
+      pushDataToCloud();
       updateDashboardStats();
       filterData();
-      showToast(`Pendaftaran Berjaya: ${guest.name} (${guest.seat})`, 'success');
+      showToast(`Hadir Disahkan: ${guest.name} (${guest.seat})`, 'success');
       showScanFeedback(guest, true);
     }
 
-    // Buka Modal Wakil
     function openProxyModal(guestId) {
       const guest = attendees.find(a => a.id === guestId);
       if (!guest) return;
@@ -594,7 +898,6 @@
       document.getElementById('proxyModal').classList.add('hidden');
     }
 
-    // Hantar Borang Wakil
     function submitProxyCheckIn() {
       if (!activeTargetIdForProxy) return;
       const guest = attendees.find(a => a.id === activeTargetIdForProxy);
@@ -613,7 +916,7 @@
       guest.proxyName = proxyRel ? `${proxyName} (${proxyRel})` : proxyName;
       guest.checkInTime = timeStr;
 
-      persistData();
+      pushDataToCloud();
       closeProxyModal();
       updateDashboardStats();
       filterData();
@@ -621,7 +924,6 @@
       showScanFeedback(guest, true);
     }
 
-    // Batal Status (Reset)
     function resetStatus(guestId) {
       const guest = attendees.find(a => a.id === guestId);
       if (!guest) return;
@@ -630,13 +932,12 @@
       guest.proxyName = '';
       guest.checkInTime = '';
 
-      persistData();
+      pushDataToCloud();
       updateDashboardStats();
       filterData();
       showToast(`Status kehadiran ${guest.name} telah dikembalikan.`, 'info');
     }
 
-    // Pengendalian Kod Manual
     function handleManualCheckIn() {
       const input = document.getElementById('manualInput');
       const id = input.value.trim().toUpperCase();
@@ -652,7 +953,6 @@
       }
     }
 
-    // Peti Maklum Balas Imbasan
     function showScanFeedback(guest, isSuccess, queryId = '') {
       const resultBox = document.getElementById('scanResultBox');
       resultBox.classList.remove('hidden', 'bg-emerald-950/60', 'border-emerald-500', 'bg-rose-950/60', 'border-rose-500');
@@ -665,7 +965,7 @@
               <i class="fa-solid fa-circle-check"></i>
             </div>
             <div>
-              <p class="text-xs font-bold text-emerald-300">PENGESAHAN DITERIMA</p>
+              <p class="text-xs font-bold text-emerald-300">PENGESAHAN DITERIMA (AUTO-SYNCED)</p>
               <h4 class="text-sm font-extrabold text-white">${guest.name}</h4>
               <p class="text-[11px] text-slate-300">${guest.award} • <b>${guest.seat}</b></p>
             </div>
@@ -680,49 +980,38 @@
             </div>
             <div>
               <p class="text-xs font-bold text-rose-300">KOD TIDAK SAH</p>
-              <p class="text-[11px] text-slate-300">Kod '${queryId}' tiada dalam pangkalan data. Sila rujuk Kaunter Bantuan.</p>
+              <p class="text-[11px] text-slate-300">Kod '${queryId}' tiada dalam pangkalan data DIVA 2026.</p>
             </div>
           </div>
         `;
       }
     }
 
-    // Pengendalian Kamera Pengimbas (HTML5-QRCode)
+    // =========================================================================
+    // PENGENDALIAN KAMERA PENGIMBAS QR
+    // =========================================================================
     function toggleScanner() {
-      if (isScannerRunning) {
-        stopScanner();
-      } else {
-        startScanner();
-      }
+      if (isScannerRunning) stopScanner();
+      else startScanner();
     }
 
     function startScanner() {
-      const readerElem = document.getElementById('reader');
       const placeholder = document.getElementById('scannerPlaceholder');
       const btn = document.getElementById('btnToggleCamera');
 
-      if (!html5QrScanner) {
-        html5QrScanner = new Html5Qrcode("reader");
-      }
+      if (!html5QrScanner) html5QrScanner = new Html5Qrcode("reader");
 
       placeholder.classList.add('hidden');
       btn.innerHTML = `<i class="fa-solid fa-stop mr-1 text-rose-400"></i> Hentikan Kamera`;
 
-      const config = { fps: 10, qrbox: { width: 220, height: 220 } };
-
       html5QrScanner.start(
         { facingMode: "environment" },
-        config,
-        (decodedText) => {
-          // Apabila QR berjaya dikesan
-          handleScannedData(decodedText);
-        },
-        (errorMessage) => {
-          // Kegagalan bacaan frame berterusan diabaikan
-        }
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decodedText) => handleScannedData(decodedText),
+        () => {}
       ).then(() => {
         isScannerRunning = true;
-      }).catch(err => {
+      }).catch(() => {
         placeholder.classList.remove('hidden');
         placeholder.innerText = "Kamera tidak dapat diakses atau disekat oleh pelayar.";
         btn.innerHTML = `<i class="fa-solid fa-camera mr-1"></i> Mulakan Kamera`;
@@ -756,7 +1045,186 @@
       }
     }
 
-    // Muat Turun Data CSV untuk Laporan Akhir
+    // =========================================================================
+    // LOGIK RUANG PHOTOBOOTH DIGITAL DIVA 2026
+    // =========================================================================
+    function populateBoothGuestSuggestions() {
+      const datalist = document.getElementById('guestNameSuggestions');
+      if (!datalist) return;
+      datalist.innerHTML = attendees.map(g => `<option value="${g.name}">${g.award}</option>`).join('');
+    }
+
+    function selectBoothFrame(theme) {
+      selectedBoothFrame = theme;
+      document.querySelectorAll('.frame-select-btn').forEach(b => {
+        b.classList.remove('border-2', 'border-amber-500', 'border-cyan-400');
+        b.classList.add('border', 'border-slate-700');
+      });
+      const activeBtn = theme === 'gold' ? document.getElementById('frameBtnGold') : document.getElementById('frameBtnCyber');
+      activeBtn.classList.remove('border', 'border-slate-700');
+      activeBtn.classList.add('border-2', theme === 'gold' ? 'border-amber-500' : 'border-cyan-400');
+    }
+
+    async function startPhotoboothCamera() {
+      const video = document.getElementById('photoboothVideo');
+      const canvas = document.getElementById('photoboothCanvas');
+      const placeholder = document.getElementById('boothPlaceholder');
+
+      try {
+        boothStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+        video.srcObject = boothStream;
+        video.classList.remove('hidden');
+        canvas.classList.add('hidden');
+        placeholder.classList.add('hidden');
+        document.getElementById('boothResultActions').classList.add('hidden');
+        document.getElementById('btnStartBooth').classList.add('hidden');
+        document.getElementById('btnStopBooth').classList.remove('hidden');
+      } catch (err) {
+        showToast('Kamera tidak ditemui atau kebenaran ditolak oleh pelayar.', 'error');
+      }
+    }
+
+    function stopPhotoboothCamera() {
+      if (boothStream) {
+        boothStream.getTracks().forEach(track => track.stop());
+        boothStream = null;
+      }
+      document.getElementById('photoboothVideo').classList.add('hidden');
+      document.getElementById('boothPlaceholder').classList.remove('hidden');
+      document.getElementById('btnStartBooth').classList.remove('hidden');
+      document.getElementById('btnStopBooth').classList.add('hidden');
+    }
+
+    function capturePhotobooth() {
+      const video = document.getElementById('photoboothVideo');
+      if (!boothStream || video.classList.contains('hidden')) {
+        showToast('Sila aktifkan kamera booth terlebih dahulu!', 'warning');
+        return;
+      }
+
+      const overlay = document.getElementById('boothCountdown');
+      const numEl = document.getElementById('countdownNumber');
+      overlay.classList.remove('hidden');
+      let count = 3;
+      numEl.innerText = count;
+
+      const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+          numEl.innerText = count;
+        } else {
+          clearInterval(timer);
+          overlay.classList.add('hidden');
+          renderFramedPhoto();
+        }
+      }, 900);
+    }
+
+    function renderFramedPhoto() {
+      const video = document.getElementById('photoboothVideo');
+      const canvas = document.getElementById('photoboothCanvas');
+      const ctx = canvas.getContext('2d');
+
+      const w = video.videoWidth || 1280;
+      const h = video.videoHeight || 720;
+      canvas.width = w;
+      canvas.height = h;
+
+      // Lukis video secara cermin (mirror) supaya semula jadi
+      ctx.save();
+      ctx.translate(w, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, w, h);
+      ctx.restore();
+
+      const isGold = selectedBoothFrame === 'gold';
+      const primaryColor = isGold ? '#f59e0b' : '#22d3ee';
+      const secondaryColor = isGold ? '#fef3c7' : '#cffafe';
+
+      // Lapisan gradien gelap di bahagian bawah untuk kebolehbacaan teks
+      const grad = ctx.createLinearGradient(0, h * 0.65, 0, h);
+      grad.addColorStop(0, 'rgba(15, 23, 42, 0)');
+      grad.addColorStop(1, 'rgba(15, 23, 42, 0.92)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, h * 0.65, w, h * 0.35);
+
+      // Bingkai luar eksklusif
+      ctx.strokeStyle = primaryColor;
+      ctx.lineWidth = Math.max(10, w * 0.012);
+      ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, w - ctx.lineWidth, h - ctx.lineWidth);
+
+      // Lencana Atas Kiri: DIVA 2026
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.fillRect(32, 32, 370, 68);
+      ctx.strokeStyle = primaryColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(32, 32, 370, 68);
+
+      ctx.fillStyle = primaryColor;
+      ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('DIVA 2026', 48, 63);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '500 13px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Digital Innovations And Visionaries Awards', 48, 84);
+
+      // Nama Tetamu & Gelaran di bahagian bawah
+      const guestName = document.getElementById('boothGuestName').value.trim() || 'Tetamu Kehormat DIVA 2026';
+      const guestTitle = document.getElementById('boothGuestTitle').value.trim() || 'Red Carpet Gala Night';
+
+      ctx.fillStyle = secondaryColor;
+      ctx.font = '800 32px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(guestName, 40, h - 55);
+
+      ctx.fillStyle = primaryColor;
+      ctx.font = '600 18px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(guestTitle, 40, h - 26);
+
+      // Paparkan hasil pada canvas
+      video.classList.add('hidden');
+      canvas.classList.remove('hidden');
+      document.getElementById('boothResultActions').classList.remove('hidden');
+
+      // Tambah ke galeri sesi
+      const dataUrl = canvas.toDataURL('image/png');
+      capturedPhotos.unshift({ url: dataUrl, name: guestName });
+      updateBoothGallery();
+      showToast('Gambar berjaya dirakam dengan bingkai rasmi DIVA 2026!', 'success');
+    }
+
+    function retakePhotobooth() {
+      document.getElementById('photoboothCanvas').classList.add('hidden');
+      document.getElementById('photoboothVideo').classList.remove('hidden');
+      document.getElementById('boothResultActions').classList.add('hidden');
+    }
+
+    function downloadPhotoboothImage() {
+      const canvas = document.getElementById('photoboothCanvas');
+      const guestName = (document.getElementById('boothGuestName').value.trim() || 'Tetamu').replace(/\s+/g, '_');
+      const link = document.createElement('a');
+      link.download = `DIVA2026_${guestName}_${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function updateBoothGallery() {
+      const grid = document.getElementById('boothGalleryGrid');
+      if (capturedPhotos.length === 0) return;
+      grid.innerHTML = capturedPhotos.slice(0, 8).map((item, idx) => `
+        <div class="group relative rounded-xl overflow-hidden border border-slate-700 bg-slate-900">
+          <img src="${item.url}" alt="${item.name}" class="w-full aspect-video object-cover">
+          <div class="p-2 flex items-center justify-between bg-slate-950/90 text-[10px]">
+            <span class="truncate font-semibold text-slate-200 max-w-[75%]">${item.name}</span>
+            <a href="${item.url}" download="DIVA2026_${idx + 1}.png" class="text-amber-400 hover:text-amber-300 font-bold">
+              <i class="fa-solid fa-download"></i>
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // =========================================================================
+    // EKSPORT CSV & NOTIFIKASI
+    // =========================================================================
     function exportCSV() {
       let csv = "ID,Nama,Kategori,Anugerah,Sesi,Kerusi_Meja,Status,Wakil,Masa_Daftar,Nota\n";
       attendees.forEach(row => {
@@ -767,13 +1235,12 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.setAttribute("href", url);
-      link.setAttribute("download", `Laporan_Kehadiran_Majlis_${new Date().toISOString().slice(0,10)}.csv`);
+      link.setAttribute("download", `Laporan_Kehadiran_DIVA2026_${new Date().toISOString().slice(0,10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
 
-    // Kotak Pesanan Toast Ringkas
     function showToast(message, type = 'info') {
       const toast = document.getElementById('toastBox');
       let bgColor = 'bg-slate-800 border-slate-600 text-slate-100';
