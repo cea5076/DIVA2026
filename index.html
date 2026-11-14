@@ -46,22 +46,23 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
-  <!-- Banner Rasmi Program DIVA 2026 (PPD Pekan) -->
-  <div id="topProgramBanner" class="w-full bg-[#020a24] border-b border-amber-500/30 shadow-2xl overflow-hidden">
-    <div class="max-w-7xl mx-auto relative">
+  <!-- Banner Rasmi Program DIVA 2026 (PPD Pekan) - Fit Kemas Tanpa Terpotong -->
+  <div id="topProgramBanner" class="w-full bg-[#020a24] border-b border-amber-500/30 shadow-xl">
+    <div class="max-w-7xl mx-auto flex items-center justify-center">
       <img 
         id="programBannerImg" 
         src="banner_diva_2026.jpg" 
+        data-attempt="0"
         alt="DIVA - Digital Innovations And Visionaries Awards 2026 (PPD Pekan)" 
-        class="w-full max-h-44 sm:max-h-56 md:max-h-64 object-cover object-center block mx-auto"
-        onerror="this.style.display='none'; document.getElementById('bannerFallbackBox').classList.remove('hidden');"
+        class="w-full h-auto max-h-28 sm:max-h-36 md:max-h-44 object-contain block mx-auto"
+        onerror="tryNextBannerExtension(this)"
       >
-      <!-- Paparan Sandaran Elegan Jika Fail banner_diva_2026.jpg Belum Dimuat Naik ke GitHub -->
-      <div id="bannerFallbackBox" class="hidden py-6 px-4 text-center bg-gradient-to-r from-[#020b2c] via-[#061d66] to-[#020b2c] border-y border-blue-500/20 relative">
+      <!-- Paparan Sandaran Elegan Jika Fail Banner Belum Dimuat Naik ke GitHub -->
+      <div id="bannerFallbackBox" class="hidden w-full py-5 px-4 text-center bg-gradient-to-r from-[#020b2c] via-[#061d66] to-[#020b2c] border-y border-blue-500/20 relative">
         <p class="text-[10px] sm:text-xs font-bold tracking-widest text-slate-200 uppercase">Kementerian Pendidikan • Pejabat Pendidikan Daerah Pekan</p>
-        <h2 class="text-3xl sm:text-5xl font-black tracking-wider text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] my-1">DIVA 2026</h2>
+        <h2 class="text-2xl sm:text-4xl font-black tracking-wider text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] my-1">DIVA 2026</h2>
         <p class="text-xs sm:text-sm font-extrabold tracking-widest text-amber-400 uppercase">Digital Innovations And Visionaries Awards</p>
-        <p class="text-[10px] text-blue-300/70 mt-2 italic">*Tip: Muat naik gambar banner anda ke GitHub sebagai <code>banner_diva_2026.jpg</code> untuk paparan grafik penuh.</p>
+        <p class="text-[10px] text-blue-300/70 mt-1.5 italic">*Tip: Muat naik gambar banner anda ke GitHub sebagai <code>banner_diva_2026.jpg</code> untuk paparan grafik penuh.</p>
       </div>
     </div>
   </div>
@@ -580,6 +581,27 @@
 
   <!-- JavaScript Logik Sistem, Cloud Auto-Sync & Photobooth -->
   <script>
+    // =========================================================================
+    // PENYEMAK AUTOMATIK SAMBUNGAN FAIL BANNER (.jpg / .JPG / .jpeg / .png)
+    // =========================================================================
+    function tryNextBannerExtension(imgEl) {
+      const candidates = [
+        'banner_diva_2026.JPG',
+        'banner_diva_2026.jpeg',
+        'banner_diva_2026.JPEG',
+        'banner_diva_2026.png',
+        'banner_diva_2026.PNG'
+      ];
+      const attempt = parseInt(imgEl.getAttribute('data-attempt') || '0', 10);
+      if (attempt < candidates.length) {
+        imgEl.setAttribute('data-attempt', attempt + 1);
+        imgEl.src = candidates[attempt] + '?v=' + new Date().getTime();
+      } else {
+        imgEl.style.display = 'none';
+        document.getElementById('bannerFallbackBox').classList.remove('hidden');
+      }
+    }
+
     // =========================================================================
     // KONFIGURASI PIN ADMIN, FIREBASE & PHOTOBOOTH
     // =========================================================================
@@ -1277,7 +1299,6 @@
     }
 
     function handleOverlayImgError() {
-      // Jika fail bingkai_diva_landscape.png belum wujud dalam folder GitHub, beralih secara senyap ke bingkai terbina dalam
       const overlayImg = document.getElementById('boothOverlayImg');
       if (overlayImg) overlayImg.classList.add('hidden');
       if (selectedBoothFrame === 'custom_png' && !customUploadedFrameDataUrl) {
@@ -1365,7 +1386,6 @@
         video.srcObject = null;
       }
 
-      // Kesan cermin hanya untuk kamera depan (selfie)
       video.style.transform = (boothFacingMode === "user") ? "scaleX(-1)" : "scaleX(1)";
 
       setTimeout(async () => {
@@ -1454,7 +1474,6 @@
     }
 
     function renderFramedPhoto() {
-      // Mainkan bunyi shutter maya seperti kod lama anda
       const snapSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-camera-shutter-click-1133.mp3');
       snapSound.play().catch(() => {});
 
@@ -1463,7 +1482,6 @@
       const overlayImg = document.getElementById('boothOverlayImg');
       const ctx = canvas.getContext('2d');
 
-      // Resolusi HD mengikut orientasi skrin (Potret 1080x1920 atau Landskap 1920x1080)
       if (isBoothPortrait) {
         canvas.width = 1080;
         canvas.height = 1920;
@@ -1472,7 +1490,6 @@
         canvas.height = 1080;
       }
 
-      // Potong (crop) nisbah aspek video supaya tepat tanpa herot
       let sWidth = video.videoWidth;
       let sHeight = video.videoHeight;
       let sx = 0, sy = 0;
@@ -1503,12 +1520,10 @@
       const guestTitle = document.getElementById('boothGuestTitle').value.trim() || 'Red Carpet Gala Night';
       const includeNameOnPng = document.getElementById('chkIncludeNameOnPng').checked;
 
-      // Jika menggunakan Template PNG Grafik Anda
       if (selectedBoothFrame === 'custom_png' && overlayImg.complete && overlayImg.naturalHeight !== 0) {
         ctx.drawImage(overlayImg, 0, 0, canvas.width, canvas.height);
 
         if (includeNameOnPng && document.getElementById('boothGuestName').value.trim() !== '') {
-          // Lencana nama elegan di bahagian bawah bingkai PNG
           const badgeHeight = 110;
           const grad = ctx.createLinearGradient(0, canvas.height - badgeHeight, 0, canvas.height);
           grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
@@ -1528,7 +1543,6 @@
           ctx.textAlign = 'left';
         }
       } else {
-        // Bingkai Terbina Dalam (Royal Gold / Visionary)
         const isGold = selectedBoothFrame !== 'cyber';
         const primaryColor = isGold ? '#f59e0b' : '#22d3ee';
         const secondaryColor = isGold ? '#fbbf24' : '#38bdf8';
@@ -1563,7 +1577,6 @@
         ctx.textAlign = 'left';
       }
 
-      // Papar hasil pada kanvas & sembunyikan overlay langsung supaya tidak bertindih dua kali
       video.classList.add('hidden');
       overlayImg.classList.add('hidden');
       canvas.classList.remove('hidden');
@@ -1572,7 +1585,6 @@
       const dataUrl = canvas.toDataURL('image/png');
       const fileName = `DIVA2026_Photobooth_${guestName.replace(/\s+/g, '_')}_${Date.now()}.png`;
 
-      // Hantar salinan ke Google Drive secara senyap jika URL Apps Script diisi
       if (PHOTOBOOTH_GDRIVE_SCRIPT_URL) {
         fetch(PHOTOBOOTH_GDRIVE_SCRIPT_URL, {
           method: 'POST',
@@ -1582,7 +1594,6 @@
         }).catch(() => {});
       }
 
-      // Muat turun automatik dengan lengah 0.5s (mesra iOS/Safari)
       setTimeout(() => {
         const autoLink = document.createElement('a');
         autoLink.download = fileName;
