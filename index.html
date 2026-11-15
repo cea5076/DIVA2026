@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- HTML5-QRCode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <!-- QRCodeJS Generator Library untuk E-Pas RSVP Tetamu -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     body {
@@ -42,6 +44,10 @@
       pointer-events: none;
       z-index: 10;
     }
+    #rsvpQrContainer img, #rsvpQrContainer canvas {
+      margin: 0 auto;
+      border-radius: 0.5rem;
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
@@ -49,10 +55,9 @@
   <!-- Header & Bar Navigasi Sistem (Logo Banner DIVA 2026 Besar & Jelas) -->
   <header class="bg-slate-950/95 backdrop-blur border-b border-amber-500/30 sticky top-0 z-50 shadow-xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col gap-4">
-      <!-- Baris 1: Banner Utama DIVA 2026 & Tajuk Sistem -->
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-        <!-- Bingkai Banner DIVA 2026 (Lebar & Jelas Tanpa Teks Pendua) -->
-        <div class="w-full sm:w-96 md:w-[440px] rounded-xl overflow-hidden border border-amber-500/50 bg-[#020a24] shadow-[0_0_25px_rgba(245,158,11,0.25)] shrink-0">
+        <!-- Bingkai Banner DIVA 2026 -->
+        <div class="w-full sm:w-96 md:w-[420px] rounded-xl overflow-hidden border border-amber-500/50 bg-[#020a24] shadow-[0_0_25px_rgba(245,158,11,0.25)] shrink-0">
           <img 
             id="programBannerImg" 
             src="banner_diva_2026.jpg" 
@@ -68,22 +73,25 @@
 
         <!-- Pemilih Paparan Jawatankuasa (Role Switcher) -->
         <div id="roleSwitcherBar" class="flex flex-wrap items-center justify-center bg-slate-900 p-1.5 rounded-xl border border-slate-700 gap-1 w-full md:w-auto">
-          <button id="btnRoleAll" onclick="switchRole('all')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition">
-            <i class="fa-solid fa-layer-group mr-1.5"></i>Floor Manager
+          <button id="btnRoleAll" onclick="switchRole('all')" class="role-btn px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition">
+            <i class="fa-solid fa-layer-group mr-1"></i>Floor Manager
           </button>
-          <button id="btnRoleAward" onclick="switchRole('awardee')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
-            <i class="fa-solid fa-medal mr-1.5"></i>Pengurus Peserta
+          <button id="btnRoleAward" onclick="switchRole('awardee')" class="role-btn px-2.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+            <i class="fa-solid fa-medal mr-1"></i>Pengurus Peserta
           </button>
-          <button id="btnRoleEmcee" onclick="switchRole('emcee')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
-            <i class="fa-solid fa-microphone mr-1.5"></i>Stage & Emcee
+          <button id="btnRoleEmcee" onclick="switchRole('emcee')" class="role-btn px-2.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+            <i class="fa-solid fa-microphone mr-1"></i>Stage & Emcee
           </button>
-          <button id="btnRoleScan" onclick="switchRole('scanner')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
-            <i class="fa-solid fa-qrcode mr-1.5"></i>Kaunter Imbas
+          <button id="btnRoleScan" onclick="switchRole('scanner')" class="role-btn px-2.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+            <i class="fa-solid fa-qrcode mr-1"></i>Kaunter Imbas
           </button>
-          <button id="btnRolePhotobooth" onclick="switchRole('photobooth')" class="role-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
-            <i class="fa-solid fa-camera-retro mr-1.5 text-amber-400"></i>Photobooth Digital
+          <button id="btnRoleRsvp" onclick="switchRole('rsvp')" class="role-btn px-2.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+            <i class="fa-solid fa-envelope-open-text mr-1 text-emerald-400"></i>Borang RSVP
           </button>
-          <button id="btnAdminLock" onclick="toggleAdminLock()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 transition ml-1" title="Buka kunci kawalan penuh Admin">
+          <button id="btnRolePhotobooth" onclick="switchRole('photobooth')" class="role-btn px-2.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+            <i class="fa-solid fa-camera-retro mr-1 text-amber-400"></i>Photobooth
+          </button>
+          <button id="btnAdminLock" onclick="toggleAdminLock()" class="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 transition ml-1" title="Buka kunci kawalan penuh Admin">
             <i class="fa-solid fa-lock mr-1"></i>Kunci Admin
           </button>
         </div>
@@ -98,7 +106,7 @@
     <div id="syncStatusBar" class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
       <div class="flex items-center gap-2.5 text-slate-300">
         <span id="syncIndicatorDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 badge-pulse"></span>
-        <span>Status Auto-Sync AJK: <b id="syncStatusBadge" class="text-amber-400">Mod Tempatan (Klik Tetapan Sync untuk AJK)</b></span>
+        <span>Status Auto-Sync AJK: <b id="syncStatusBadge" class="text-amber-400">Menyambung ke Firebase...</b></span>
       </div>
       <div id="adminControlsGroup" class="hidden flex flex-wrap items-center gap-2">
         <button onclick="openCloudConfigModal()" class="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 rounded-lg text-amber-300 transition font-semibold">
@@ -124,11 +132,11 @@
       </div>
     </div>
 
-    <!-- Kad Statistik Masa Nyata (Live Stats) -->
-    <section id="statsSection" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Kad Statistik Masa Nyata (5 Kad: Perbandingan RSVP Awal vs Ketibaan Hari Majlis) -->
+    <section id="statsSection" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
       <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60 shadow-lg">
         <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-xs font-medium uppercase tracking-wider">Jumlah Jemputan</span>
+          <span class="text-[11px] font-medium uppercase tracking-wider">Jumlah Jemputan</span>
           <i class="fa-solid fa-users text-sm"></i>
         </div>
         <div class="flex items-baseline space-x-2">
@@ -137,9 +145,20 @@
         </div>
       </div>
 
+      <div class="bg-slate-800/80 p-4 rounded-2xl border border-cyan-500/30 shadow-lg">
+        <div class="flex items-center justify-between text-cyan-400 mb-2">
+          <span class="text-[11px] font-medium uppercase tracking-wider">Sahkan RSVP</span>
+          <i class="fa-solid fa-envelope-circle-check text-sm"></i>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="statRsvpConfirmed" class="text-2xl sm:text-3xl font-extrabold text-cyan-400">0</span>
+          <span id="statRsvpPercent" class="text-xs text-cyan-500 font-bold">(0%)</span>
+        </div>
+      </div>
+
       <div class="bg-slate-800/80 p-4 rounded-2xl border border-emerald-500/30 shadow-lg">
         <div class="flex items-center justify-between text-emerald-400 mb-2">
-          <span class="text-xs font-medium uppercase tracking-wider">Telah Hadir</span>
+          <span class="text-[11px] font-medium uppercase tracking-wider">Tiba Di Dewan</span>
           <i class="fa-solid fa-circle-check text-sm"></i>
         </div>
         <div class="flex items-baseline space-x-2">
@@ -150,7 +169,7 @@
 
       <div class="bg-slate-800/80 p-4 rounded-2xl border border-rose-500/30 shadow-lg">
         <div class="flex items-center justify-between text-rose-400 mb-2">
-          <span class="text-xs font-medium uppercase tracking-wider">Belum Tiba</span>
+          <span class="text-[11px] font-medium uppercase tracking-wider">Belum Tiba</span>
           <i class="fa-solid fa-clock text-sm"></i>
         </div>
         <div class="flex items-baseline space-x-2">
@@ -159,24 +178,133 @@
         </div>
       </div>
 
-      <div class="bg-slate-800/80 p-4 rounded-2xl border border-amber-500/30 shadow-lg">
+      <div class="col-span-2 sm:col-span-1 bg-slate-800/80 p-4 rounded-2xl border border-amber-500/30 shadow-lg">
         <div class="flex items-center justify-between text-amber-400 mb-2">
-          <span class="text-xs font-medium uppercase tracking-wider">Dihadiri Wakil</span>
+          <span class="text-[11px] font-medium uppercase tracking-wider">Dihadiri Wakil</span>
           <i class="fa-solid fa-user-tag text-sm"></i>
         </div>
         <div class="flex items-baseline space-x-2">
           <span id="statProxy" class="text-2xl sm:text-3xl font-extrabold text-amber-400">0</span>
-          <span class="text-xs text-amber-500 font-medium">Perlu perhatian emcee</span>
+          <span class="text-[11px] text-amber-500 font-medium">Rujukan Emcee</span>
         </div>
       </div>
     </section>
 
-    <!-- BAHAGIAN PENGIMBAS QR (MOD RAHSIA ANUGERAH) -->
+    <!-- ===================================================================== -->
+    <!-- BAHAGIAN 1: BORANG PENGESAHAN KEHADIRAN AWAL (RSVP TETAMU - ?role=rsvp) -->
+    <!-- ===================================================================== -->
+    <section id="rsvpPortalSection" class="hidden max-w-2xl mx-auto bg-slate-800/95 p-6 sm:p-8 rounded-3xl border border-amber-500/40 shadow-2xl space-y-6">
+      <div class="text-center space-y-2 pb-4 border-b border-slate-700/80">
+        <span class="px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 text-[11px] font-bold uppercase tracking-widest border border-amber-500/30">
+          Pengesahan Kehadiran Rasmi (RSVP)
+        </span>
+        <h2 class="text-xl sm:text-2xl font-extrabold text-white pt-1">
+          Majlis Anugerah DIVA 2026
+        </h2>
+        <p class="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+          Sila semak rekod jemputan anda di bawah untuk mengesahkan kehadiran dan memuat turun <b>E-Pas Masuk & Kod QR</b> bagi kelancaran pendaftaran di pintu dewan.
+        </p>
+      </div>
+
+      <!-- Langkah 1: Carian Rekod Jemputan -->
+      <div class="space-y-3">
+        <label class="block text-xs font-bold text-slate-200">
+          <i class="fa-solid fa-magnifying-glass text-amber-400 mr-1.5"></i>Langkah 1: Masukkan ID Jemputan atau Nama Penuh Anda
+        </label>
+        <div class="flex gap-2">
+          <input type="text" id="rsvpSearchInput" placeholder="Contoh: DIVA-001 atau Siti Aminah..." class="flex-1 px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500" onkeydown="if(event.key==='Enter') searchGuestForRsvp()">
+          <button onclick="searchGuestForRsvp()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition shadow-lg">
+            Semak Rekod
+          </button>
+        </div>
+        <div id="rsvpSearchMatches" class="space-y-2"></div>
+      </div>
+
+      <!-- Langkah 2: Borang Pengesahan RSVP -->
+      <div id="rsvpFormCard" class="hidden bg-slate-900/90 p-5 rounded-2xl border border-slate-700 space-y-4">
+        <div class="flex items-start justify-between gap-2 pb-3 border-b border-slate-800">
+          <div>
+            <span id="rsvpGuestIdBadge" class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">ID</span>
+            <h3 id="rsvpGuestNameDisplay" class="text-base sm:text-lg font-extrabold text-white mt-1.5">Nama Tetamu</h3>
+            <p id="rsvpGuestMetaDisplay" class="text-xs text-slate-400 mt-0.5">Kategori • Lokasi Tempat Duduk</p>
+          </div>
+          <span id="rsvpCurrentStatusPill" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">Status</span>
+        </div>
+
+        <div class="space-y-3">
+          <label class="block text-xs font-bold text-slate-200">Langkah 2: Pilih Pengesahan Kehadiran Anda:</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <label class="cursor-pointer">
+              <input type="radio" name="rsvpChoice" value="Sahkan Hadir" class="peer hidden" checked onchange="toggleRsvpProxyInput()">
+              <div class="p-3 rounded-xl border border-slate-700 bg-slate-800/80 peer-checked:border-emerald-500 peer-checked:bg-emerald-950/50 transition text-center">
+                <i class="fa-solid fa-circle-check text-emerald-400 text-lg mb-1"></i>
+                <p class="text-xs font-bold text-white">Hadir Sendiri</p>
+                <p class="text-[10px] text-slate-400">Saya akan hadir</p>
+              </div>
+            </label>
+
+            <label class="cursor-pointer">
+              <input type="radio" name="rsvpChoice" value="Hantar Wakil" class="peer hidden" onchange="toggleRsvpProxyInput()">
+              <div class="p-3 rounded-xl border border-slate-700 bg-slate-800/80 peer-checked:border-amber-500 peer-checked:bg-amber-950/50 transition text-center">
+                <i class="fa-solid fa-user-tag text-amber-400 text-lg mb-1"></i>
+                <p class="text-xs font-bold text-white">Hantar Wakil</p>
+                <p class="text-[10px] text-slate-400">Diwakili individu lain</p>
+              </div>
+            </label>
+
+            <label class="cursor-pointer">
+              <input type="radio" name="rsvpChoice" value="Tidak Hadir" class="peer hidden" onchange="toggleRsvpProxyInput()">
+              <div class="p-3 rounded-xl border border-slate-700 bg-slate-800/80 peer-checked:border-rose-500 peer-checked:bg-rose-950/50 transition text-center">
+                <i class="fa-solid fa-circle-xmark text-rose-400 text-lg mb-1"></i>
+                <p class="text-xs font-bold text-white">Tidak Hadir</p>
+                <p class="text-[10px] text-slate-400">Maaf, tidak dapat hadir</p>
+              </div>
+            </label>
+          </div>
+
+          <!-- Input Nama Wakil Awal -->
+          <div id="rsvpProxyFieldBox" class="hidden pt-2 space-y-2">
+            <label class="block text-xs font-semibold text-amber-300">Nama Penuh Wakil Rasmi & Jawatan:</label>
+            <input type="text" id="rsvpProxyNameInput" placeholder="Contoh: Encik Ahmad Razali (Timbalan Pengarah)" class="w-full px-3.5 py-2 bg-slate-800 border border-amber-500/40 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+
+          <button onclick="submitGuestRsvp()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg transition mt-2">
+            <i class="fa-solid fa-paper-plane mr-1.5"></i> Hantar Pengesahan RSVP & Jana E-Pas
+          </button>
+        </div>
+      </div>
+
+      <!-- Langkah 3: E-Pas Masuk Digital & Kod QR -->
+      <div id="rsvpEpassCard" class="hidden bg-gradient-to-b from-slate-900 to-slate-950 p-6 rounded-3xl border-2 border-amber-500/60 shadow-2xl text-center space-y-4">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30">
+          <i class="fa-solid fa-circle-check"></i> Pengesahan RSVP Direkodkan!
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-widest text-amber-400 font-bold">E-Pas Masuk Rasmi DIVA 2026</p>
+          <h3 id="epassName" class="text-lg sm:text-xl font-extrabold text-white mt-1">Nama Tetamu</h3>
+          <p id="epassCategorySeat" class="text-xs text-slate-300 mt-1">Kategori • Zon Kerusi</p>
+          <p id="epassProxyNote" class="hidden text-xs text-amber-300 font-semibold mt-1"></p>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl inline-block shadow-lg">
+          <div id="rsvpQrContainer"></div>
+          <p id="epassIdText" class="text-slate-900 font-mono font-extrabold text-sm mt-2 tracking-wider">DIVA-001</p>
+        </div>
+
+        <p class="text-xs text-slate-400 max-w-sm mx-auto">
+          Sila tangkap layar (<i>Screenshot</i>) E-Pas ini dan tunjukkan Kod QR di <b>Kaunter Pendaftaran Foyer</b> pada hari majlis untuk imbasan pantas.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- BAHAGIAN 2: PENGIMBAS QR KAUNTER FOYER (HARI KEJADIAN)                 -->
+    <!-- ===================================================================== -->
     <section id="scannerSection" class="hidden bg-slate-800 p-5 rounded-2xl border border-amber-500/40 shadow-xl">
       <div class="flex flex-wrap items-center justify-between pb-3 mb-4 border-b border-slate-700 gap-2">
         <div class="flex items-center space-x-2">
           <span class="w-3 h-3 rounded-full bg-emerald-500 badge-pulse"></span>
-          <h2 class="text-sm font-bold tracking-wide uppercase text-amber-400">Kamera Pengimbas Kod QR (Foyer DIVA 2026)</h2>
+          <h2 class="text-sm font-bold tracking-wide uppercase text-amber-400">Kamera Pengimbas Kod QR (Pendaftaran Hari Kejadian)</h2>
           <span class="px-2 py-0.5 text-[10px] rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 font-semibold">
             <i class="fa-solid fa-eye-slash mr-1"></i>Mod Rahsia (Nama Anugerah Disembunyikan)
           </span>
@@ -190,7 +318,7 @@
         <div class="relative bg-slate-950 rounded-xl overflow-hidden min-h-[240px] flex flex-col items-center justify-center border border-slate-700">
           <div id="reader" class="w-full"></div>
           <p id="scannerPlaceholder" class="text-xs text-slate-500 p-4 text-center">
-            Tekan 'Mulakan Kamera' untuk mengaktifkan pengimbasan kod pas digital atau gunakan carian manual di sebelah.
+            Tekan 'Mulakan Kamera' untuk mengaktifkan pengimbasan kod E-Pas tetamu atau gunakan carian manual di sebelah.
           </p>
         </div>
 
@@ -202,7 +330,7 @@
             <div class="flex gap-2">
               <input type="text" id="manualInput" placeholder="Contoh: DIVA-001, VIP-001..." class="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500" onkeydown="if(event.key==='Enter') handleManualCheckIn()">
               <button onclick="handleManualCheckIn()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition">
-                Daftar
+                Daftar Tiba
               </button>
             </div>
             <p class="text-[11px] text-slate-400 mt-2">
@@ -215,7 +343,9 @@
       </div>
     </section>
 
-    <!-- BAHAGIAN RUANG PHOTOBOOTH DIGITAL DIVA 2026 -->
+    <!-- ===================================================================== -->
+    <!-- BAHAGIAN 3: RUANG PHOTOBOOTH DIGITAL DIVA 2026                        -->
+    <!-- ===================================================================== -->
     <section id="photoboothSection" class="hidden bg-slate-800/95 p-5 sm:p-6 rounded-2xl border border-amber-500/40 shadow-2xl space-y-6">
       <div class="flex flex-wrap items-center justify-between pb-4 border-b border-slate-700 gap-3">
         <div>
@@ -239,7 +369,6 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <!-- Kawalan Tetamu & Bingkai -->
         <div class="lg:col-span-5 space-y-4 bg-slate-900/80 p-4 rounded-2xl border border-slate-700/80">
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1.5">1. Pilih / Masukkan Nama Tetamu atau Penerima:</label>
@@ -289,7 +418,6 @@
           </div>
         </div>
 
-        <!-- Paparan Kamera Langsung & Pratonton Hasil -->
         <div class="lg:col-span-7 space-y-4">
           <div id="boothCameraWrapper" class="booth-stage bg-slate-950 rounded-2xl border-2 border-slate-700 flex items-center justify-center shadow-inner" style="aspect-ratio: 16 / 9;">
             <video id="photoboothVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
@@ -339,9 +467,11 @@
       </div>
     </section>
 
-    <!-- Papan Pemuka Senarai Kehadiran Bersepadu -->
+    <!-- ===================================================================== -->
+    <!-- BAHAGIAN 4: PAPAN PEMUKA SENARAI KEHADIRAN BERSEPADU                  -->
+    <!-- ===================================================================== -->
     <section id="dashboardTableSection" class="bg-slate-800/90 rounded-2xl border border-slate-700/60 shadow-xl overflow-hidden flex flex-col">
-      <div class="p-4 sm:p-5 border-b border-slate-700 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+      <div class="p-4 sm:p-5 border-b border-slate-700 flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
         <div class="flex items-center space-x-2">
           <h2 id="tableHeading" class="text-base font-bold text-white flex items-center gap-2">
             <i class="fa-solid fa-list-check text-amber-400"></i> Papan Pemuka Utama DIVA 2026
@@ -350,8 +480,8 @@
         </div>
 
         <!-- Penapis & Carian -->
-        <div class="flex flex-wrap items-center gap-2.5">
-          <div class="relative flex-1 sm:w-56">
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="relative flex-1 sm:w-48">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
             <input type="text" id="searchInput" oninput="filterData()" placeholder="Cari nama, ID, kerusi..." class="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
@@ -364,11 +494,19 @@
             <option value="Jemputan Khas">Jemputan Khas</option>
           </select>
 
+          <select id="rsvpFilter" onchange="filterData()" class="px-2.5 py-1.5 bg-slate-900 border border-cyan-500/40 rounded-lg text-xs text-cyan-300 focus:outline-none focus:border-cyan-400">
+            <option value="all">Semua Status RSVP</option>
+            <option value="Sahkan Hadir">RSVP: Sahkan Hadir</option>
+            <option value="Hantar Wakil">RSVP: Hantar Wakil</option>
+            <option value="Menunggu RSVP">RSVP: Menunggu Balas</option>
+            <option value="Tidak Hadir">RSVP: Tidak Hadir</option>
+          </select>
+
           <select id="statusFilter" onchange="filterData()" class="px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amber-500">
-            <option value="all">Semua Status</option>
-            <option value="Hadir">Hadir Sendiri</option>
-            <option value="Hadir Wakil">Hadir Wakil</option>
-            <option value="Belum Hadir">Belum Hadir</option>
+            <option value="all">Semua Status Foyer</option>
+            <option value="Hadir">Foyer: Hadir Sendiri</option>
+            <option value="Hadir Wakil">Foyer: Hadir Wakil</option>
+            <option value="Belum Hadir">Foyer: Belum Tiba</option>
           </select>
 
           <button onclick="exportReportCSV()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
@@ -377,7 +515,7 @@
         </div>
       </div>
 
-      <!-- Jadual Senarai Tetamu -->
+      <!-- Jadual Senarai Tetamu (Memisahkan Lajur Pengesahan RSVP & Pendaftaran Foyer) -->
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
@@ -385,9 +523,10 @@
               <th class="py-3 px-4">ID & Nama Tetamu</th>
               <th id="thCategoryAward" class="py-3 px-3">Kategori & Sesi</th>
               <th class="py-3 px-3">Kerusi / Meja</th>
-              <th class="py-3 px-3 text-center">Status</th>
+              <th class="py-3 px-3 text-center text-cyan-400">Pengesahan RSVP<br><span class="text-[9px] font-normal text-slate-400">(Sebelum Majlis)</span></th>
+              <th class="py-3 px-3 text-center text-emerald-400">Pendaftaran Foyer<br><span class="text-[9px] font-normal text-slate-400">(Hari Kejadian)</span></th>
               <th class="py-3 px-3">Masa & Info Wakil</th>
-              <th class="py-3 px-4 text-right">Tindakan</th>
+              <th class="py-3 px-4 text-right">Tindakan Hari Majlis</th>
             </tr>
           </thead>
           <tbody id="guestTableBody" class="divide-y divide-slate-700/50 text-xs">
@@ -413,7 +552,7 @@
       </p>
       <div>
         <label class="block text-xs font-semibold text-slate-300 mb-1.5">URL Firebase Realtime Database:</label>
-        <input type="url" id="firebaseUrlInput" placeholder="https://projek-anda-default-rtdb.asia-southeast1.firebasedatabase.app" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+        <input type="url" id="firebaseUrlInput" placeholder="https://diva-awards-2026-default-rtdb.asia-southeast1.firebasedatabase.app/" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
       </div>
       <div class="flex flex-wrap justify-between gap-2 pt-3 border-t border-slate-700">
         <button onclick="disconnectCloudSync()" class="px-3 py-2 bg-rose-950/60 hover:bg-rose-900 text-rose-300 rounded-lg text-xs font-semibold">Putuskan Sync</button>
@@ -440,8 +579,8 @@
       </p>
       <div class="space-y-2.5 pt-1">
         <button onclick="executeResetAllData()" class="w-full p-3 bg-slate-900 hover:bg-amber-950/50 border border-amber-500/40 rounded-xl text-left transition">
-          <p class="text-xs font-bold text-amber-400"><i class="fa-solid fa-rotate-left mr-1.5"></i>1. Set Semula Status Kehadiran Sahaja</p>
-          <p class="text-[11px] text-slate-400 mt-0.5">Kekalkan senarai nama tetamu, tetapi tukar semua status kepada "Belum Hadir".</p>
+          <p class="text-xs font-bold text-amber-400"><i class="fa-solid fa-rotate-left mr-1.5"></i>1. Set Semula Pendaftaran Foyer Sahaja</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Kekalkan senarai nama & status RSVP, tetapi tukar status Foyer kepada "Belum Hadir".</p>
         </button>
         <button onclick="executeClearAllGuests()" class="w-full p-3 bg-slate-900 hover:bg-rose-950/60 border border-rose-500/40 rounded-xl text-left transition">
           <p class="text-xs font-bold text-rose-400"><i class="fa-solid fa-trash-can mr-1.5"></i>2. Padam Semua Data Contoh (Kosongkan Senarai)</p>
@@ -495,6 +634,15 @@
           <input type="text" id="newGuestSeat" placeholder="Cth: Zon A - Kerusi 10" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500">
         </div>
         <div>
+          <label class="block text-slate-300 font-medium mb-1">Status RSVP Awal:</label>
+          <select id="newGuestRsvp" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500">
+            <option value="Menunggu RSVP">Menunggu RSVP</option>
+            <option value="Sahkan Hadir">Sahkan Hadir</option>
+            <option value="Hantar Wakil">Hantar Wakil</option>
+            <option value="Tidak Hadir">Tidak Hadir</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
           <label class="block text-slate-300 font-medium mb-1">Catatan Protokol (Pilihan):</label>
           <input type="text" id="newGuestNotes" placeholder="Cth: Kerusi roda / LO bertugas" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500">
         </div>
@@ -563,7 +711,7 @@
     </div>
   </div>
 
-  <!-- JavaScript Logik Sistem, Cloud Auto-Sync & Photobooth -->
+  <!-- JavaScript Logik Sistem, Cloud Auto-Sync, RSVP & Photobooth -->
   <script>
     // =========================================================================
     // PENYEMAK AUTOMATIK SAMBUNGAN FAIL BANNER (.jpg / .JPG / .jpeg / .png)
@@ -587,7 +735,7 @@
     }
 
     // =========================================================================
-    // KONFIGURASI PIN ADMIN, FIREBASE & PHOTOBOOTH
+    // KONFIGURASI PIN ADMIN, FIREBASE RASMI & PHOTOBOOTH
     // =========================================================================
     const ADMIN_PIN = "DIVA2026";
     const DEFAULT_FIREBASE_DB_URL = "https://diva-awards-2026-default-rtdb.asia-southeast1.firebasedatabase.app/"; 
@@ -598,30 +746,28 @@
     let syncInterval = null;
     let lastSyncedHash = "";
 
-    // Helper: Semak sama ada paparan semasa perlu merahsiakan nama anugerah
     function shouldHideAwardName() {
-      // Rahsiakan di Kaunter Imbas/Pendaftaran & Photobooth supaya peserta mendapat kejutan (surprise)
-      // Melainkan Admin membuka kunci PIN secara manual
       if (isAdminUnlocked) return false;
-      return (currentRole === 'scanner' || currentRole === 'photobooth');
+      return (currentRole === 'scanner' || currentRole === 'photobooth' || currentRole === 'rsvp');
     }
 
-    // Pangkalan Data Utama DIVA 2026
+    // Pangkalan Data Utama DIVA 2026 (Dilengkapi rsvpStatus berasingan daripada status Foyer)
     let attendees = [
-      { id: "VIP-001", name: "YAB Dato' Sri Menteri Besar", category: "VVIP", award: "Tetamu Kehormat Utama", session: "Perasmian", seat: "Meja VVIP 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 1" },
-      { id: "VIP-002", name: "YB Menteri Digital Malaysia", category: "VVIP", award: "Perasmi Majlis DIVA 2026", session: "Perasmian", seat: "Meja VVIP 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 2" },
-      { id: "DIVA-001", name: "Prof. Dr. Siti Aminah binti Yusof", category: "Penerima Anugerah", award: "Visionary Tech Leader Award", session: "Sesi 1 (Giliran #1)", seat: "Zon A - Baris 1, No 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Sedia di Holding Room 15 minit awal" },
-      { id: "DIVA-002", name: "Ir. Ts. Kamaruddin bin Mansor", category: "Penerima Anugerah", award: "Digital Transformation Excellence", session: "Sesi 1 (Giliran #2)", seat: "Zon A - Baris 1, No 2", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "DIVA-003", name: "Datin Hajah Zarina binti Daud", category: "Penerima Anugerah", award: "Woman Innovator of The Year", session: "Sesi 2 (Giliran #3)", seat: "Zon A - Baris 2, No 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "DIVA-004", name: "Encik Muhammad Farhan bin Zulkifli", category: "Penerima Anugerah", award: "Emerging AI Startup Award", session: "Sesi 2 (Giliran #4)", seat: "Zon A - Baris 2, No 2", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "DIVA-005", name: "Puan Noor Azlin binti Abdul Jalil", category: "Penerima Anugerah", award: "Smart Sustainability Pioneer", session: "Sesi 2 (Giliran #5)", seat: "Zon A - Baris 2, No 3", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "JM-101", name: "Dato' Sri Dr. Hj. Mohd Zaki", category: "Jemputan Khas", award: "Rakan Strategik Utama", session: "Perasmian", seat: "Meja Penaja 1", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" }
+      { id: "VIP-001", name: "YAB Dato' Sri Menteri Besar", category: "VVIP", award: "Tetamu Kehormat Utama", session: "Perasmian", seat: "Meja VVIP 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 1" },
+      { id: "VIP-002", name: "YB Menteri Digital Malaysia", category: "VVIP", award: "Perasmi Majlis DIVA 2026", session: "Perasmian", seat: "Meja VVIP 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 2" },
+      { id: "DIVA-001", name: "Prof. Dr. Siti Aminah binti Yusof", category: "Penerima Anugerah", award: "Visionary Tech Leader Award", session: "Sesi 1 (Giliran #1)", seat: "Zon A - Baris 1, No 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Sedia di Holding Room 15 minit awal" },
+      { id: "DIVA-002", name: "Ir. Ts. Kamaruddin bin Mansor", category: "Penerima Anugerah", award: "Digital Transformation Excellence", session: "Sesi 1 (Giliran #2)", seat: "Zon A - Baris 1, No 2", rsvpStatus: "Menunggu RSVP", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "DIVA-003", name: "Datin Hajah Zarina binti Daud", category: "Penerima Anugerah", award: "Woman Innovator of The Year", session: "Sesi 2 (Giliran #3)", seat: "Zon A - Baris 2, No 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "DIVA-004", name: "Encik Muhammad Farhan bin Zulkifli", category: "Penerima Anugerah", award: "Emerging AI Startup Award", session: "Sesi 2 (Giliran #4)", seat: "Zon A - Baris 2, No 2", rsvpStatus: "Menunggu RSVP", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "DIVA-005", name: "Puan Noor Azlin binti Abdul Jalil", category: "Penerima Anugerah", award: "Smart Sustainability Pioneer", session: "Sesi 2 (Giliran #5)", seat: "Zon A - Baris 2, No 3", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "JM-101", name: "Dato' Sri Dr. Hj. Mohd Zaki", category: "Jemputan Khas", award: "Rakan Strategik Utama", session: "Perasmian", seat: "Meja Penaja 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" }
     ];
 
     let currentRole = 'all';
     let html5QrScanner = null;
     let isScannerRunning = false;
     let activeTargetIdForProxy = null;
+    let selectedGuestIdForRsvp = null;
 
     // Pembolehubah Photobooth Pintar
     let boothStream = null;
@@ -685,9 +831,13 @@
         }
         const cloudData = await res.json();
         if (cloudData && Array.isArray(cloudData)) {
-          const incomingHash = JSON.stringify(cloudData);
+          const normalized = cloudData.map(item => ({
+            rsvpStatus: item.rsvpStatus || 'Menunggu RSVP',
+            ...item
+          }));
+          const incomingHash = JSON.stringify(normalized);
           if (incomingHash !== lastSyncedHash) {
-            attendees = cloudData;
+            attendees = normalized;
             lastSyncedHash = incomingHash;
             localStorage.setItem('DIVA_ATTENDEES_DATA', incomingHash);
             updateDashboardStats();
@@ -755,13 +905,17 @@
     }
 
     // =========================================================================
-    // INISIALISASI & PENGURUSAN DATA
+    // INISIALISASI & KAWALAN PERANAN
     // =========================================================================
     function loadSavedData() {
       const saved = localStorage.getItem('DIVA_ATTENDEES_DATA');
       if (saved) {
         try {
-          attendees = JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          attendees = parsed.map(item => ({
+            rsvpStatus: item.rsvpStatus || 'Menunggu RSVP',
+            ...item
+          }));
         } catch(e) {
           console.warn("Gagal memuatkan data tempatan", e);
         }
@@ -783,7 +937,7 @@
       startCloudAutoSync();
 
       const roleParam = urlParams.get('role');
-      if (roleParam && ['all', 'awardee', 'emcee', 'scanner', 'photobooth'].includes(roleParam)) {
+      if (roleParam && ['all', 'awardee', 'emcee', 'scanner', 'rsvp', 'photobooth'].includes(roleParam)) {
         switchRole(roleParam);
       } else {
         updateAdminUIState();
@@ -856,6 +1010,7 @@
         awardee: 'btnRoleAward',
         emcee: 'btnRoleEmcee',
         scanner: 'btnRoleScan',
+        rsvp: 'btnRoleRsvp',
         photobooth: 'btnRolePhotobooth'
       };
 
@@ -873,6 +1028,7 @@
       const roleSwitcherBar = document.getElementById('roleSwitcherBar');
       const syncStatusBar = document.getElementById('syncStatusBar');
       const statsSection = document.getElementById('statsSection');
+      const rsvpPortalSection = document.getElementById('rsvpPortalSection');
       const scannerSection = document.getElementById('scannerSection');
       const photoboothSection = document.getElementById('photoboothSection');
       const dashboardTableSection = document.getElementById('dashboardTableSection');
@@ -880,23 +1036,34 @@
       const categoryFilter = document.getElementById('categoryFilter');
       const thCategoryAward = document.getElementById('thCategoryAward');
 
+      const urlRole = new URLSearchParams(window.location.search).get('role');
+
       roleSwitcherBar.classList.remove('hidden');
       syncStatusBar.classList.remove('hidden');
+      rsvpPortalSection.classList.add('hidden');
       scannerSection.classList.add('hidden');
       photoboothSection.classList.add('hidden');
       statsSection.classList.remove('hidden');
       dashboardTableSection.classList.remove('hidden');
 
-      if (role === 'scanner') {
+      if (role === 'rsvp') {
+        rsvpPortalSection.classList.remove('hidden');
+        statsSection.classList.add('hidden');
+        dashboardTableSection.classList.add('hidden');
+        if (urlRole === 'rsvp' && !isAdminUnlocked) {
+          roleSwitcherBar.classList.add('hidden');
+          syncStatusBar.classList.add('hidden');
+        }
+      } else if (role === 'scanner') {
         scannerSection.classList.remove('hidden');
-        tableHeading.innerHTML = `<i class="fa-solid fa-qrcode text-amber-400"></i> Log Pendaftaran Kaunter Foyer`;
+        tableHeading.innerHTML = `<i class="fa-solid fa-qrcode text-amber-400"></i> Log Pendaftaran Kaunter Foyer (Hari Kejadian)`;
         thCategoryAward.innerText = "Kategori & Sesi (Anugerah Dirahsiakan)";
         categoryFilter.value = 'all';
       } else if (role === 'photobooth') {
         photoboothSection.classList.remove('hidden');
         statsSection.classList.add('hidden');
         dashboardTableSection.classList.add('hidden');
-        if (new URLSearchParams(window.location.search).get('role') === 'photobooth' && !isAdminUnlocked) {
+        if (urlRole === 'photobooth' && !isAdminUnlocked) {
           roleSwitcherBar.classList.add('hidden');
           syncStatusBar.classList.add('hidden');
         }
@@ -918,9 +1085,166 @@
       filterData();
     }
 
+    // =========================================================================
+    // MODUL PENGESAHAN KEHADIRAN AWAL (RSVP TETAMU & JANA E-PAS QR)
+    // =========================================================================
+    function searchGuestForRsvp() {
+      const query = document.getElementById('rsvpSearchInput').value.trim().toLowerCase();
+      const matchesBox = document.getElementById('rsvpSearchMatches');
+      matchesBox.innerHTML = '';
+      document.getElementById('rsvpFormCard').classList.add('hidden');
+      document.getElementById('rsvpEpassCard').classList.add('hidden');
+
+      if (!query || query.length < 2) {
+        showToast('Sila masukkan sekurang-kurangnya 2 aksara nama atau ID jemputan.', 'warning');
+        return;
+      }
+
+      const matches = attendees.filter(g =>
+        g.id.toLowerCase().includes(query) || g.name.toLowerCase().includes(query)
+      );
+
+      if (matches.length === 0) {
+        matchesBox.innerHTML = `
+          <div class="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-200">
+            <i class="fa-solid fa-circle-exclamation mr-1.5 text-rose-400"></i>
+            Rekod tidak ditemui. Sila pastikan ejaan nama tepat seperti dalam surat jemputan atau hubungi Urus Setia DIVA 2026.
+          </div>
+        `;
+        return;
+      }
+
+      if (matches.length === 1) {
+        selectGuestForRsvp(matches[0].id);
+      } else {
+        matchesBox.innerHTML = `<p class="text-[11px] text-slate-400">Ditemui ${matches.length} rekod sepadan. Sila pilih nama anda:</p>`;
+        matches.forEach(g => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.onclick = () => selectGuestForRsvp(g.id);
+          btn.className = 'w-full p-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/50 text-left flex items-center justify-between transition';
+          btn.innerHTML = `
+            <div>
+              <span class="font-mono text-[11px] text-amber-400 font-bold mr-2">${g.id}</span>
+              <span class="text-xs font-bold text-white">${g.name}</span>
+              <p class="text-[11px] text-slate-400 mt-0.5">${g.category} • ${g.seat}</p>
+            </div>
+            <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+          `;
+          matchesBox.appendChild(btn);
+        });
+      }
+    }
+
+    function selectGuestForRsvp(guestId) {
+      const guest = attendees.find(g => g.id === guestId);
+      if (!guest) return;
+
+      selectedGuestIdForRsvp = guest.id;
+      document.getElementById('rsvpSearchMatches').innerHTML = '';
+      document.getElementById('rsvpFormCard').classList.remove('hidden');
+      document.getElementById('rsvpEpassCard').classList.add('hidden');
+
+      document.getElementById('rsvpGuestIdBadge').innerText = guest.id;
+      document.getElementById('rsvpGuestNameDisplay').innerText = guest.name;
+      // Rahsiakan nama anugerah sebenar pada paparan RSVP tetamu (kejutan majlis)
+      document.getElementById('rsvpGuestMetaDisplay').innerText = `${guest.category} • Lokasi: ${guest.seat}`;
+      document.getElementById('rsvpCurrentStatusPill').innerText = `Status Semasa: ${guest.rsvpStatus || 'Menunggu RSVP'}`;
+
+      const radios = document.querySelectorAll('input[name="rsvpChoice"]');
+      radios.forEach(r => {
+        r.checked = (r.value === (guest.rsvpStatus === 'Hantar Wakil' || guest.rsvpStatus === 'Tidak Hadir' ? guest.rsvpStatus : 'Sahkan Hadir'));
+      });
+      document.getElementById('rsvpProxyNameInput').value = guest.proxyName || '';
+      toggleRsvpProxyInput();
+    }
+
+    function toggleRsvpProxyInput() {
+      const selected = document.querySelector('input[name="rsvpChoice"]:checked')?.value;
+      const box = document.getElementById('rsvpProxyFieldBox');
+      if (selected === 'Hantar Wakil') {
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    function submitGuestRsvp() {
+      if (!selectedGuestIdForRsvp) return;
+      const guest = attendees.find(g => g.id === selectedGuestIdForRsvp);
+      if (!guest) return;
+
+      const choice = document.querySelector('input[name="rsvpChoice"]:checked')?.value || 'Sahkan Hadir';
+      const proxyInputVal = document.getElementById('rsvpProxyNameInput').value.trim();
+
+      if (choice === 'Hantar Wakil' && !proxyInputVal) {
+        showToast('Sila masukkan nama penuh wakil rasmi anda!', 'error');
+        return;
+      }
+
+      guest.rsvpStatus = choice;
+      if (choice === 'Hantar Wakil') {
+        guest.proxyName = proxyInputVal;
+      } else if (choice === 'Sahkan Hadir') {
+        guest.proxyName = '';
+      }
+
+      pushDataToCloud();
+      updateDashboardStats();
+      filterData();
+
+      document.getElementById('rsvpFormCard').classList.add('hidden');
+      const epassCard = document.getElementById('rsvpEpassCard');
+      epassCard.classList.remove('hidden');
+
+      document.getElementById('epassName').innerText = guest.name;
+      document.getElementById('epassCategorySeat').innerText = `${guest.category} • ${guest.seat}`;
+      document.getElementById('epassIdText').innerText = guest.id;
+
+      const proxyNote = document.getElementById('epassProxyNote');
+      if (choice === 'Hantar Wakil') {
+        proxyNote.classList.remove('hidden');
+        proxyNote.innerText = `Wakil Disahkan: ${guest.proxyName}`;
+      } else if (choice === 'Tidak Hadir') {
+        proxyNote.classList.remove('hidden');
+        proxyNote.innerText = `Status: Tidak Dapat Hadir (Terima kasih atas maklum balas)`;
+      } else {
+        proxyNote.classList.add('hidden');
+      }
+
+      const qrContainer = document.getElementById('rsvpQrContainer');
+      qrContainer.innerHTML = '';
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(qrContainer, {
+          text: guest.id,
+          width: 170,
+          height: 170,
+          colorDark: "#020617",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+
+      showToast('Pengesahan RSVP berjaya dihantar & E-Pas dijana!', 'success');
+    }
+
+    function updateGuestRsvpDirectly(guestId, newRsvpStatus) {
+      const guest = attendees.find(g => g.id === guestId);
+      if (!guest) return;
+      guest.rsvpStatus = newRsvpStatus;
+      pushDataToCloud();
+      updateDashboardStats();
+      filterData();
+      showToast(`Status RSVP ${guest.name} dikemas kini kepada "${newRsvpStatus}".`, 'info');
+    }
+
+    // =========================================================================
+    // PENAPISAN, MUAT NAIK CSV & EKSPORT DATA
+    // =========================================================================
     function filterData() {
       const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
       const catVal = document.getElementById('categoryFilter').value;
+      const rsvpVal = document.getElementById('rsvpFilter').value;
       const statusVal = document.getElementById('statusFilter').value;
       const hideAward = shouldHideAwardName();
 
@@ -933,9 +1257,11 @@
           (g.proxyName && g.proxyName.toLowerCase().includes(searchText));
 
         const matchesCat = catVal === 'all' || g.category === catVal;
+        const currentRsvp = g.rsvpStatus || 'Menunggu RSVP';
+        const matchesRsvp = rsvpVal === 'all' || currentRsvp === rsvpVal;
         const matchesStatus = statusVal === 'all' || g.status === statusVal;
 
-        return matchesSearch && matchesCat && matchesStatus;
+        return matchesSearch && matchesCat && matchesRsvp && matchesStatus;
       });
 
       renderTable(filtered);
@@ -965,10 +1291,11 @@
               award: cols[3] || '-',
               session: cols[4] || 'Sesi 1',
               seat: cols[5] || 'Zon Umum',
-              status: cols[6] || 'Belum Hadir',
-              proxyName: cols[7] || '',
-              checkInTime: cols[8] || '',
-              notes: cols[9] || ''
+              rsvpStatus: cols[6] || 'Menunggu RSVP',
+              status: cols[7] || 'Belum Hadir',
+              proxyName: cols[8] || '',
+              checkInTime: cols[9] || '',
+              notes: cols[10] || ''
             });
           }
         }
@@ -990,10 +1317,10 @@
 
     function downloadCSVTemplate() {
       const templateCSV = [
-        "ID,Nama,Kategori,Anugerah,Sesi,Kerusi_Meja,Status,Wakil,Masa_Daftar,Nota",
-        '"VIP-001","YAB Dato\' Sri Contoh VVIP","VVIP","Tetamu Kehormat","Perasmian","Meja VVIP 1","Belum Hadir","","","LO Protokol 1"',
-        '"DIVA-001","Dr. Ahmad bin Ali","Penerima Anugerah","Anugerah Inovasi Digital 2026","Sesi 1 (Giliran #1)","Zon A - Kerusi 1","Belum Hadir","","","Sedia di Holding Room"',
-        '"JM-001","Puan Siti Sarah","Jemputan Khas","Rakan Strategik","Perasmian","Meja Penaja 2","Belum Hadir","","",""'
+        "ID,Nama,Kategori,Anugerah,Sesi,Kerusi_Meja,Status_RSVP,Status_Foyer,Wakil,Masa_Daftar,Nota",
+        '"VIP-001","YAB Dato\' Sri Contoh VVIP","VVIP","Tetamu Kehormat","Perasmian","Meja VVIP 1","Sahkan Hadir","Belum Hadir","","","LO Protokol 1"',
+        '"DIVA-001","Dr. Ahmad bin Ali","Penerima Anugerah","Anugerah Inovasi Digital 2026","Sesi 1 (Giliran #1)","Zon A - Kerusi 1","Menunggu RSVP","Belum Hadir","","","Sedia di Holding Room"',
+        '"JM-001","Puan Siti Sarah","Jemputan Khas","Rakan Strategik","Perasmian","Meja Penaja 2","Sahkan Hadir","Belum Hadir","","",""'
       ].join("\n");
 
       const blob = new Blob([templateCSV], { type: 'text/csv;charset=utf-8;' });
@@ -1008,7 +1335,7 @@
     }
 
     function exportReportCSV() {
-      const headers = ["ID", "Nama", "Kategori", "Anugerah", "Sesi", "Kerusi_Meja", "Status", "Wakil", "Masa_Daftar", "Nota"];
+      const headers = ["ID", "Nama", "Kategori", "Anugerah", "Sesi", "Kerusi_Meja", "Status_RSVP", "Status_Foyer", "Wakil", "Masa_Daftar", "Nota"];
       const rows = attendees.map(g => [
         `"${g.id}"`,
         `"${g.name.replace(/"/g, '""')}"`,
@@ -1016,6 +1343,7 @@
         `"${g.award.replace(/"/g, '""')}"`,
         `"${g.session}"`,
         `"${g.seat}"`,
+        `"${g.rsvpStatus || 'Menunggu RSVP'}"`,
         `"${g.status}"`,
         `"${(g.proxyName || '').replace(/"/g, '""')}"`,
         `"${g.checkInTime || ''}"`,
@@ -1045,14 +1373,13 @@
     function executeResetAllData() {
       attendees.forEach(g => {
         g.status = 'Belum Hadir';
-        g.proxyName = '';
         g.checkInTime = '';
       });
       pushDataToCloud();
       closeResetModal();
       updateDashboardStats();
       filterData();
-      showToast('Semua status kehadiran telah ditetapkan semula.', 'info');
+      showToast('Semua status Pendaftaran Foyer telah ditetapkan semula.', 'info');
     }
 
     function executeClearAllGuests() {
@@ -1082,6 +1409,7 @@
       document.getElementById('newGuestAward').value = '';
       document.getElementById('newGuestSession').value = 'Sesi 1';
       document.getElementById('newGuestSeat').value = '';
+      document.getElementById('newGuestRsvp').value = 'Menunggu RSVP';
       document.getElementById('newGuestNotes').value = '';
       document.getElementById('addGuestModal').classList.remove('hidden');
     }
@@ -1108,6 +1436,7 @@
         award: document.getElementById('newGuestAward').value.trim() || '-',
         session: document.getElementById('newGuestSession').value.trim() || 'Sesi 1',
         seat: document.getElementById('newGuestSeat').value.trim() || 'Zon Umum',
+        rsvpStatus: document.getElementById('newGuestRsvp').value,
         status: 'Belum Hadir',
         proxyName: '',
         checkInTime: '',
@@ -1122,7 +1451,7 @@
     }
 
     // =========================================================================
-    // TINDAKAN KEHADIRAN & WAKIL (PROXY)
+    // TINDAKAN KEHADIRAN HARI KEJADIAN & WAKIL (PROXY)
     // =========================================================================
     function getCurrentTimeStr() {
       return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1137,7 +1466,7 @@
       pushDataToCloud();
       updateDashboardStats();
       filterData();
-      showToast(`${guest.name} disahkan hadir!`, 'success');
+      showToast(`${guest.name} disahkan tiba di dewan!`, 'success');
       return guest;
     }
 
@@ -1145,12 +1474,11 @@
       const guest = attendees.find(g => g.id === guestId);
       if (!guest) return;
       guest.status = 'Belum Hadir';
-      guest.proxyName = '';
       guest.checkInTime = '';
       pushDataToCloud();
       updateDashboardStats();
       filterData();
-      showToast(`Status kehadiran ${guest.name} dibatalkan.`, 'info');
+      showToast(`Status ketibaan ${guest.name} dibatalkan.`, 'info');
     }
 
     function openProxyModal(guestId) {
@@ -1158,13 +1486,12 @@
       if (!guest) return;
       activeTargetIdForProxy = guestId;
       document.getElementById('modalOriginalName').innerText = guest.name;
-      // Rahsiakan nama anugerah dalam modal pendaftaran wakil di kaunter
       if (shouldHideAwardName()) {
         document.getElementById('modalOriginalCategory').innerText = `${guest.category} • ${guest.seat}`;
       } else {
         document.getElementById('modalOriginalCategory').innerText = `${guest.category} (${guest.award})`;
       }
-      document.getElementById('proxyNameInput').value = '';
+      document.getElementById('proxyNameInput').value = guest.proxyName || '';
       document.getElementById('proxyRelationInput').value = '';
       document.getElementById('proxyModal').classList.remove('hidden');
     }
@@ -1192,7 +1519,7 @@
         pushDataToCloud();
         updateDashboardStats();
         filterData();
-        showToast(`Wakil bagi ${guest.name} berjaya didaftarkan!`, 'success');
+        showToast(`Wakil bagi ${guest.name} berjaya didaftarkan tiba!`, 'success');
       }
       closeProxyModal();
     }
@@ -1247,16 +1574,27 @@
 
       const guest = attendees.find(g => g.id.toUpperCase() === code.toUpperCase());
       if (guest) {
-        markSelfPresent(guest.id);
+        if (guest.rsvpStatus === 'Hantar Wakil' && guest.proxyName) {
+          guest.status = 'Hadir Wakil';
+          guest.checkInTime = getCurrentTimeStr();
+          pushDataToCloud();
+          updateDashboardStats();
+          filterData();
+          showToast(`Wakil berdaftar (${guest.proxyName}) disahkan tiba!`, 'success');
+        } else {
+          markSelfPresent(guest.id);
+        }
+
         resultBox.classList.add('bg-emerald-950/70', 'border-emerald-500');
-        // Paparan selepas imbas hanya memaparkan Kategori & Kerusi (tiada nama anugerah didedahkan kepada peserta)
         resultBox.innerHTML = `
           <div class="flex items-start gap-3">
             <i class="fa-solid fa-circle-check text-emerald-400 text-xl mt-0.5"></i>
             <div>
-              <p class="text-xs font-extrabold text-emerald-400 uppercase">Pendaftaran Berjaya (${guest.id})</p>
+              <p class="text-xs font-extrabold text-emerald-400 uppercase">Pendaftaran Foyer Berjaya (${guest.id})</p>
               <p class="text-sm font-bold text-white mt-0.5">${guest.name}</p>
               <p class="text-xs text-slate-300 mt-1">Kategori: <b>${guest.category}</b> • Kerusi: <b>${guest.seat}</b></p>
+              <p class="text-xs text-cyan-300 mt-0.5">Status RSVP Awal: <b>${guest.rsvpStatus || 'Menunggu RSVP'}</b></p>
+              ${guest.proxyName ? `<p class="text-xs text-amber-300 mt-0.5">Wakil: <b>${guest.proxyName}</b></p>` : ''}
               ${guest.notes ? `<p class="text-xs text-amber-300 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${guest.notes}</p>` : ''}
             </div>
           </div>
@@ -1341,7 +1679,6 @@
       const nameVal = document.getElementById('boothGuestName').value.trim();
       const found = attendees.find(g => g.name.toLowerCase() === nameVal.toLowerCase());
       if (found) {
-        // Rahsiakan nama anugerah di photobooth (paparkan kategori umum sahaja supaya kejutan terpelihara)
         if (found.category === 'Penerima Anugerah') {
           document.getElementById('boothGuestTitle').value = 'Penerima Anugerah DIVA 2026';
         } else {
@@ -1652,19 +1989,24 @@
     }
 
     // =========================================================================
-    // JADUAL UTAMA & NOTIFIKASI TOAST
+    // JADUAL UTAMA & STATISTIK (MEMAPARKAN RSVP AWAL + PENDAFTARAN FOYER)
     // =========================================================================
     function updateDashboardStats() {
       const total = attendees.length;
+      const rsvpConfirmed = attendees.filter(a => a.rsvpStatus === 'Sahkan Hadir' || a.rsvpStatus === 'Hantar Wakil').length;
+      const rsvpPercent = total > 0 ? Math.round((rsvpConfirmed / total) * 100) : 0;
+
       const presentSelf = attendees.filter(a => a.status === 'Hadir').length;
       const presentProxy = attendees.filter(a => a.status === 'Hadir Wakil').length;
       const totalPresent = presentSelf + presentProxy;
       const absent = total - totalPresent;
-      const percent = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
+      const presentPercent = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
 
       document.getElementById('statTotal').innerText = total;
+      document.getElementById('statRsvpConfirmed').innerText = rsvpConfirmed;
+      document.getElementById('statRsvpPercent').innerText = `(${rsvpPercent}%)`;
       document.getElementById('statPresent').innerText = totalPresent;
-      document.getElementById('statPresentPercent').innerText = `(${percent}%)`;
+      document.getElementById('statPresentPercent').innerText = `(${presentPercent}%)`;
       document.getElementById('statAbsent').innerText = absent;
       document.getElementById('statProxy').innerText = presentProxy;
     }
@@ -1679,7 +2021,7 @@
       if (dataToRender.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="text-center py-8 text-slate-500">
+            <td colspan="7" class="text-center py-8 text-slate-500">
               <i class="fa-solid fa-folder-open text-2xl mb-2 block"></i>
               Tiada rekod ditemui mengikut tapisan semasa.
             </td>
@@ -1689,6 +2031,28 @@
       }
 
       dataToRender.forEach(guest => {
+        // Lencana Status RSVP (Sebelum Majlis)
+        const rsvpVal = guest.rsvpStatus || 'Menunggu RSVP';
+        let rsvpBadge = '';
+        if (rsvpVal === 'Sahkan Hadir') {
+          rsvpBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+            <i class="fa-solid fa-envelope-circle-check"></i> Sahkan Hadir
+          </span>`;
+        } else if (rsvpVal === 'Hantar Wakil') {
+          rsvpBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+            <i class="fa-solid fa-user-clock"></i> Hantar Wakil
+          </span>`;
+        } else if (rsvpVal === 'Tidak Hadir') {
+          rsvpBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
+            <i class="fa-solid fa-ban"></i> Tidak Hadir
+          </span>`;
+        } else {
+          rsvpBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-700/70 text-slate-300 border border-slate-600">
+            <i class="fa-regular fa-hourglass-half"></i> Menunggu RSVP
+          </span>`;
+        }
+
+        // Lencana Status Pendaftaran Foyer (Hari Kejadian)
         let statusBadge = '';
         if (guest.status === 'Hadir') {
           statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -1707,7 +2071,6 @@
         const tr = document.createElement('tr');
         tr.className = `hover:bg-slate-800/60 transition ${guest.status !== 'Belum Hadir' ? 'bg-slate-800/20' : ''}`;
 
-        // Di Kaunter Imbas/Pendaftaran (hideAward = true), rahsiakan nama anugerah supaya peserta mendapat kejutan
         const categoryAwardCell = hideAward
           ? `
             <p class="font-semibold text-slate-200">${guest.category}</p>
@@ -1717,6 +2080,17 @@
             <p class="font-semibold text-slate-200">${guest.award}</p>
             <p class="text-[11px] text-slate-400">${guest.category} • <span class="text-amber-400/90">${guest.session}</span></p>
           `;
+
+        const rsvpCellHtml = isAdminUnlocked
+          ? `
+            <select onchange="updateGuestRsvpDirectly('${guest.id}', this.value)" class="px-2 py-1 bg-slate-900 border border-slate-700 rounded text-[11px] text-cyan-300 focus:outline-none focus:border-cyan-400">
+              <option value="Menunggu RSVP" ${rsvpVal === 'Menunggu RSVP' ? 'selected' : ''}>Menunggu RSVP</option>
+              <option value="Sahkan Hadir" ${rsvpVal === 'Sahkan Hadir' ? 'selected' : ''}>Sahkan Hadir</option>
+              <option value="Hantar Wakil" ${rsvpVal === 'Hantar Wakil' ? 'selected' : ''}>Hantar Wakil</option>
+              <option value="Tidak Hadir" ${rsvpVal === 'Tidak Hadir' ? 'selected' : ''}>Tidak Hadir</option>
+            </select>
+          `
+          : rsvpBadge;
 
         tr.innerHTML = `
           <td class="py-3 px-4">
@@ -1737,6 +2111,9 @@
             </span>
           </td>
           <td class="py-3 px-3 text-center">
+            ${rsvpCellHtml}
+          </td>
+          <td class="py-3 px-3 text-center">
             ${statusBadge}
           </td>
           <td class="py-3 px-3">
@@ -1747,14 +2124,14 @@
             <div class="flex justify-end gap-1.5">
               ${(currentRole === 'scanner' || currentRole === 'all' || isAdminUnlocked) ? (
                 guest.status === 'Belum Hadir' ? `
-                  <button onclick="markSelfPresent('${guest.id}')" title="Sahkan Hadir Sendiri" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-semibold text-[11px] transition">
+                  <button onclick="markSelfPresent('${guest.id}')" title="Sahkan Tiba di Foyer" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-semibold text-[11px] transition">
                     <i class="fa-solid fa-check mr-1"></i>Hadir
                   </button>
-                  <button onclick="openProxyModal('${guest.id}')" title="Daftar Wakil" class="px-2.5 py-1 bg-slate-700 hover:bg-amber-600 text-slate-200 hover:text-white rounded font-medium text-[11px] transition">
+                  <button onclick="openProxyModal('${guest.id}')" title="Daftar Wakil Tiba" class="px-2.5 py-1 bg-slate-700 hover:bg-amber-600 text-slate-200 hover:text-white rounded font-medium text-[11px] transition">
                     <i class="fa-solid fa-user-tag mr-1"></i>Wakil
                   </button>
                 ` : `
-                  <button onclick="resetStatus('${guest.id}')" title="Set Semula Status" class="px-2 py-1 bg-slate-800 hover:bg-amber-900/50 text-slate-400 hover:text-amber-300 rounded text-[11px] transition border border-slate-700">
+                  <button onclick="resetStatus('${guest.id}')" title="Set Semula Status Foyer" class="px-2 py-1 bg-slate-800 hover:bg-amber-900/50 text-slate-400 hover:text-amber-300 rounded text-[11px] transition border border-slate-700">
                     <i class="fa-solid fa-rotate-left"></i> Batal
                   </button>
                 `
