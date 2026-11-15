@@ -171,12 +171,15 @@
       </div>
     </section>
 
-    <!-- BAHAGIAN PENGIMBAS QR -->
+    <!-- BAHAGIAN PENGIMBAS QR (MOD RAHSIA ANUGERAH) -->
     <section id="scannerSection" class="hidden bg-slate-800 p-5 rounded-2xl border border-amber-500/40 shadow-xl">
       <div class="flex flex-wrap items-center justify-between pb-3 mb-4 border-b border-slate-700 gap-2">
         <div class="flex items-center space-x-2">
           <span class="w-3 h-3 rounded-full bg-emerald-500 badge-pulse"></span>
           <h2 class="text-sm font-bold tracking-wide uppercase text-amber-400">Kamera Pengimbas Kod QR (Foyer DIVA 2026)</h2>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 font-semibold">
+            <i class="fa-solid fa-eye-slash mr-1"></i>Mod Rahsia (Nama Anugerah Disembunyikan)
+          </span>
         </div>
         <button onclick="toggleScanner()" id="btnToggleCamera" class="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition">
           <i class="fa-solid fa-camera mr-1"></i> Mulakan / Hentikan Kamera
@@ -212,7 +215,7 @@
       </div>
     </section>
 
-    <!-- BAHAGIAN RUANG PHOTOBOOTH DIGITAL DIVA 2026 (DENGAN SOKONGAN TEMPLATE PNG & TUKAR KAMERA) -->
+    <!-- BAHAGIAN RUANG PHOTOBOOTH DIGITAL DIVA 2026 -->
     <section id="photoboothSection" class="hidden bg-slate-800/95 p-5 sm:p-6 rounded-2xl border border-amber-500/40 shadow-2xl space-y-6">
       <div class="flex flex-wrap items-center justify-between pb-4 border-b border-slate-700 gap-3">
         <div>
@@ -245,8 +248,8 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">2. Gelaran / Kategori Anugerah (Pilihan):</label>
-            <input type="text" id="boothGuestTitle" placeholder="Contoh: Penerima Anugerah Inovasi / Tetamu Kehormat" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">2. Gelaran / Kategori Tetamu (Pilihan):</label>
+            <input type="text" id="boothGuestTitle" placeholder="Contoh: Penerima Anugerah DIVA 2026 / Tetamu Kehormat" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
 
           <div>
@@ -266,7 +269,6 @@
               </button>
             </div>
 
-            <!-- Pilihan Muat Naik Fail Bingkai PNG Sendiri Terus Dari Peranti -->
             <div class="mt-2.5 pt-2.5 border-t border-slate-800 flex items-center justify-between gap-2">
               <span class="text-[11px] text-slate-400">Ada fail bingkai PNG sendiri?</span>
               <input type="file" id="customFrameInput" accept="image/png" class="hidden" onchange="handleCustomFrameUpload(event)">
@@ -291,16 +293,13 @@
         <div class="lg:col-span-7 space-y-4">
           <div id="boothCameraWrapper" class="booth-stage bg-slate-950 rounded-2xl border-2 border-slate-700 flex items-center justify-center shadow-inner" style="aspect-ratio: 16 / 9;">
             <video id="photoboothVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
-            <!-- Tindanan Bingkai PNG Secara Langsung (Live Overlay) -->
             <img id="boothOverlayImg" src="bingkai_diva_landscape.png" alt="Bingkai DIVA 2026" class="hidden" onerror="handleOverlayImgError()">
             <canvas id="photoboothCanvas" class="w-full h-full object-contain hidden"></canvas>
             
-            <!-- Kiraan Masa (Countdown Overlay) -->
             <div id="boothCountdown" class="hidden absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-20">
               <span id="countdownNumber" class="text-7xl font-black text-amber-400 drop-shadow-lg">3</span>
             </div>
 
-            <!-- Placeholder sebelum kamera dibuka -->
             <div id="boothPlaceholder" class="text-center p-6 space-y-2">
               <div class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto text-amber-400">
                 <i class="fa-solid fa-sparkles text-2xl"></i>
@@ -310,7 +309,6 @@
             </div>
           </div>
 
-          <!-- Butang Muat Turun & Kongsi Hasil Gambar -->
           <div id="boothResultActions" class="hidden flex flex-wrap items-center justify-between gap-3 bg-slate-900 p-3.5 rounded-xl border border-emerald-500/40">
             <div class="space-y-0.5">
               <div class="flex items-center gap-2 text-xs text-emerald-400 font-semibold">
@@ -331,7 +329,6 @@
         </div>
       </div>
 
-      <!-- Galeri Mini Sesi Semasa -->
       <div class="pt-4 border-t border-slate-700/70">
         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
           <i class="fa-solid fa-images text-amber-400"></i> Galeri Sesi Photobooth Hari Ini
@@ -386,7 +383,7 @@
           <thead>
             <tr class="bg-slate-950/60 border-b border-slate-700/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
               <th class="py-3 px-4">ID & Nama Tetamu</th>
-              <th class="py-3 px-3">Kategori & Sesi</th>
+              <th id="thCategoryAward" class="py-3 px-3">Kategori & Sesi</th>
               <th class="py-3 px-3">Kerusi / Meja</th>
               <th class="py-3 px-3 text-center">Status</th>
               <th class="py-3 px-3">Masa & Info Wakil</th>
@@ -510,7 +507,7 @@
     </div>
   </div>
 
-  <!-- Modal Pendaftaran Wakil (Proxy Modal) -->
+  <!-- Modal Pendaftaran Wakil (Proxy Modal - Rahsiakan Nama Anugerah di Kaunter) -->
   <div id="proxyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-slate-700">
@@ -594,13 +591,20 @@
     // =========================================================================
     const ADMIN_PIN = "DIVA2026";
     const DEFAULT_FIREBASE_DB_URL = "https://diva-awards-2026-default-rtdb.asia-southeast1.firebasedatabase.app/"; 
-    // Pilihan tambahan: Tampal URL Google Apps Script jika mahu sandaran foto terus ke Google Drive
     const PHOTOBOOTH_GDRIVE_SCRIPT_URL = ""; 
 
     let isAdminUnlocked = sessionStorage.getItem('DIVA_ADMIN_UNLOCKED') === 'true';
     let firebaseDbUrl = localStorage.getItem('DIVA_FIREBASE_URL') || DEFAULT_FIREBASE_DB_URL;
     let syncInterval = null;
     let lastSyncedHash = "";
+
+    // Helper: Semak sama ada paparan semasa perlu merahsiakan nama anugerah
+    function shouldHideAwardName() {
+      // Rahsiakan di Kaunter Imbas/Pendaftaran & Photobooth supaya peserta mendapat kejutan (surprise)
+      // Melainkan Admin membuka kunci PIN secara manual
+      if (isAdminUnlocked) return false;
+      return (currentRole === 'scanner' || currentRole === 'photobooth');
+    }
 
     // Pangkalan Data Utama DIVA 2026
     let attendees = [
@@ -621,9 +625,9 @@
 
     // Pembolehubah Photobooth Pintar
     let boothStream = null;
-    let boothFacingMode = "user"; // 'user' = depan (selfie), 'environment' = belakang
+    let boothFacingMode = "user";
     let isBoothPortrait = false;
-    let selectedBoothFrame = 'custom_png'; // 'custom_png', 'gold', 'cyber'
+    let selectedBoothFrame = 'custom_png';
     let customUploadedFrameDataUrl = null;
     let capturedPhotos = [];
 
@@ -796,7 +800,7 @@
         isAdminUnlocked = false;
         sessionStorage.removeItem('DIVA_ADMIN_UNLOCKED');
         updateAdminUIState();
-        renderTable();
+        filterData();
         showToast('Mod Admin dikunci semula.', 'info');
       } else {
         document.getElementById('adminPinInput').value = '';
@@ -874,6 +878,7 @@
       const dashboardTableSection = document.getElementById('dashboardTableSection');
       const tableHeading = document.getElementById('tableHeading');
       const categoryFilter = document.getElementById('categoryFilter');
+      const thCategoryAward = document.getElementById('thCategoryAward');
 
       roleSwitcherBar.classList.remove('hidden');
       syncStatusBar.classList.remove('hidden');
@@ -885,6 +890,7 @@
       if (role === 'scanner') {
         scannerSection.classList.remove('hidden');
         tableHeading.innerHTML = `<i class="fa-solid fa-qrcode text-amber-400"></i> Log Pendaftaran Kaunter Foyer`;
+        thCategoryAward.innerText = "Kategori & Sesi (Anugerah Dirahsiakan)";
         categoryFilter.value = 'all';
       } else if (role === 'photobooth') {
         photoboothSection.classList.remove('hidden');
@@ -896,12 +902,15 @@
         }
       } else if (role === 'awardee') {
         tableHeading.innerHTML = `<i class="fa-solid fa-medal text-amber-400"></i> Senarai Penerima Anugerah (Holding Room)`;
+        thCategoryAward.innerText = "Kategori & Anugerah";
         categoryFilter.value = 'Penerima Anugerah';
       } else if (role === 'emcee') {
         tableHeading.innerHTML = `<i class="fa-solid fa-microphone text-amber-400"></i> Senarai Protokol Pentas & Wakil (Emcee)`;
+        thCategoryAward.innerText = "Kategori & Anugerah";
         categoryFilter.value = 'all';
       } else {
         tableHeading.innerHTML = `<i class="fa-solid fa-list-check text-amber-400"></i> Papan Pemuka Utama DIVA 2026`;
+        thCategoryAward.innerText = "Kategori & Anugerah";
         categoryFilter.value = 'all';
       }
 
@@ -913,13 +922,14 @@
       const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
       const catVal = document.getElementById('categoryFilter').value;
       const statusVal = document.getElementById('statusFilter').value;
+      const hideAward = shouldHideAwardName();
 
       const filtered = attendees.filter(g => {
         const matchesSearch = !searchText ||
           g.name.toLowerCase().includes(searchText) ||
           g.id.toLowerCase().includes(searchText) ||
           g.seat.toLowerCase().includes(searchText) ||
-          g.award.toLowerCase().includes(searchText) ||
+          (!hideAward && g.award.toLowerCase().includes(searchText)) ||
           (g.proxyName && g.proxyName.toLowerCase().includes(searchText));
 
         const matchesCat = catVal === 'all' || g.category === catVal;
@@ -1148,7 +1158,12 @@
       if (!guest) return;
       activeTargetIdForProxy = guestId;
       document.getElementById('modalOriginalName').innerText = guest.name;
-      document.getElementById('modalOriginalCategory').innerText = `${guest.category} (${guest.award})`;
+      // Rahsiakan nama anugerah dalam modal pendaftaran wakil di kaunter
+      if (shouldHideAwardName()) {
+        document.getElementById('modalOriginalCategory').innerText = `${guest.category} • ${guest.seat}`;
+      } else {
+        document.getElementById('modalOriginalCategory').innerText = `${guest.category} (${guest.award})`;
+      }
       document.getElementById('proxyNameInput').value = '';
       document.getElementById('proxyRelationInput').value = '';
       document.getElementById('proxyModal').classList.remove('hidden');
@@ -1183,7 +1198,7 @@
     }
 
     // =========================================================================
-    // PENGIMBAS KOD QR (CAMERA & MANUAL)
+    // PENGIMBAS KOD QR (CAMERA & MANUAL - TANPA MENDEDAHKAN NAMA ANUGERAH)
     // =========================================================================
     function toggleScanner() {
       if (isScannerRunning) {
@@ -1234,6 +1249,7 @@
       if (guest) {
         markSelfPresent(guest.id);
         resultBox.classList.add('bg-emerald-950/70', 'border-emerald-500');
+        // Paparan selepas imbas hanya memaparkan Kategori & Kerusi (tiada nama anugerah didedahkan kepada peserta)
         resultBox.innerHTML = `
           <div class="flex items-start gap-3">
             <i class="fa-solid fa-circle-check text-emerald-400 text-xl mt-0.5"></i>
@@ -1261,7 +1277,7 @@
     }
 
     // =========================================================================
-    // MODUL PHOTOBOOTH DIGITAL DIVA 2026 (DENGAN TEMPLATE PNG & ORIENTASI PINTAR)
+    // MODUL PHOTOBOOTH DIGITAL DIVA 2026
     // =========================================================================
     function checkBoothOrientation() {
       const wrapper = document.getElementById('boothCameraWrapper');
@@ -1325,7 +1341,12 @@
       const nameVal = document.getElementById('boothGuestName').value.trim();
       const found = attendees.find(g => g.name.toLowerCase() === nameVal.toLowerCase());
       if (found) {
-        document.getElementById('boothGuestTitle').value = found.award !== '-' ? found.award : found.category;
+        // Rahsiakan nama anugerah di photobooth (paparkan kategori umum sahaja supaya kejutan terpelihara)
+        if (found.category === 'Penerima Anugerah') {
+          document.getElementById('boothGuestTitle').value = 'Penerima Anugerah DIVA 2026';
+        } else {
+          document.getElementById('boothGuestTitle').value = found.category;
+        }
       }
     }
 
@@ -1653,6 +1674,7 @@
       const recordCount = document.getElementById('recordCount');
       tbody.innerHTML = '';
       recordCount.innerText = `${dataToRender.length} rekod`;
+      const hideAward = shouldHideAwardName();
 
       if (dataToRender.length === 0) {
         tbody.innerHTML = `
@@ -1685,6 +1707,17 @@
         const tr = document.createElement('tr');
         tr.className = `hover:bg-slate-800/60 transition ${guest.status !== 'Belum Hadir' ? 'bg-slate-800/20' : ''}`;
 
+        // Di Kaunter Imbas/Pendaftaran (hideAward = true), rahsiakan nama anugerah supaya peserta mendapat kejutan
+        const categoryAwardCell = hideAward
+          ? `
+            <p class="font-semibold text-slate-200">${guest.category}</p>
+            <p class="text-[11px] text-slate-400"><span class="text-amber-400/90">${guest.session}</span> • <span class="italic text-slate-500"><i class="fa-solid fa-gift mr-1"></i>Anugerah Dirahsiakan</span></p>
+          `
+          : `
+            <p class="font-semibold text-slate-200">${guest.award}</p>
+            <p class="text-[11px] text-slate-400">${guest.category} • <span class="text-amber-400/90">${guest.session}</span></p>
+          `;
+
         tr.innerHTML = `
           <td class="py-3 px-4">
             <div class="flex items-center space-x-2">
@@ -1696,8 +1729,7 @@
             </div>
           </td>
           <td class="py-3 px-3">
-            <p class="font-semibold text-slate-200">${guest.award}</p>
-            <p class="text-[11px] text-slate-400">${guest.category} • <span class="text-amber-400/90">${guest.session}</span></p>
+            ${categoryAwardCell}
           </td>
           <td class="py-3 px-3">
             <span class="px-2 py-1 rounded bg-slate-900/80 border border-slate-700 font-medium text-slate-300">
