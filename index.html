@@ -202,33 +202,36 @@
           Majlis Anugerah DIVA 2026
         </h2>
         <p class="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-          Sila semak rekod jemputan anda di bawah untuk mengesahkan kehadiran dan memuat turun <b>E-Pas Masuk & Kod QR</b> bagi kelancaran pendaftaran di pintu dewan.
+          Cari mengikut <b>Nama Institusi / Sekolah / Organisasi</b>, <b>Nama Penerima</b>, atau <b>ID Jemputan</b> untuk menyenaraikan kesemua penerima di bawah institusi anda dan menjana <b>E-Pas Masuk & Kod QR</b>.
         </p>
       </div>
 
-      <!-- Langkah 1: Carian Rekod Jemputan -->
+      <!-- Langkah 1: Carian Rekod Jemputan (Nama / ID / Institusi) -->
       <div class="space-y-3">
         <label class="block text-xs font-bold text-slate-200">
-          <i class="fa-solid fa-magnifying-glass text-amber-400 mr-1.5"></i>Langkah 1: Masukkan ID Jemputan atau Nama Penuh Anda
+          <i class="fa-solid fa-building-columns text-amber-400 mr-1.5"></i>Langkah 1: Cari Nama Institusi / Organisasi, Nama Penuh atau ID Jemputan
         </label>
         <div class="flex gap-2">
-          <input type="text" id="rsvpSearchInput" placeholder="Contoh: DIVA-001 atau Siti Aminah..." class="flex-1 px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500" onkeydown="if(event.key==='Enter') searchGuestForRsvp()">
+          <input type="text" id="rsvpSearchInput" placeholder="Contoh: SMK Ahmad, PPD Pekan, DIVA-001..." class="flex-1 px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500" onkeydown="if(event.key==='Enter') searchGuestForRsvp()">
           <button onclick="searchGuestForRsvp()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition shadow-lg">
-            Semak Rekod
+            Cari Senarai
           </button>
         </div>
-        <div id="rsvpSearchMatches" class="space-y-2"></div>
+        <div id="rsvpSearchMatches" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
       </div>
 
       <!-- Langkah 2: Borang Pengesahan RSVP -->
       <div id="rsvpFormCard" class="hidden bg-slate-900/90 p-5 rounded-2xl border border-slate-700 space-y-4">
         <div class="flex items-start justify-between gap-2 pb-3 border-b border-slate-800">
           <div>
-            <span id="rsvpGuestIdBadge" class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">ID</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="rsvpGuestIdBadge" class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">ID</span>
+              <span id="rsvpGuestInstitutionBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">Institusi</span>
+            </div>
             <h3 id="rsvpGuestNameDisplay" class="text-base sm:text-lg font-extrabold text-white mt-1.5">Nama Tetamu</h3>
             <p id="rsvpGuestMetaDisplay" class="text-xs text-slate-400 mt-0.5">Kategori • Lokasi Tempat Duduk</p>
           </div>
-          <span id="rsvpCurrentStatusPill" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">Status</span>
+          <span id="rsvpCurrentStatusPill" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700 shrink-0">Status</span>
         </div>
 
         <div class="space-y-3">
@@ -265,7 +268,7 @@
           <!-- Input Nama Wakil Awal -->
           <div id="rsvpProxyFieldBox" class="hidden pt-2 space-y-2">
             <label class="block text-xs font-semibold text-amber-300">Nama Penuh Wakil Rasmi & Jawatan:</label>
-            <input type="text" id="rsvpProxyNameInput" placeholder="Contoh: Encik Ahmad Razali (Timbalan Pengarah)" class="w-full px-3.5 py-2 bg-slate-800 border border-amber-500/40 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
+            <input type="text" id="rsvpProxyNameInput" placeholder="Contoh: Encik Ahmad Razali (Guru Penolong Kanan)" class="w-full px-3.5 py-2 bg-slate-800 border border-amber-500/40 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
 
           <button onclick="submitGuestRsvp()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg transition mt-2">
@@ -282,6 +285,7 @@
         <div>
           <p class="text-[11px] uppercase tracking-widest text-amber-400 font-bold">E-Pas Masuk Rasmi DIVA 2026</p>
           <h3 id="epassName" class="text-lg sm:text-xl font-extrabold text-white mt-1">Nama Tetamu</h3>
+          <p id="epassInstitution" class="text-xs font-bold text-cyan-300 mt-0.5">Nama Institusi</p>
           <p id="epassCategorySeat" class="text-xs text-slate-300 mt-1">Kategori • Zon Kerusi</p>
           <p id="epassProxyNote" class="hidden text-xs text-amber-300 font-semibold mt-1"></p>
         </div>
@@ -294,6 +298,12 @@
         <p class="text-xs text-slate-400 max-w-sm mx-auto">
           Sila tangkap layar (<i>Screenshot</i>) E-Pas ini dan tunjukkan Kod QR di <b>Kaunter Pendaftaran Foyer</b> pada hari majlis untuk imbasan pantas.
         </p>
+
+        <div class="pt-2">
+          <button type="button" onclick="searchGuestForRsvp()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition">
+            <i class="fa-solid fa-users mr-1.5"></i> Sahkan Penerima Lain dari Institusi Sama
+          </button>
+        </div>
       </div>
     </section>
 
@@ -377,8 +387,8 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">2. Gelaran / Kategori Tetamu (Pilihan):</label>
-            <input type="text" id="boothGuestTitle" placeholder="Contoh: Penerima Anugerah DIVA 2026 / Tetamu Kehormat" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">2. Institusi / Kategori Tetamu (Pilihan):</label>
+            <input type="text" id="boothGuestTitle" placeholder="Contoh: SMK Ahmad / Penerima Anugerah DIVA 2026" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
 
           <div>
@@ -481,9 +491,9 @@
 
         <!-- Penapis & Carian -->
         <div class="flex flex-wrap items-center gap-2">
-          <div class="relative flex-1 sm:w-48">
+          <div class="relative flex-1 sm:w-56">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="text" id="searchInput" oninput="filterData()" placeholder="Cari nama, ID, kerusi..." class="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+            <input type="text" id="searchInput" oninput="filterData()" placeholder="Cari nama, institusi, ID, kerusi..." class="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
 
           <select id="categoryFilter" onchange="filterData()" class="px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amber-500">
@@ -515,12 +525,12 @@
         </div>
       </div>
 
-      <!-- Jadual Senarai Tetamu (Memisahkan Lajur Pengesahan RSVP & Pendaftaran Foyer) -->
+      <!-- Jadual Senarai Tetamu (Memisahkan Lajur Pengesahan RSVP & Pendaftaran Foyer + Institusi) -->
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-slate-950/60 border-b border-slate-700/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              <th class="py-3 px-4">ID & Nama Tetamu</th>
+              <th class="py-3 px-4">ID, Nama & Institusi</th>
               <th id="thCategoryAward" class="py-3 px-3">Kategori & Sesi</th>
               <th class="py-3 px-3">Kerusi / Meja</th>
               <th class="py-3 px-3 text-center text-cyan-400">Pengesahan RSVP<br><span class="text-[9px] font-normal text-slate-400">(Sebelum Majlis)</span></th>
@@ -580,7 +590,7 @@
       <div class="space-y-2.5 pt-1">
         <button onclick="executeResetAllData()" class="w-full p-3 bg-slate-900 hover:bg-amber-950/50 border border-amber-500/40 rounded-xl text-left transition">
           <p class="text-xs font-bold text-amber-400"><i class="fa-solid fa-rotate-left mr-1.5"></i>1. Set Semula Pendaftaran Foyer Sahaja</p>
-          <p class="text-[11px] text-slate-400 mt-0.5">Kekalkan senarai nama & status RSVP, tetapi tukar status Foyer kepada "Belum Hadir".</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Kekalkan senarai nama, institusi & status RSVP, tetapi tukar status Foyer kepada "Belum Hadir".</p>
         </button>
         <button onclick="executeClearAllGuests()" class="w-full p-3 bg-slate-900 hover:bg-rose-950/60 border border-rose-500/40 rounded-xl text-left transition">
           <p class="text-xs font-bold text-rose-400"><i class="fa-solid fa-trash-can mr-1.5"></i>2. Padam Semua Data Contoh (Kosongkan Senarai)</p>
@@ -619,11 +629,15 @@
         </div>
         <div class="sm:col-span-2">
           <label class="block text-slate-300 font-medium mb-1">Nama Penuh & Gelaran:</label>
-          <input type="text" id="newGuestName" placeholder="Cth: Dato' Ir. Ahmad bin Ibrahim" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500">
+          <input type="text" id="newGuestName" placeholder="Cth: Cikgu Ahmad bin Ibrahim" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-slate-300 font-medium mb-1">Institusi / Sekolah / Organisasi:</label>
+          <input type="text" id="newGuestInstitution" placeholder="Cth: SMK Dato' Mahmud Mat / PPD Pekan" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500">
         </div>
         <div>
           <label class="block text-slate-300 font-medium mb-1">Nama Anugerah / Jawatan:</label>
-          <input type="text" id="newGuestAward" placeholder="Cth: Best Digital Startup" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500">
+          <input type="text" id="newGuestAward" placeholder="Cth: Best Digital Innovator" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500">
         </div>
         <div>
           <label class="block text-slate-300 font-medium mb-1">Sesi / Giliran Pentas:</label>
@@ -669,17 +683,17 @@
 
       <div class="text-xs text-slate-300">
         Penerima Sebenar: <span id="modalOriginalName" class="font-bold text-amber-400"></span><br>
-        <span class="text-slate-400">Kategori: <span id="modalOriginalCategory"></span></span>
+        <span class="text-slate-400">Maklumat: <span id="modalOriginalCategory"></span></span>
       </div>
 
       <div class="space-y-3 pt-2">
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Nama Penuh Wakil (Untuk Sebutan Emcee):</label>
-          <input type="text" id="proxyNameInput" placeholder="Contoh: Encik Ahmad Razali (Ketua Pegawai Teknologi)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+          <input type="text" id="proxyNameInput" placeholder="Contoh: Encik Ahmad Razali (Guru Penolong Kanan)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Hubungan / Jawatan Wakil:</label>
-          <input type="text" id="proxyRelationInput" placeholder="Contoh: Wakil Syarikat / Pasangan" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+          <input type="text" id="proxyRelationInput" placeholder="Contoh: Wakil Sekolah / Pasangan" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
         </div>
       </div>
 
@@ -751,16 +765,16 @@
       return (currentRole === 'scanner' || currentRole === 'photobooth' || currentRole === 'rsvp');
     }
 
-    // Pangkalan Data Utama DIVA 2026 (Dilengkapi rsvpStatus berasingan daripada status Foyer)
+    // Pangkalan Data Utama DIVA 2026 (Dilengkapi atribut institution & rsvpStatus)
     let attendees = [
-      { id: "VIP-001", name: "YAB Dato' Sri Menteri Besar", category: "VVIP", award: "Tetamu Kehormat Utama", session: "Perasmian", seat: "Meja VVIP 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 1" },
-      { id: "VIP-002", name: "YB Menteri Digital Malaysia", category: "VVIP", award: "Perasmi Majlis DIVA 2026", session: "Perasmian", seat: "Meja VVIP 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 2" },
-      { id: "DIVA-001", name: "Prof. Dr. Siti Aminah binti Yusof", category: "Penerima Anugerah", award: "Visionary Tech Leader Award", session: "Sesi 1 (Giliran #1)", seat: "Zon A - Baris 1, No 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Sedia di Holding Room 15 minit awal" },
-      { id: "DIVA-002", name: "Ir. Ts. Kamaruddin bin Mansor", category: "Penerima Anugerah", award: "Digital Transformation Excellence", session: "Sesi 1 (Giliran #2)", seat: "Zon A - Baris 1, No 2", rsvpStatus: "Menunggu RSVP", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "DIVA-003", name: "Datin Hajah Zarina binti Daud", category: "Penerima Anugerah", award: "Woman Innovator of The Year", session: "Sesi 2 (Giliran #3)", seat: "Zon A - Baris 2, No 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "DIVA-004", name: "Encik Muhammad Farhan bin Zulkifli", category: "Penerima Anugerah", award: "Emerging AI Startup Award", session: "Sesi 2 (Giliran #4)", seat: "Zon A - Baris 2, No 2", rsvpStatus: "Menunggu RSVP", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "DIVA-005", name: "Puan Noor Azlin binti Abdul Jalil", category: "Penerima Anugerah", award: "Smart Sustainability Pioneer", session: "Sesi 2 (Giliran #5)", seat: "Zon A - Baris 2, No 3", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "JM-101", name: "Dato' Sri Dr. Hj. Mohd Zaki", category: "Jemputan Khas", award: "Rakan Strategik Utama", session: "Perasmian", seat: "Meja Penaja 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" }
+      { id: "VIP-001", name: "YAB Dato' Sri Menteri Besar", institution: "Pejabat Menteri Besar Pahang", category: "VVIP", award: "Tetamu Kehormat Utama", session: "Perasmian", seat: "Meja VVIP 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 1" },
+      { id: "VIP-002", name: "YBrs. Pegawai Pendidikan Daerah Pekan", institution: "PPD Pekan", category: "VVIP", award: "Tuan Rumah Majlis DIVA 2026", session: "Perasmian", seat: "Meja VVIP 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 2" },
+      { id: "DIVA-001", name: "Cikgu Siti Aminah binti Yusof", institution: "SMK Dato' Mahmud Mat", category: "Penerima Anugerah", award: "Visionary Tech Educator Award", session: "Sesi 1 (Giliran #1)", seat: "Zon A - Baris 1, No 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Sedia di Holding Room 15 minit awal" },
+      { id: "DIVA-002", name: "Cikgu Kamaruddin bin Mansor", institution: "SMK Dato' Mahmud Mat", category: "Penerima Anugerah", award: "Digital Transformation School", session: "Sesi 1 (Giliran #2)", seat: "Zon A - Baris 1, No 2", rsvpStatus: "Menunggu RSVP", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "DIVA-003", name: "Puan Hajah Zarina binti Daud", institution: "SK Ahmad Pekan", category: "Penerima Anugerah", award: "Woman Innovator of The Year", session: "Sesi 2 (Giliran #3)", seat: "Zon A - Baris 2, No 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "DIVA-004", name: "Encik Muhammad Farhan bin Zulkifli", institution: "SK Ahmad Pekan", category: "Penerima Anugerah", award: "Emerging AI Classroom Award", session: "Sesi 2 (Giliran #4)", seat: "Zon A - Baris 2, No 2", rsvpStatus: "Menunggu RSVP", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "DIVA-005", name: "Puan Noor Azlin binti Abdul Jalil", institution: "SMK Pekan", category: "Penerima Anugerah", award: "Smart Sustainability Pioneer", session: "Sesi 2 (Giliran #5)", seat: "Zon A - Baris 2, No 3", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "JM-101", name: "Dato' Sri Dr. Hj. Mohd Zaki", institution: "Yayasan Pahang", category: "Jemputan Khas", award: "Rakan Strategik Utama", session: "Perasmian", seat: "Meja Penaja 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" }
     ];
 
     let currentRole = 'all';
@@ -832,6 +846,7 @@
         const cloudData = await res.json();
         if (cloudData && Array.isArray(cloudData)) {
           const normalized = cloudData.map(item => ({
+            institution: item.institution || '-',
             rsvpStatus: item.rsvpStatus || 'Menunggu RSVP',
             ...item
           }));
@@ -913,6 +928,7 @@
         try {
           const parsed = JSON.parse(saved);
           attendees = parsed.map(item => ({
+            institution: item.institution || '-',
             rsvpStatus: item.rsvpStatus || 'Menunggu RSVP',
             ...item
           }));
@@ -1086,7 +1102,7 @@
     }
 
     // =========================================================================
-    // MODUL PENGESAHAN KEHADIRAN AWAL (RSVP TETAMU & JANA E-PAS QR)
+    // MODUL PENGESAHAN KEHADIRAN AWAL (RSVP TETAMU & CARIAN INSTITUSI)
     // =========================================================================
     function searchGuestForRsvp() {
       const query = document.getElementById('rsvpSearchInput').value.trim().toLowerCase();
@@ -1096,40 +1112,60 @@
       document.getElementById('rsvpEpassCard').classList.add('hidden');
 
       if (!query || query.length < 2) {
-        showToast('Sila masukkan sekurang-kurangnya 2 aksara nama atau ID jemputan.', 'warning');
+        showToast('Sila masukkan sekurang-kurangnya 2 aksara nama institusi, nama penerima atau ID.', 'warning');
         return;
       }
 
+      // Cari padanan pada ID, Nama Penerima, atau Nama Institusi
       const matches = attendees.filter(g =>
-        g.id.toLowerCase().includes(query) || g.name.toLowerCase().includes(query)
+        g.id.toLowerCase().includes(query) ||
+        g.name.toLowerCase().includes(query) ||
+        (g.institution && g.institution.toLowerCase().includes(query))
       );
 
       if (matches.length === 0) {
         matchesBox.innerHTML = `
           <div class="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-200">
             <i class="fa-solid fa-circle-exclamation mr-1.5 text-rose-400"></i>
-            Rekod tidak ditemui. Sila pastikan ejaan nama tepat seperti dalam surat jemputan atau hubungi Urus Setia DIVA 2026.
+            Rekod tidak ditemui. Sila pastikan ejaan nama institusi/penerima tepat atau hubungi Urus Setia DIVA 2026.
           </div>
         `;
         return;
       }
 
-      if (matches.length === 1) {
+      // Jika carian adalah nama tepat ID dan cuma 1 rekod, terus buka borang
+      if (matches.length === 1 && matches[0].id.toLowerCase() === query) {
         selectGuestForRsvp(matches[0].id);
       } else {
-        matchesBox.innerHTML = `<p class="text-[11px] text-slate-400">Ditemui ${matches.length} rekod sepadan. Sila pilih nama anda:</p>`;
+        matchesBox.innerHTML = `<p class="text-[11px] text-amber-300 font-semibold">Ditemui ${matches.length} penerima/jemputan sepadan. Klik pada nama untuk mengesahkan RSVP:</p>`;
         matches.forEach(g => {
+          const rsvpStat = g.rsvpStatus || 'Menunggu RSVP';
+          let statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-600">${rsvpStat}</span>`;
+          if (rsvpStat === 'Sahkan Hadir') {
+            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold"><i class="fa-solid fa-check mr-1"></i>Sahkan Hadir</span>`;
+          } else if (rsvpStat === 'Hantar Wakil') {
+            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold"><i class="fa-solid fa-user-tag mr-1"></i>Hantar Wakil</span>`;
+          } else if (rsvpStat === 'Tidak Hadir') {
+            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">Tidak Hadir</span>`;
+          }
+
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.onclick = () => selectGuestForRsvp(g.id);
-          btn.className = 'w-full p-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/50 text-left flex items-center justify-between transition';
+          btn.className = 'w-full p-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/60 text-left flex items-center justify-between gap-3 transition';
           btn.innerHTML = `
             <div>
-              <span class="font-mono text-[11px] text-amber-400 font-bold mr-2">${g.id}</span>
-              <span class="text-xs font-bold text-white">${g.name}</span>
-              <p class="text-[11px] text-slate-400 mt-0.5">${g.category} • ${g.seat}</p>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="font-mono text-[11px] text-amber-400 font-bold">${g.id}</span>
+                <span class="text-xs font-bold text-white">${g.name}</span>
+              </div>
+              <p class="text-[11px] text-cyan-300 font-medium mt-0.5"><i class="fa-solid fa-building-columns mr-1"></i>${g.institution || '-'}</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">${g.category} • ${g.seat}</p>
             </div>
-            <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+            <div class="flex items-center gap-2 shrink-0">
+              ${statusTag}
+              <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+            </div>
           `;
           matchesBox.appendChild(btn);
         });
@@ -1146,6 +1182,7 @@
       document.getElementById('rsvpEpassCard').classList.add('hidden');
 
       document.getElementById('rsvpGuestIdBadge').innerText = guest.id;
+      document.getElementById('rsvpGuestInstitutionBadge').innerHTML = `<i class="fa-solid fa-building-columns mr-1"></i>${guest.institution || '-'}`;
       document.getElementById('rsvpGuestNameDisplay').innerText = guest.name;
       // Rahsiakan nama anugerah sebenar pada paparan RSVP tetamu (kejutan majlis)
       document.getElementById('rsvpGuestMetaDisplay').innerText = `${guest.category} • Lokasi: ${guest.seat}`;
@@ -1198,6 +1235,7 @@
       epassCard.classList.remove('hidden');
 
       document.getElementById('epassName').innerText = guest.name;
+      document.getElementById('epassInstitution').innerText = guest.institution || '-';
       document.getElementById('epassCategorySeat').innerText = `${guest.category} • ${guest.seat}`;
       document.getElementById('epassIdText').innerText = guest.id;
 
@@ -1251,6 +1289,7 @@
       const filtered = attendees.filter(g => {
         const matchesSearch = !searchText ||
           g.name.toLowerCase().includes(searchText) ||
+          (g.institution && g.institution.toLowerCase().includes(searchText)) ||
           g.id.toLowerCase().includes(searchText) ||
           g.seat.toLowerCase().includes(searchText) ||
           (!hideAward && g.award.toLowerCase().includes(searchText)) ||
@@ -1287,15 +1326,16 @@
             newAttendees.push({
               id: cols[0] || `DIVA-${String(i).padStart(3, '0')}`,
               name: cols[1] || 'Nama Tetamu',
-              category: cols[2] || 'Jemputan Khas',
-              award: cols[3] || '-',
-              session: cols[4] || 'Sesi 1',
-              seat: cols[5] || 'Zon Umum',
-              rsvpStatus: cols[6] || 'Menunggu RSVP',
-              status: cols[7] || 'Belum Hadir',
-              proxyName: cols[8] || '',
-              checkInTime: cols[9] || '',
-              notes: cols[10] || ''
+              institution: cols[2] || '-',
+              category: cols[3] || 'Jemputan Khas',
+              award: cols[4] || '-',
+              session: cols[5] || 'Sesi 1',
+              seat: cols[6] || 'Zon Umum',
+              rsvpStatus: cols[7] || 'Menunggu RSVP',
+              status: cols[8] || 'Belum Hadir',
+              proxyName: cols[9] || '',
+              checkInTime: cols[10] || '',
+              notes: cols[11] || ''
             });
           }
         }
@@ -1317,10 +1357,10 @@
 
     function downloadCSVTemplate() {
       const templateCSV = [
-        "ID,Nama,Kategori,Anugerah,Sesi,Kerusi_Meja,Status_RSVP,Status_Foyer,Wakil,Masa_Daftar,Nota",
-        '"VIP-001","YAB Dato\' Sri Contoh VVIP","VVIP","Tetamu Kehormat","Perasmian","Meja VVIP 1","Sahkan Hadir","Belum Hadir","","","LO Protokol 1"',
-        '"DIVA-001","Dr. Ahmad bin Ali","Penerima Anugerah","Anugerah Inovasi Digital 2026","Sesi 1 (Giliran #1)","Zon A - Kerusi 1","Menunggu RSVP","Belum Hadir","","","Sedia di Holding Room"',
-        '"JM-001","Puan Siti Sarah","Jemputan Khas","Rakan Strategik","Perasmian","Meja Penaja 2","Sahkan Hadir","Belum Hadir","","",""'
+        "ID,Nama,Institusi,Kategori,Anugerah,Sesi,Kerusi_Meja,Status_RSVP,Status_Foyer,Wakil,Masa_Daftar,Nota",
+        '"VIP-001","YAB Dato\' Sri Contoh VVIP","Pejabat Menteri Besar Pahang","VVIP","Tetamu Kehormat","Perasmian","Meja VVIP 1","Sahkan Hadir","Belum Hadir","","","LO Protokol 1"',
+        '"DIVA-001","Cikgu Ahmad bin Ali","SMK Dato\' Mahmud Mat","Penerima Anugerah","Anugerah Inovasi Digital 2026","Sesi 1 (Giliran #1)","Zon A - Kerusi 1","Menunggu RSVP","Belum Hadir","","","Sedia di Holding Room"',
+        '"JM-001","Puan Siti Sarah","PPD Pekan","Jemputan Khas","Rakan Strategik","Perasmian","Meja Penaja 2","Sahkan Hadir","Belum Hadir","","",""'
       ].join("\n");
 
       const blob = new Blob([templateCSV], { type: 'text/csv;charset=utf-8;' });
@@ -1335,10 +1375,11 @@
     }
 
     function exportReportCSV() {
-      const headers = ["ID", "Nama", "Kategori", "Anugerah", "Sesi", "Kerusi_Meja", "Status_RSVP", "Status_Foyer", "Wakil", "Masa_Daftar", "Nota"];
+      const headers = ["ID", "Nama", "Institusi", "Kategori", "Anugerah", "Sesi", "Kerusi_Meja", "Status_RSVP", "Status_Foyer", "Wakil", "Masa_Daftar", "Nota"];
       const rows = attendees.map(g => [
         `"${g.id}"`,
         `"${g.name.replace(/"/g, '""')}"`,
+        `"${(g.institution || '-').replace(/"/g, '""')}"`,
         `"${g.category}"`,
         `"${g.award.replace(/"/g, '""')}"`,
         `"${g.session}"`,
@@ -1406,6 +1447,7 @@
     function openAddGuestModal() {
       document.getElementById('newGuestId').value = `DIVA-${String(attendees.length + 1).padStart(3, '0')}`;
       document.getElementById('newGuestName').value = '';
+      document.getElementById('newGuestInstitution').value = '';
       document.getElementById('newGuestAward').value = '';
       document.getElementById('newGuestSession').value = 'Sesi 1';
       document.getElementById('newGuestSeat').value = '';
@@ -1432,6 +1474,7 @@
       attendees.push({
         id: id,
         name: name,
+        institution: document.getElementById('newGuestInstitution').value.trim() || '-',
         category: document.getElementById('newGuestCategory').value,
         award: document.getElementById('newGuestAward').value.trim() || '-',
         session: document.getElementById('newGuestSession').value.trim() || 'Sesi 1',
@@ -1487,9 +1530,9 @@
       activeTargetIdForProxy = guestId;
       document.getElementById('modalOriginalName').innerText = guest.name;
       if (shouldHideAwardName()) {
-        document.getElementById('modalOriginalCategory').innerText = `${guest.category} • ${guest.seat}`;
+        document.getElementById('modalOriginalCategory').innerText = `${guest.institution || '-'} • ${guest.category} • ${guest.seat}`;
       } else {
-        document.getElementById('modalOriginalCategory').innerText = `${guest.category} (${guest.award})`;
+        document.getElementById('modalOriginalCategory').innerText = `${guest.institution || '-'} • ${guest.category} (${guest.award})`;
       }
       document.getElementById('proxyNameInput').value = guest.proxyName || '';
       document.getElementById('proxyRelationInput').value = '';
@@ -1592,6 +1635,7 @@
             <div>
               <p class="text-xs font-extrabold text-emerald-400 uppercase">Pendaftaran Foyer Berjaya (${guest.id})</p>
               <p class="text-sm font-bold text-white mt-0.5">${guest.name}</p>
+              <p class="text-xs text-cyan-300 font-semibold mt-0.5"><i class="fa-solid fa-building-columns mr-1"></i>${guest.institution || '-'}</p>
               <p class="text-xs text-slate-300 mt-1">Kategori: <b>${guest.category}</b> • Kerusi: <b>${guest.seat}</b></p>
               <p class="text-xs text-cyan-300 mt-0.5">Status RSVP Awal: <b>${guest.rsvpStatus || 'Menunggu RSVP'}</b></p>
               ${guest.proxyName ? `<p class="text-xs text-amber-300 mt-0.5">Wakil: <b>${guest.proxyName}</b></p>` : ''}
@@ -1679,10 +1723,11 @@
       const nameVal = document.getElementById('boothGuestName').value.trim();
       const found = attendees.find(g => g.name.toLowerCase() === nameVal.toLowerCase());
       if (found) {
+        const instText = (found.institution && found.institution !== '-') ? `${found.institution} • ` : '';
         if (found.category === 'Penerima Anugerah') {
-          document.getElementById('boothGuestTitle').value = 'Penerima Anugerah DIVA 2026';
+          document.getElementById('boothGuestTitle').value = `${instText}Penerima Anugerah DIVA 2026`;
         } else {
-          document.getElementById('boothGuestTitle').value = found.category;
+          document.getElementById('boothGuestTitle').value = `${instText}${found.category}`;
         }
       }
     }
@@ -1989,7 +2034,7 @@
     }
 
     // =========================================================================
-    // JADUAL UTAMA & STATISTIK (MEMAPARKAN RSVP AWAL + PENDAFTARAN FOYER)
+    // JADUAL UTAMA & STATISTIK (MEMAPARKAN INSTITUSI, RSVP & FOYER)
     // =========================================================================
     function updateDashboardStats() {
       const total = attendees.length;
@@ -2094,11 +2139,12 @@
 
         tr.innerHTML = `
           <td class="py-3 px-4">
-            <div class="flex items-center space-x-2">
-              <span class="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-amber-400 border border-slate-700">${guest.id}</span>
+            <div class="flex items-start space-x-2">
+              <span class="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-amber-400 border border-slate-700 mt-0.5">${guest.id}</span>
               <div>
                 <p class="font-bold text-slate-100 text-xs sm:text-sm">${guest.name}</p>
-                ${guest.notes ? `<p class="text-[10px] text-amber-300/80"><i class="fa-solid fa-circle-info mr-1"></i>${guest.notes}</p>` : ''}
+                <p class="text-[11px] text-cyan-300/90 font-medium"><i class="fa-solid fa-building-columns mr-1 text-cyan-400/70"></i>${guest.institution || '-'}</p>
+                ${guest.notes ? `<p class="text-[10px] text-amber-300/80 mt-0.5"><i class="fa-solid fa-circle-info mr-1"></i>${guest.notes}</p>` : ''}
               </div>
             </div>
           </td>
