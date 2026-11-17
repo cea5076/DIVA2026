@@ -873,7 +873,11 @@
           }
           updateSyncUI('connected', 'Auto-Sync Aktif (Senarai Kosong)');
         } else if (isInitial) {
-          await pushDataToCloud();
+          // Perlindungan: Hanya hantar data awal jika Firebase benar-benar kosong (null)
+          // dan pastikan tidak menimpa data sedia ada sekiranya senarai tempatan kosong
+          if (attendees.length > 0) {
+            await pushDataToCloud();
+          }
         }
       } catch (err) {
         updateSyncUI('error', 'Gangguan Rangkaian (Menggunakan Cache)');
@@ -1162,7 +1166,7 @@
                 <span class="text-xs font-bold text-white">${g.name}</span>
               </div>
               <p class="text-[11px] text-cyan-300 font-medium mt-0.5"><i class="fa-solid fa-building-columns mr-1"></i>${g.institution || '-'}</p>
-              <p class="text-[10px] text-slate-400 mt-0.5">${g.category} • ${g.seat}</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">Tetamu Jemputan Rasmi • Lokasi: ${g.seat}</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               ${statusTag}
@@ -1186,8 +1190,8 @@
       document.getElementById('rsvpGuestIdBadge').innerText = guest.id;
       document.getElementById('rsvpGuestInstitutionBadge').innerHTML = `<i class="fa-solid fa-building-columns mr-1"></i>${guest.institution || '-'}`;
       document.getElementById('rsvpGuestNameDisplay').innerText = guest.name;
-      // Nama anugerah dan acara/sesi disembunyikan sepenuhnya semasa tetamu mengisi RSVP
-      document.getElementById('rsvpGuestMetaDisplay').innerText = `${guest.category} • Lokasi: ${guest.seat}`;
+      // Kategori (Penerima Anugerah/VIP), Nama Anugerah, dan Sesi dirahsiakan sepenuhnya semasa RSVP
+      document.getElementById('rsvpGuestMetaDisplay').innerText = `Tetamu Jemputan Rasmi • Lokasi: ${guest.seat}`;
       document.getElementById('rsvpCurrentStatusPill').innerText = `Status Semasa: ${guest.rsvpStatus || 'Menunggu RSVP'}`;
 
       const radios = document.querySelectorAll('input[name="rsvpChoice"]');
@@ -1238,7 +1242,7 @@
 
       document.getElementById('epassName').innerText = guest.name;
       document.getElementById('epassInstitution').innerText = guest.institution || '-';
-      document.getElementById('epassCategorySeat').innerText = `${guest.category} • ${guest.seat}`;
+      document.getElementById('epassCategorySeat').innerText = `Tetamu Jemputan Rasmi • ${guest.seat}`;
       document.getElementById('epassIdText').innerText = guest.id;
 
       const proxyNote = document.getElementById('epassProxyNote');
