@@ -1315,54 +1315,74 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         const text = e.target.result;
-        const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
-        if (lines.length <= 1) {
+        
+        // Parser robust yang menyokong baris baharu (new lines) dalam tanda petik CSV (Google Sheets / Excel multi-line cells)
+        const rows = [];
+        let currentRow = [];
+        let curVal = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < text.length; i++) {
+          let char = text[i];
+          let nextChar = text[i + 1];
+          
+          if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+              curVal += '"';
+              i++; // skip escaped quote
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === ',' && !inQuotes) {
+            currentRow.push(curVal.trim());
+            curVal = '';
+          } else if ((char === '\r' || char === '\n') && !inQuotes) {
+            if (char === '\r' && nextChar === '\n') {
+              i++; // handle \r\n
+            }
+            currentRow.push(curVal.trim());
+            if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== '')) {
+              rows.push(currentRow);
+            }
+            currentRow = [];
+            curVal = '';
+          } else {
+            curVal += char;
+          }
+        }
+        // Masukkan lajur terakhir jika ada
+        if (curVal !== '' || currentRow.length > 0) {
+          currentRow.push(curVal.trim());
+          if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== '')) {
+            rows.push(currentRow);
+          }
+        }
+
+        if (rows.length <= 1) {
           showToast('Fail CSV kosong atau tidak sah!', 'error');
           return;
         }
 
         const newAttendees = [];
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue;
+        // Mula dari indeks 1 untuk melangkau baris tajuk (header)
+        for (let i = 1; i < rows.length; i++) {
+          const cols = rows[i];
+          if (!cols || cols.length < 2 || !cols[1]) continue;
 
-          // Pengurai regex robust untuk CSV yang membenarkan tanda petik (quotes)
-          const cols = [];
-          const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
-          let match;
-          
-          // Pendekatan alternatif yang lebih selamat untuk baris CSV dengan petikan
-          let curVal = '';
-          let inQuotes = false;
-          for (let c = 0; c < line.length; c++) {
-            let char = line[c];
-            if (char === '"') {
-              inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-              cols.push(curVal.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
-              curVal = '';
-            } else {
-              curVal += char;
-            }
-          }
-          cols.push(curVal.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
-
-          if (cols.length >= 2 && cols[1] !== '') {
-            newAttendees.push({
-              id: cols[0] || `DIVA-${String(i).padStart(3, '0')}`,
-              name: cols[1],
-              institution: cols[2] && cols[2] !== '' ? cols[2] : '-',
-              category: cols[3] && cols[3] !== '' ? cols[3] : 'Jemputan Khas',
-              award: cols[4] && cols[4] !== '' ? cols[4] : '-',
-              session: cols[5] && cols[5] !== '' ? cols[5] : 'Sesi 1',
-              seat: cols[6] && cols[6] !== '' ? cols[6] : 'Zon Umum',
-              rsvpStatus: cols[7] && cols[7] !== '' ? cols[7] : 'Menunggu RSVP',
-              status: cols[8] && cols[8] !== '' ? cols[8] : 'Belum Hadir',
-              proxyName: cols[9] || '',
-              checkInTime: cols[10] || '',
-              notes: cols[11] || ''
-            });
-          }
+          newAttendees.push({
+            id: cols[0] || `DIVA-${String(i).padStart(3, '0')}`,
+            name: cols[1],
+            institution: cols[2] && cols[2] !== '' ? cols[2] : '-',
+            category: cols[3] && cols[3] !== '' ? cols[3] : 'Jemputan Khas',
+            award: cols[4] && cols[4] !== '' ? cols[4] : '-',
+            session: cols[5] && cols[5] !== '' ? cols[5] : 'Sesi 1',
+            seat: cols[6] && cols[6] !== '' ? cols[6] : 'Zon Umum',
+            rsvpStatus: cols[7] && cols[7] !== '' ? cols[7] : 'Menunggu RSVP',
+            status: cols[8] && cols[8] !== '' ? cols[8] : 'Belum Hadir',
+            proxyName: cols[9] || '',
+            checkInTime: cols[10] || '',
+            notes: cols[11] || ''
+          });
         }
 
         if (newAttendees.length > 0) {
@@ -1371,7 +1391,7 @@
           updateDashboardStats();
           filterData();
           populateBoothGuestSuggestions();
-          showToast(`Berjaya memuat naik ${newAttendees.length} rekod & menggantikan data lama!`, 'success');
+          showToast(`Berjaya memuat naik ${newAttendees.length} rekod (menyokong multi-line cell) & menggantikan data lama!`, 'success');
         } else {
           showToast('Tiada baris data sah ditemui dalam fail CSV. Sila semak format lajur.', 'error');
         }
