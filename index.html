@@ -230,7 +230,7 @@
             </div>
             <h3 id="rsvpGuestNameDisplay" class="text-base sm:text-lg font-extrabold text-white mt-1.5">Nama Tetamu</h3>
             <p id="rsvpGuestMetaDisplay" class="text-xs text-slate-400 mt-0.5">Kategori • Lokasi Tempat Duduk</p>
-            <p class="text-[11px] text-amber-400/90 italic mt-1"><i class="fa-solid fa-gift mr-1"></i>Nama anugerah dirahsiakan untuk kejayaan malam majlis</p>
+            <p class="text-[11px] text-amber-400/90 italic mt-1"><i class="fa-solid fa-gift mr-1"></i>Nama anugerah & acara dirahsiakan sehingga majlis berlangsung</p>
           </div>
           <span id="rsvpCurrentStatusPill" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700 shrink-0">Status</span>
         </div>
@@ -288,7 +288,7 @@
           <h3 id="epassName" class="text-lg sm:text-xl font-extrabold text-white mt-1">Nama Tetamu</h3>
           <p id="epassInstitution" class="text-xs font-bold text-cyan-300 mt-0.5">Nama Institusi</p>
           <p id="epassCategorySeat" class="text-xs text-slate-300 mt-1">Kategori • Zon Kerusi</p>
-          <p class="text-[11px] text-amber-400/90 italic mt-0.5"><i class="fa-solid fa-gift mr-1"></i>Anugerah dirahsiakan (Diumumkan di atas pentas)</p>
+          <p class="text-[11px] text-amber-400/90 italic mt-0.5"><i class="fa-solid fa-gift mr-1"></i>Anugerah & acara dirahsiakan (Diumumkan di atas pentas)</p>
           <p id="epassProxyNote" class="hidden text-xs text-amber-300 font-semibold mt-1"></p>
         </div>
 
@@ -1186,7 +1186,7 @@
       document.getElementById('rsvpGuestIdBadge').innerText = guest.id;
       document.getElementById('rsvpGuestInstitutionBadge').innerHTML = `<i class="fa-solid fa-building-columns mr-1"></i>${guest.institution || '-'}`;
       document.getElementById('rsvpGuestNameDisplay').innerText = guest.name;
-      // Nama anugerah disembunyikan sepenuhnya semasa tetamu mengisi RSVP
+      // Nama anugerah dan acara/sesi disembunyikan sepenuhnya semasa tetamu mengisi RSVP
       document.getElementById('rsvpGuestMetaDisplay').innerText = `${guest.category} • Lokasi: ${guest.seat}`;
       document.getElementById('rsvpCurrentStatusPill').innerText = `Status Semasa: ${guest.rsvpStatus || 'Menunggu RSVP'}`;
 
