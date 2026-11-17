@@ -230,6 +230,7 @@
             </div>
             <h3 id="rsvpGuestNameDisplay" class="text-base sm:text-lg font-extrabold text-white mt-1.5">Nama Tetamu</h3>
             <p id="rsvpGuestMetaDisplay" class="text-xs text-slate-400 mt-0.5">Kategori • Lokasi Tempat Duduk</p>
+            <p class="text-[11px] text-amber-400/90 italic mt-1"><i class="fa-solid fa-gift mr-1"></i>Nama anugerah dirahsiakan untuk kejayaan malam majlis</p>
           </div>
           <span id="rsvpCurrentStatusPill" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700 shrink-0">Status</span>
         </div>
@@ -287,6 +288,7 @@
           <h3 id="epassName" class="text-lg sm:text-xl font-extrabold text-white mt-1">Nama Tetamu</h3>
           <p id="epassInstitution" class="text-xs font-bold text-cyan-300 mt-0.5">Nama Institusi</p>
           <p id="epassCategorySeat" class="text-xs text-slate-300 mt-1">Kategori • Zon Kerusi</p>
+          <p class="text-[11px] text-amber-400/90 italic mt-0.5"><i class="fa-solid fa-gift mr-1"></i>Anugerah dirahsiakan (Diumumkan di atas pentas)</p>
           <p id="epassProxyNote" class="hidden text-xs text-amber-300 font-semibold mt-1"></p>
         </div>
 
@@ -1184,7 +1186,7 @@
       document.getElementById('rsvpGuestIdBadge').innerText = guest.id;
       document.getElementById('rsvpGuestInstitutionBadge').innerHTML = `<i class="fa-solid fa-building-columns mr-1"></i>${guest.institution || '-'}`;
       document.getElementById('rsvpGuestNameDisplay').innerText = guest.name;
-      // Rahsiakan nama anugerah sebenar pada paparan RSVP tetamu (kejutan majlis)
+      // Nama anugerah disembunyikan sepenuhnya semasa tetamu mengisi RSVP
       document.getElementById('rsvpGuestMetaDisplay').innerText = `${guest.category} • Lokasi: ${guest.seat}`;
       document.getElementById('rsvpCurrentStatusPill').innerText = `Status Semasa: ${guest.rsvpStatus || 'Menunggu RSVP'}`;
 
@@ -1313,7 +1315,7 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         const text = e.target.result;
-        const lines = text.split('\n').filter(line => line.trim() !== '');
+        const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
         if (lines.length <= 1) {
           showToast('Fail CSV kosong atau tidak sah!', 'error');
           return;
@@ -1321,18 +1323,41 @@
 
         const newAttendees = [];
         for (let i = 1; i < lines.length; i++) {
-          const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''));
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          // Pengurai regex robust untuk CSV yang membenarkan tanda petik (quotes)
+          const cols = [];
+          const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
+          let match;
+          
+          // Pendekatan alternatif yang lebih selamat untuk baris CSV dengan petikan
+          let curVal = '';
+          let inQuotes = false;
+          for (let c = 0; c < line.length; c++) {
+            let char = line[c];
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              cols.push(curVal.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+              curVal = '';
+            } else {
+              curVal += char;
+            }
+          }
+          cols.push(curVal.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+
           if (cols.length >= 2 && cols[1] !== '') {
             newAttendees.push({
               id: cols[0] || `DIVA-${String(i).padStart(3, '0')}`,
-              name: cols[1] || 'Nama Tetamu',
-              institution: cols[2] || '-',
-              category: cols[3] || 'Jemputan Khas',
-              award: cols[4] || '-',
-              session: cols[5] || 'Sesi 1',
-              seat: cols[6] || 'Zon Umum',
-              rsvpStatus: cols[7] || 'Menunggu RSVP',
-              status: cols[8] || 'Belum Hadir',
+              name: cols[1],
+              institution: cols[2] && cols[2] !== '' ? cols[2] : '-',
+              category: cols[3] && cols[3] !== '' ? cols[3] : 'Jemputan Khas',
+              award: cols[4] && cols[4] !== '' ? cols[4] : '-',
+              session: cols[5] && cols[5] !== '' ? cols[5] : 'Sesi 1',
+              seat: cols[6] && cols[6] !== '' ? cols[6] : 'Zon Umum',
+              rsvpStatus: cols[7] && cols[7] !== '' ? cols[7] : 'Menunggu RSVP',
+              status: cols[8] && cols[8] !== '' ? cols[8] : 'Belum Hadir',
               proxyName: cols[9] || '',
               checkInTime: cols[10] || '',
               notes: cols[11] || ''
@@ -1348,7 +1373,7 @@
           populateBoothGuestSuggestions();
           showToast(`Berjaya memuat naik ${newAttendees.length} rekod & menggantikan data lama!`, 'success');
         } else {
-          showToast('Tiada baris data sah ditemui dalam fail CSV.', 'error');
+          showToast('Tiada baris data sah ditemui dalam fail CSV. Sila semak format lajur.', 'error');
         }
       };
       reader.readAsText(file);
