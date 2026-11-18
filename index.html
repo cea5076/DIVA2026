@@ -679,6 +679,70 @@
     </div>
   </div>
 
+  <!-- Modal Edit Maklumat Tetamu (Tanpa Mengganggu Status RSVP & Foyer Sedia Ada) -->
+  <div id="editGuestModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="bg-slate-800 border border-cyan-500/40 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-cyan-400"></i> Kemas Kini Maklumat Rekod (<span id="editGuestIdDisplay" class="font-mono text-amber-400"></span>)
+        </h3>
+        <button onclick="closeEditGuestModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="text-[11px] text-cyan-300/90 bg-cyan-950/40 border border-cyan-500/30 px-3 py-2 rounded-lg">
+        <i class="fa-solid fa-shield-check mr-1"></i> Respon RSVP dan status ketibaan Foyer sedia ada bagi rekod ini akan kekal terpelihara.
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">ID Unik:</label>
+          <input type="text" id="editGuestId" disabled class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-400 font-mono cursor-not-allowed">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Kategori Tetamu:</label>
+          <select id="editGuestCategory" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400">
+            <option value="Penerima Anugerah">Penerima Anugerah</option>
+            <option value="VVIP">VVIP</option>
+            <option value="VIP">VIP</option>
+            <option value="Jemputan Khas">Jemputan Khas</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-slate-300 font-medium mb-1">Nama Penuh & Gelaran:</label>
+          <input type="text" id="editGuestName" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-slate-300 font-medium mb-1">Institusi / Sekolah / Organisasi:</label>
+          <input type="text" id="editGuestInstitution" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Nama Anugerah / Jawatan:</label>
+          <input type="text" id="editGuestAward" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Sesi / Giliran Pentas:</label>
+          <input type="text" id="editGuestSession" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Zon / Nombor Meja / Kerusi:</label>
+          <input type="text" id="editGuestSeat" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Nama Wakil (Jika Ada):</label>
+          <input type="text" id="editGuestProxy" placeholder="Kosongkan jika hadir sendiri" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-slate-300 font-medium mb-1">Catatan Protokol (Pilihan):</label>
+          <input type="text" id="editGuestNotes" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
+        <button onclick="closeEditGuestModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-semibold text-slate-200">Batal</button>
+        <button onclick="saveEditedGuest()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 rounded-lg text-xs font-bold text-slate-950">Simpan Pembetulan</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Pendaftaran Wakil (Proxy Modal - Rahsiakan Nama Anugerah di Kaunter) -->
   <div id="proxyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
@@ -1598,25 +1662,44 @@
           return;
         }
 
+        // Peta rekod sedia ada mengikut ID untuk mengekalkan respon RSVP & Foyer yang sudah diisi
+        const existingMap = new Map();
+        attendees.forEach(item => {
+          existingMap.set(item.id.toUpperCase(), item);
+        });
+
         const newAttendees = [];
+        let preservedCount = 0;
+
         // Mula dari indeks 1 untuk melangkau baris tajuk (header)
         for (let i = 1; i < rows.length; i++) {
           const cols = rows[i];
           if (!cols || cols.length < 2 || !cols[1]) continue;
 
+          const rowId = cols[0] || `DIVA-${String(i).padStart(3, '0')}`;
+          const prev = existingMap.get(rowId.toUpperCase());
+
+          // Kekalkan respon RSVP & status Foyer jika rekod sedia ada sudah mempunyai maklum balas
+          const hasExistingRsvp = prev && prev.rsvpStatus && prev.rsvpStatus !== 'Menunggu RSVP';
+          const hasExistingFoyer = prev && prev.status && prev.status !== 'Belum Hadir';
+
+          if (hasExistingRsvp || hasExistingFoyer) {
+            preservedCount++;
+          }
+
           newAttendees.push({
-            id: cols[0] || `DIVA-${String(i).padStart(3, '0')}`,
+            id: rowId,
             name: cols[1],
             institution: cols[2] && cols[2] !== '' ? cols[2] : '-',
             category: cols[3] && cols[3] !== '' ? cols[3] : 'Jemputan Khas',
             award: cols[4] && cols[4] !== '' ? cols[4] : '-',
             session: cols[5] && cols[5] !== '' ? cols[5] : 'Sesi 1',
             seat: cols[6] && cols[6] !== '' ? cols[6] : 'Zon Umum',
-            rsvpStatus: cols[7] && cols[7] !== '' ? cols[7] : 'Menunggu RSVP',
-            status: cols[8] && cols[8] !== '' ? cols[8] : 'Belum Hadir',
-            proxyName: cols[9] || '',
-            checkInTime: cols[10] || '',
-            notes: cols[11] || ''
+            rsvpStatus: hasExistingRsvp ? prev.rsvpStatus : (cols[7] && cols[7] !== '' ? cols[7] : 'Menunggu RSVP'),
+            status: hasExistingFoyer ? prev.status : (cols[8] && cols[8] !== '' ? cols[8] : 'Belum Hadir'),
+            proxyName: (prev && prev.proxyName) ? prev.proxyName : (cols[9] || ''),
+            checkInTime: (prev && prev.checkInTime) ? prev.checkInTime : (cols[10] || ''),
+            notes: cols[11] || (prev ? prev.notes : '') || ''
           });
         }
 
@@ -1626,7 +1709,10 @@
           updateDashboardStats();
           filterData();
           populateBoothGuestSuggestions();
-          showToast(`Berjaya memuat naik ${newAttendees.length} rekod (menyokong multi-line cell) & menggantikan data lama!`, 'success');
+          const msg = preservedCount > 0
+            ? `Berjaya kemas kini ${newAttendees.length} rekod (${preservedCount} respon RSVP/Foyer sedia ada dikekalkan)!`
+            : `Berjaya memuat naik ${newAttendees.length} rekod CSV & diselaraskan ke semua AJK!`;
+          showToast(msg, 'success');
         } else {
           showToast('Tiada baris data sah ditemui dalam fail CSV. Sila semak format lajur.', 'error');
         }
@@ -1771,6 +1857,53 @@
       filterData();
       populateBoothGuestSuggestions();
       showToast(`Berjaya menambah ${name} & diselaraskan ke semua AJK!`, 'success');
+    }
+
+    function openEditGuestModal(guestId) {
+      const guest = attendees.find(g => g.id === guestId);
+      if (!guest) return;
+      document.getElementById('editGuestIdDisplay').innerText = guest.id;
+      document.getElementById('editGuestId').value = guest.id;
+      document.getElementById('editGuestCategory').value = guest.category || 'Penerima Anugerah';
+      document.getElementById('editGuestName').value = guest.name || '';
+      document.getElementById('editGuestInstitution').value = (guest.institution && guest.institution !== '-') ? guest.institution : '';
+      document.getElementById('editGuestAward').value = (guest.award && guest.award !== '-') ? guest.award : '';
+      document.getElementById('editGuestSession').value = guest.session || '';
+      document.getElementById('editGuestSeat').value = guest.seat || '';
+      document.getElementById('editGuestProxy').value = guest.proxyName || '';
+      document.getElementById('editGuestNotes').value = guest.notes || '';
+      document.getElementById('editGuestModal').classList.remove('hidden');
+    }
+
+    function closeEditGuestModal() {
+      document.getElementById('editGuestModal').classList.add('hidden');
+    }
+
+    function saveEditedGuest() {
+      const id = document.getElementById('editGuestId').value.trim();
+      const name = document.getElementById('editGuestName').value.trim();
+      if (!name) {
+        showToast('Nama penuh tidak boleh dikosongkan!', 'error');
+        return;
+      }
+      const guest = attendees.find(g => g.id === id);
+      if (!guest) return;
+
+      guest.category = document.getElementById('editGuestCategory').value;
+      guest.name = name;
+      guest.institution = document.getElementById('editGuestInstitution').value.trim() || '-';
+      guest.award = document.getElementById('editGuestAward').value.trim() || '-';
+      guest.session = document.getElementById('editGuestSession').value.trim() || 'Sesi 1';
+      guest.seat = document.getElementById('editGuestSeat').value.trim() || 'Zon Umum';
+      guest.proxyName = document.getElementById('editGuestProxy').value.trim();
+      guest.notes = document.getElementById('editGuestNotes').value.trim();
+
+      pushDataToCloud();
+      closeEditGuestModal();
+      updateDashboardStats();
+      filterData();
+      populateBoothGuestSuggestions();
+      showToast(`Maklumat ${guest.name} berjaya dikemas kini tanpa mengubah status RSVP!`, 'success');
     }
 
     // =========================================================================
@@ -2463,6 +2596,9 @@
                 `
               ) : `<span class="text-[10px] text-slate-500 italic">Mod Pantauan</span>`}
               ${isAdminUnlocked ? `
+                <button onclick="openEditGuestModal('${guest.id}')" title="Edit Maklumat Rekod Ini (Admin)" class="px-2 py-1 bg-slate-800 hover:bg-cyan-900/70 text-cyan-400 hover:text-cyan-200 rounded text-[11px] transition border border-slate-700">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
                 <button onclick="deleteSingleGuest('${guest.id}')" title="Padam Rekod Ini (Admin)" class="px-2 py-1 bg-slate-800 hover:bg-rose-900/70 text-slate-500 hover:text-rose-300 rounded text-[11px] transition border border-slate-700">
                   <i class="fa-solid fa-trash-can"></i>
                 </button>
