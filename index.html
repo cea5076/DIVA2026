@@ -337,16 +337,17 @@
         <div class="space-y-4">
           <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-700">
             <label class="block text-xs font-semibold text-slate-300 mb-2">
-              <i class="fa-solid fa-barcode mr-1 text-amber-400"></i> Imbas Kod Manual / ID Tetamu:
+              <i class="fa-solid fa-magnifying-glass mr-1 text-amber-400"></i> Carian Manual (Nama, Institusi atau ID Tetamu):
             </label>
             <div class="flex gap-2">
-              <input type="text" id="manualInput" placeholder="Contoh: DIVA-001, VIP-001..." class="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500" onkeydown="if(event.key==='Enter') handleManualCheckIn()">
+              <input type="text" id="manualInput" oninput="searchManualCheckInMatches()" placeholder="Taip nama tetamu, sekolah, atau ID..." class="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500" onkeydown="if(event.key==='Enter') handleManualCheckIn()">
               <button onclick="handleManualCheckIn()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition">
-                Daftar Tiba
+                Cari / Daftar
               </button>
             </div>
+            <div id="manualSearchMatches" class="mt-2.5 space-y-1.5 max-h-60 overflow-y-auto"></div>
             <p class="text-[11px] text-slate-400 mt-2">
-              Tip Ujian Cepat: Masukkan ID contoh seperti <code>DIVA-001</code>, <code>DIVA-002</code>, <code>VIP-001</code>.
+              Tip Pantas: Taip sekurang-kurangnya 2 huruf nama atau sekolah untuk memaparkan pilihan, atau masukkan ID tepat seperti <code>DIVA-001</code>.
             </p>
           </div>
 
@@ -2059,11 +2060,85 @@
       const input = document.getElementById('manualInput');
       const code = input.value.trim();
       if (!code) {
-        showToast('Sila masukkan ID tetamu terlebih dahulu.', 'warning');
+        showToast('Sila masukkan nama, institusi atau ID tetamu terlebih dahulu.', 'warning');
         return;
       }
-      processScannedCode(code);
-      input.value = '';
+
+      // Semak jika padanan ID tepat wujud
+      const exactIdMatch = attendees.find(g => g.id.toUpperCase() === code.toUpperCase());
+      if (exactIdMatch) {
+        document.getElementById('manualSearchMatches').innerHTML = '';
+        processScannedCode(exactIdMatch.id);
+        input.value = '';
+        return;
+      }
+
+      // Jika bukan ID tepat, paparkan senarai carian mengikut nama atau institusi
+      searchManualCheckInMatches(true);
+    }
+
+    function searchManualCheckInMatches(showEmptyWarning = false) {
+      const input = document.getElementById('manualInput');
+      const query = input.value.trim().toLowerCase();
+      const matchesBox = document.getElementById('manualSearchMatches');
+      matchesBox.innerHTML = '';
+
+      if (query.length < 2) {
+        if (showEmptyWarning) {
+          showToast('Sila taip sekurang-kurangnya 2 aksara nama atau institusi.', 'warning');
+        }
+        return;
+      }
+
+      const matches = attendees.filter(g =>
+        g.id.toLowerCase().includes(query) ||
+        g.name.toLowerCase().includes(query) ||
+        (g.institution && g.institution.toLowerCase().includes(query))
+      );
+
+      if (matches.length === 0) {
+        if (showEmptyWarning) {
+          processScannedCode(input.value.trim());
+        } else {
+          matchesBox.innerHTML = `<p class="text-[11px] text-rose-400 italic py-1">Tiada padanan ditemui untuk "${input.value.trim()}".</p>`;
+        }
+        return;
+      }
+
+      matches.forEach(g => {
+        const isCheckedIn = g.status !== 'Belum Hadir';
+        const statusPill = isCheckedIn
+          ? `<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">${g.status}</span>`
+          : `<span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-600">Belum Tiba</span>`;
+
+        const row = document.createElement('div');
+        row.className = 'p-2.5 rounded-lg bg-slate-800/90 border border-slate-700 flex items-center justify-between gap-2';
+        row.innerHTML = `
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono text-[10px] font-bold text-amber-400">${g.id}</span>
+              <span class="text-xs font-bold text-white truncate">${g.name}</span>
+            </div>
+            <p class="text-[10px] text-cyan-300 truncate">${g.institution || '-'} • Meja: ${formatMejaLabel(g.seat)}</p>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            ${statusPill}
+            <button type="button" onclick="selectManualGuestCheckIn('${g.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold transition">
+              Daftar Tiba
+            </button>
+            <button type="button" onclick="openProxyModal('${g.id}')" class="px-2 py-1 bg-slate-700 hover:bg-amber-600 text-slate-200 hover:text-white rounded text-[11px] font-semibold transition" title="Daftar Wakil">
+              Wakil
+            </button>
+          </div>
+        `;
+        matchesBox.appendChild(row);
+      });
+    }
+
+    function selectManualGuestCheckIn(guestId) {
+      document.getElementById('manualInput').value = '';
+      document.getElementById('manualSearchMatches').innerHTML = '';
+      processScannedCode(guestId);
     }
 
     function processScannedCode(code) {
