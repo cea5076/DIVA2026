@@ -1025,7 +1025,17 @@
       populateTableFilterOptions();
       populateBoothGuestSuggestions();
       checkBoothOrientation();
-// ... existing code ... -->
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const syncParam = urlParams.get('sync');
+      if (syncParam && syncParam.startsWith('https://')) {
+        firebaseDbUrl = syncParam;
+        localStorage.setItem('DIVA_FIREBASE_URL', syncParam);
+      }
+
+      startCloudAutoSync();
+
+      const roleParam = urlParams.get('role');
       if (roleParam && ['all', 'awardee', 'emcee', 'scanner', 'rsvp', 'photobooth'].includes(roleParam)) {
         switchRole(roleParam);
       } else {
