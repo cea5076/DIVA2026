@@ -506,6 +506,10 @@
             <option value="Jemputan Khas">Jemputan Khas</option>
           </select>
 
+          <select id="tableFilter" onchange="filterData()" class="px-2.5 py-1.5 bg-slate-900 border border-amber-500/40 rounded-lg text-xs text-amber-300 focus:outline-none focus:border-amber-400">
+            <option value="all">Semua Meja</option>
+          </select>
+
           <select id="rsvpFilter" onchange="filterData()" class="px-2.5 py-1.5 bg-slate-900 border border-cyan-500/40 rounded-lg text-xs text-cyan-300 focus:outline-none focus:border-cyan-400">
             <option value="all">Semua Status RSVP</option>
             <option value="Sahkan Hadir">RSVP: Sahkan Hadir</option>
@@ -929,6 +933,7 @@
             attendees = normalized;
             lastSyncedHash = incomingHash;
             localStorage.setItem('DIVA_ATTENDEES_DATA', incomingHash);
+            populateTableFilterOptions();
             updateDashboardStats();
             filterData();
             populateBoothGuestSuggestions();
@@ -939,6 +944,7 @@
             attendees = [];
             lastSyncedHash = "[]";
             localStorage.setItem('DIVA_ATTENDEES_DATA', "[]");
+            populateTableFilterOptions();
             updateDashboardStats();
             filterData();
             populateBoothGuestSuggestions();
@@ -1016,19 +1022,10 @@
 
     window.onload = function() {
       loadSavedData();
+      populateTableFilterOptions();
       populateBoothGuestSuggestions();
       checkBoothOrientation();
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const syncParam = urlParams.get('sync');
-      if (syncParam && syncParam.startsWith('https://')) {
-        firebaseDbUrl = syncParam;
-        localStorage.setItem('DIVA_FIREBASE_URL', syncParam);
-      }
-
-      startCloudAutoSync();
-
-      const roleParam = urlParams.get('role');
+// ... existing code ... -->
       if (roleParam && ['all', 'awardee', 'emcee', 'scanner', 'rsvp', 'photobooth'].includes(roleParam)) {
         switchRole(roleParam);
       } else {
@@ -1037,6 +1034,30 @@
         renderTable();
       }
     };
+
+    function populateTableFilterOptions() {
+      const tableSelect = document.getElementById('tableFilter');
+      if (!tableSelect) return;
+      const currentVal = tableSelect.value;
+      const uniqueTables = [...new Set(
+        attendees
+          .map(g => formatMejaLabel(g.seat))
+          .filter(s => s && s !== '-')
+      )].sort((a, b) => a.localeCompare(b, 'ms', { numeric: true }));
+
+      tableSelect.innerHTML = '<option value="all">Semua Meja</option>';
+      uniqueTables.forEach(meja => {
+        const opt = document.createElement('option');
+        opt.value = meja;
+        const count = attendees.filter(g => formatMejaLabel(g.seat) === meja).length;
+        opt.textContent = `${meja} (${count} org)`;
+        tableSelect.appendChild(opt);
+      });
+
+      if (uniqueTables.includes(currentVal)) {
+        tableSelect.value = currentVal;
+      }
+    }
 
     window.addEventListener('resize', checkBoothOrientation);
     window.addEventListener('orientationchange', () => setTimeout(checkBoothOrientation, 200));
@@ -1363,25 +1384,28 @@
     function getFilteredAttendees() {
       const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
       const catVal = document.getElementById('categoryFilter').value;
+      const tableVal = document.getElementById('tableFilter').value;
       const rsvpVal = document.getElementById('rsvpFilter').value;
       const statusVal = document.getElementById('statusFilter').value;
       const hideAward = shouldHideAwardName();
 
       return attendees.filter(g => {
+        const formattedSeat = formatMejaLabel(g.seat);
         const matchesSearch = !searchText ||
           g.name.toLowerCase().includes(searchText) ||
           (g.institution && g.institution.toLowerCase().includes(searchText)) ||
           g.id.toLowerCase().includes(searchText) ||
-          g.seat.toLowerCase().includes(searchText) ||
+          formattedSeat.toLowerCase().includes(searchText) ||
           (!hideAward && g.award.toLowerCase().includes(searchText)) ||
           (g.proxyName && g.proxyName.toLowerCase().includes(searchText));
 
         const matchesCat = catVal === 'all' || g.category === catVal;
+        const matchesTable = tableVal === 'all' || formattedSeat === tableVal;
         const currentRsvp = g.rsvpStatus || 'Menunggu RSVP';
         const matchesRsvp = rsvpVal === 'all' || currentRsvp === rsvpVal;
         const matchesStatus = statusVal === 'all' || g.status === statusVal;
 
-        return matchesSearch && matchesCat && matchesRsvp && matchesStatus;
+        return matchesSearch && matchesCat && matchesTable && matchesRsvp && matchesStatus;
       });
     }
 
@@ -1709,6 +1733,7 @@
         if (newAttendees.length > 0) {
           attendees = newAttendees;
           pushDataToCloud();
+          populateTableFilterOptions();
           updateDashboardStats();
           filterData();
           populateBoothGuestSuggestions();
@@ -1796,6 +1821,7 @@
       attendees = [];
       pushDataToCloud();
       closeResetModal();
+      populateTableFilterOptions();
       updateDashboardStats();
       filterData();
       populateBoothGuestSuggestions();
@@ -1807,6 +1833,7 @@
       if (idx === -1) return;
       const removed = attendees.splice(idx, 1)[0];
       pushDataToCloud();
+      populateTableFilterOptions();
       updateDashboardStats();
       filterData();
       populateBoothGuestSuggestions();
@@ -1856,6 +1883,7 @@
       });
       pushDataToCloud();
       closeAddGuestModal();
+      populateTableFilterOptions();
       updateDashboardStats();
       filterData();
       populateBoothGuestSuggestions();
@@ -1903,6 +1931,7 @@
 
       pushDataToCloud();
       closeEditGuestModal();
+      populateTableFilterOptions();
       updateDashboardStats();
       filterData();
       populateBoothGuestSuggestions();
