@@ -121,20 +121,9 @@
         <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
         <button onclick="document.getElementById('csvFileInput').click()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition font-medium">
           <i class="fa-solid fa-file-arrow-up mr-1 text-amber-400"></i> Muat Naik CSV
-        </button>
-        <button onclick="openResetModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-rose-900/60 border border-slate-700 text-slate-400 hover:text-rose-200 rounded-lg transition font-medium">
-          <i class="fa-solid fa-arrows-rotate mr-1"></i> Set Semula / Padam
-        </button>
-      </div>
-      <div id="lockedAdminHint" class="text-[11px] text-slate-400 flex items-center gap-1.5">
-        <i class="fa-solid fa-shield-halved text-amber-400"></i>
-        <span>Mod Operasi Selamat (Kawalan Padam & CSV dikunci untuk Admin)</span>
-      </div>
-    </div>
-
-    <!-- Kad Statistik Masa Nyata (5 Kad: Perbandingan RSVP Awal vs Ketibaan Hari Majlis) -->
-    <section id="statsSection" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-      <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60 shadow-lg">
+    <!-- Kad Statistik Masa Nyata (6 Kad: Perbandingan RSVP Awal vs Ketibaan Hari Majlis) -->
+    <section id="statsSection" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+      <div onclick="quickFilterRsvp('all')" class="cursor-pointer bg-slate-800/80 hover:bg-slate-800 p-4 rounded-2xl border border-slate-700/60 shadow-lg transition">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="text-[11px] font-medium uppercase tracking-wider">Jumlah Jemputan</span>
           <i class="fa-solid fa-users text-sm"></i>
@@ -145,7 +134,7 @@
         </div>
       </div>
 
-      <div class="bg-slate-800/80 p-4 rounded-2xl border border-cyan-500/30 shadow-lg">
+      <div onclick="quickFilterRsvp('Sahkan Hadir')" class="cursor-pointer bg-slate-800/80 hover:bg-slate-800 p-4 rounded-2xl border border-cyan-500/30 shadow-lg transition" title="Klik untuk tapis RSVP Sahkan Hadir">
         <div class="flex items-center justify-between text-cyan-400 mb-2">
           <span class="text-[11px] font-medium uppercase tracking-wider">Sahkan RSVP</span>
           <i class="fa-solid fa-envelope-circle-check text-sm"></i>
@@ -153,6 +142,17 @@
         <div class="flex items-baseline space-x-2">
           <span id="statRsvpConfirmed" class="text-2xl sm:text-3xl font-extrabold text-cyan-400">0</span>
           <span id="statRsvpPercent" class="text-xs text-cyan-500 font-bold">(0%)</span>
+        </div>
+      </div>
+
+      <div onclick="quickFilterRsvp('Tidak Hadir')" class="cursor-pointer bg-slate-800/80 hover:bg-rose-950/30 p-4 rounded-2xl border border-rose-500/40 shadow-lg transition" title="Klik untuk melihat senarai peserta yang membuat RSVP Tidak Hadir">
+        <div class="flex items-center justify-between text-rose-400 mb-2">
+          <span class="text-[11px] font-medium uppercase tracking-wider">RSVP Tidak Hadir</span>
+          <i class="fa-solid fa-user-xmark text-sm"></i>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="statRsvpDeclined" class="text-2xl sm:text-3xl font-extrabold text-rose-400">0</span>
+          <span class="text-[10px] text-rose-300/80 font-medium underline">Lihat Senarai</span>
         </div>
       </div>
 
@@ -167,18 +167,18 @@
         </div>
       </div>
 
-      <div class="bg-slate-800/80 p-4 rounded-2xl border border-rose-500/30 shadow-lg">
-        <div class="flex items-center justify-between text-rose-400 mb-2">
+      <div class="bg-slate-800/80 p-4 rounded-2xl border border-orange-500/30 shadow-lg">
+        <div class="flex items-center justify-between text-orange-400 mb-2">
           <span class="text-[11px] font-medium uppercase tracking-wider">Belum Tiba</span>
           <i class="fa-solid fa-clock text-sm"></i>
         </div>
         <div class="flex items-baseline space-x-2">
-          <span id="statAbsent" class="text-2xl sm:text-3xl font-extrabold text-rose-400">0</span>
+          <span id="statAbsent" class="text-2xl sm:text-3xl font-extrabold text-orange-400">0</span>
           <span class="text-xs text-slate-400">orang</span>
         </div>
       </div>
 
-      <div class="col-span-2 sm:col-span-1 bg-slate-800/80 p-4 rounded-2xl border border-amber-500/30 shadow-lg">
+      <div class="bg-slate-800/80 p-4 rounded-2xl border border-amber-500/30 shadow-lg">
         <div class="flex items-center justify-between text-amber-400 mb-2">
           <span class="text-[11px] font-medium uppercase tracking-wider">Dihadiri Wakil</span>
           <i class="fa-solid fa-user-tag text-sm"></i>
@@ -2566,9 +2566,20 @@
     // =========================================================================
     // JADUAL UTAMA & STATISTIK (MEMAPARKAN INSTITUSI, RSVP & FOYER)
     // =========================================================================
+    function quickFilterRsvp(rsvpStatusVal) {
+      const rsvpSelect = document.getElementById('rsvpFilter');
+      if (rsvpSelect) {
+        rsvpSelect.value = rsvpStatusVal;
+        filterData();
+        const tableSection = document.getElementById('dashboardTableSection');
+        if (tableSection) tableSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
     function updateDashboardStats() {
       const total = attendees.length;
       const rsvpConfirmed = attendees.filter(a => a.rsvpStatus === 'Sahkan Hadir' || a.rsvpStatus === 'Hantar Wakil').length;
+      const rsvpDeclined = attendees.filter(a => a.rsvpStatus === 'Tidak Hadir').length;
       const rsvpPercent = total > 0 ? Math.round((rsvpConfirmed / total) * 100) : 0;
 
       const presentSelf = attendees.filter(a => a.status === 'Hadir').length;
@@ -2580,6 +2591,7 @@
       document.getElementById('statTotal').innerText = total;
       document.getElementById('statRsvpConfirmed').innerText = rsvpConfirmed;
       document.getElementById('statRsvpPercent').innerText = `(${rsvpPercent}%)`;
+      document.getElementById('statRsvpDeclined').innerText = rsvpDeclined;
       document.getElementById('statPresent').innerText = totalPresent;
       document.getElementById('statPresentPercent').innerText = `(${presentPercent}%)`;
       document.getElementById('statAbsent').innerText = absent;
@@ -2644,7 +2656,8 @@
         }
 
         const tr = document.createElement('tr');
-        tr.className = `hover:bg-slate-800/60 transition ${guest.status !== 'Belum Hadir' ? 'bg-slate-800/20' : ''}`;
+        const isDeclined = rsvpVal === 'Tidak Hadir';
+        tr.className = `hover:bg-slate-800/60 transition ${isDeclined ? 'bg-rose-950/25' : (guest.status !== 'Belum Hadir' ? 'bg-slate-800/20' : '')}`;
 
         const categoryAwardCell = hideAward
           ? `
@@ -2672,8 +2685,9 @@
             <div class="flex items-start space-x-2">
               <span class="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-amber-400 border border-slate-700 mt-0.5">${guest.id}</span>
               <div>
-                <p class="font-bold text-slate-100 text-xs sm:text-sm">${guest.name}</p>
+                <p class="font-bold ${isDeclined ? 'text-rose-200' : 'text-slate-100'} text-xs sm:text-sm">${guest.name}</p>
                 <p class="text-[11px] text-cyan-300/90 font-medium"><i class="fa-solid fa-building-columns mr-1 text-cyan-400/70"></i>${guest.institution || '-'}</p>
+                ${isDeclined ? `<p class="text-[10px] text-rose-400 font-semibold mt-0.5"><i class="fa-solid fa-circle-xmark mr-1"></i>Maklum Balas RSVP: Tidak Dapat Hadir</p>` : ''}
                 ${guest.notes ? `<p class="text-[10px] text-amber-300/80 mt-0.5"><i class="fa-solid fa-circle-info mr-1"></i>${guest.notes}</p>` : ''}
               </div>
             </div>
