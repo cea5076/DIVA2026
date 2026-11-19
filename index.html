@@ -12,6 +12,8 @@
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <!-- QRCodeJS Generator Library untuk E-Pas RSVP Tetamu -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- MediaPipe Selfie Segmentation untuk Tukar Latar Belakang (JPG Virtual Background) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     body {
@@ -406,11 +408,15 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">3. Pilih Template / Bingkai Rasmi DIVA 2026:</label>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">3. Pilih Template / Latar Belakang DIVA 2026:</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="selectBoothFrame('virtual_bg')" id="frameBtnVirtualBg" class="frame-select-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-left transition">
+                <p class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Latar JPG (AI)</p>
+                <p class="text-[10px] text-slate-400">Buang Belakang Asal</p>
+              </button>
               <button type="button" onclick="selectBoothFrame('custom_png')" id="frameBtnPng" class="frame-select-btn p-2.5 rounded-xl border-2 border-amber-500 bg-slate-800 text-left transition">
                 <p class="text-xs font-bold text-amber-400"><i class="fa-solid fa-image mr-1"></i>Template PNG</p>
-                <p class="text-[10px] text-slate-400">Bingkai Grafik Rasmi</p>
+                <p class="text-[10px] text-slate-400">Bingkai Lutsinar</p>
               </button>
               <button type="button" onclick="selectBoothFrame('gold')" id="frameBtnGold" class="frame-select-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-left transition">
                 <p class="text-xs font-bold text-amber-300">Royal Gold</p>
@@ -422,16 +428,53 @@
               </button>
             </div>
 
-            <div class="mt-2.5 pt-2.5 border-t border-slate-800 flex items-center justify-between gap-2">
-              <span class="text-[11px] text-slate-400">Ada fail bingkai PNG sendiri?</span>
-              <input type="file" id="customFrameInput" accept="image/png" class="hidden" onchange="handleCustomFrameUpload(event)">
-              <button type="button" onclick="document.getElementById('customFrameInput').click()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-[11px] text-amber-300 font-semibold transition">
-                <i class="fa-solid fa-upload mr-1"></i> Pilih Fail PNG
-              </button>
+            <!-- Muat Naik Gambar JPG sebagai Latar Belakang Maya (Virtual Background) -->
+            <div class="mt-2.5 pt-2.5 border-t border-slate-800 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] text-emerald-300 font-semibold"><i class="fa-solid fa-panorama mr-1"></i>Muat Naik Latar Belakang (JPG/PNG):</span>
+                <input type="file" id="virtualBgInput" accept="image/jpeg,image/jpg,image/png" class="hidden" onchange="handleVirtualBgUpload(event)">
+                <button type="button" onclick="document.getElementById('virtualBgInput').click()" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/50 rounded-lg text-[11px] text-emerald-200 font-semibold transition">
+                  <i class="fa-solid fa-upload mr-1"></i> Pilih Fail JPG
+                </button>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] text-slate-400">Atau Bingkai Lutsinar (PNG):</span>
+                <input type="file" id="customFrameInput" accept="image/png" class="hidden" onchange="handleCustomFrameUpload(event)">
+                <button type="button" onclick="document.getElementById('customFrameInput').click()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-[11px] text-amber-300 font-semibold transition">
+                  <i class="fa-solid fa-upload mr-1"></i> Pilih Fail PNG
+                </button>
+              </div>
             </div>
             <div class="mt-2 flex items-center gap-2">
               <input type="checkbox" id="chkIncludeNameOnPng" checked class="rounded bg-slate-800 border-slate-600 text-amber-500 focus:ring-amber-500">
-              <label for="chkIncludeNameOnPng" class="text-[11px] text-slate-300">Cetak nama tetamu di bawah bingkai PNG</label>
+              <label for="chkIncludeNameOnPng" class="text-[11px] text-slate-300">Cetak nama tetamu & bingkai DIVA di hadapan</label>
+            </div>
+          </div>
+
+          <div class="pt-1">
+            <button onclick="capturePhotobooth()" id="btnCapturePhoto" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-camera text-base"></i> SNAP GAMBAR SEKARANG (3s)
+            </button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 space-y-4">
+          <div id="boothCameraWrapper" class="booth-stage bg-slate-950 rounded-2xl border-2 border-slate-700 flex items-center justify-center shadow-inner" style="aspect-ratio: 16 / 9;">
+            <video id="photoboothVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
+            <canvas id="virtualBgLiveCanvas" class="w-full h-full object-cover hidden"></canvas>
+            <img id="boothOverlayImg" src="bingkai_diva_landscape.png" alt="Bingkai DIVA 2026" class="hidden" onerror="handleOverlayImgError()">
+            <canvas id="photoboothCanvas" class="w-full h-full object-contain hidden"></canvas>
+            
+            <div id="boothCountdown" class="hidden absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-20">
+              <span id="countdownNumber" class="text-7xl font-black text-amber-400 drop-shadow-lg">3</span>
+            </div>
+
+            <div id="boothPlaceholder" class="text-center p-6 space-y-2">
+              <div class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto text-amber-400">
+                <i class="fa-solid fa-sparkles text-2xl"></i>
+              </div>
+              <p class="text-sm font-bold text-slate-200">Sedia untuk Sesi Fotografi Karpet Merah?</p>
+              <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik butang <b>"Aktifkan Kamera Booth"</b> di atas untuk memulakan pratonton langsung bersama bingkai atau latar belakang JPG anda.</p>
             </div>
           </div>
 
@@ -879,6 +922,9 @@
     let isBoothPortrait = false;
     let selectedBoothFrame = 'custom_png';
     let customUploadedFrameDataUrl = null;
+    let virtualBgImageObj = null;
+    let selfieSegmentation = null;
+    let isVirtualBgLoopRunning = false;
     let capturedPhotos = [];
 
     // =========================================================================
@@ -2249,6 +2295,103 @@
       reader.readAsDataURL(file);
     }
 
+    function handleVirtualBgUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          virtualBgImageObj = img;
+          selectBoothFrame('virtual_bg');
+          showToast('Gambar JPG berjaya dimuatkan sebagai latar belakang maya!', 'success');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function initSelfieSegmentation() {
+      if (selfieSegmentation || typeof SelfieSegmentation === 'undefined') return;
+      selfieSegmentation = new SelfieSegmentation({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
+      });
+      selfieSegmentation.setOptions({
+        modelSelection: 1,
+        selfieMode: false
+      });
+      selfieSegmentation.onResults(onVirtualBgResults);
+    }
+
+    function onVirtualBgResults(results) {
+      const liveCanvas = document.getElementById('virtualBgLiveCanvas');
+      if (!liveCanvas || selectedBoothFrame !== 'virtual_bg') return;
+      const ctx = liveCanvas.getContext('2d');
+      const w = results.image.width || 1280;
+      const h = results.image.height || 720;
+      if (liveCanvas.width !== w || liveCanvas.height !== h) {
+        liveCanvas.width = w;
+        liveCanvas.height = h;
+      }
+
+      ctx.save();
+      ctx.clearRect(0, 0, w, h);
+
+      // Lukis topeng subjek manusia (mask)
+      ctx.save();
+      if (boothFacingMode === "user") {
+        ctx.translate(w, 0);
+        ctx.scale(-1, 1);
+      }
+      ctx.drawImage(results.segmentationMask, 0, 0, w, h);
+
+      // Kekalkan hanya bahagian orang di hadapan
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.drawImage(results.image, 0, 0, w, h);
+      ctx.restore();
+
+      // Lukis gambar latar belakang JPG di belakang orang tersebut
+      ctx.globalCompositeOperation = 'destination-over';
+      if (virtualBgImageObj && virtualBgImageObj.complete) {
+        const bgRatio = virtualBgImageObj.width / virtualBgImageObj.height;
+        const canvasRatio = w / h;
+        let drawW = w, drawH = h, offsetX = 0, offsetY = 0;
+        if (bgRatio > canvasRatio) {
+          drawW = h * bgRatio;
+          offsetX = (w - drawW) / 2;
+        } else {
+          drawH = w / bgRatio;
+          offsetY = (h - drawH) / 2;
+        }
+        ctx.drawImage(virtualBgImageObj, offsetX, offsetY, drawW, drawH);
+      } else {
+        // Latar belakang lalai jika belum pilih fail JPG
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, '#020a24');
+        grad.addColorStop(1, '#1e1b4b');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      ctx.restore();
+    }
+
+    async function runVirtualBgLoop() {
+      if (!isVirtualBgLoopRunning) return;
+      const video = document.getElementById('photoboothVideo');
+      if (selectedBoothFrame === 'virtual_bg' && boothStream && video && video.readyState >= 2) {
+        initSelfieSegmentation();
+        if (selfieSegmentation) {
+          try {
+            await selfieSegmentation.send({ image: video });
+          } catch (e) {}
+        }
+      }
+      if (isVirtualBgLoopRunning) {
+        requestAnimationFrame(runVirtualBgLoop);
+      }
+    }
+
     function populateBoothGuestSuggestions() {
       const datalist = document.getElementById('guestNameSuggestions');
       if (!datalist) return;
@@ -2275,27 +2418,52 @@
 
     function selectBoothFrame(theme, isFallback = false) {
       selectedBoothFrame = theme;
+      const vbgBtn = document.getElementById('frameBtnVirtualBg');
       const pngBtn = document.getElementById('frameBtnPng');
       const goldBtn = document.getElementById('frameBtnGold');
       const cyberBtn = document.getElementById('frameBtnCyber');
       const overlayImg = document.getElementById('boothOverlayImg');
+      const videoEl = document.getElementById('photoboothVideo');
+      const liveVbgCanvas = document.getElementById('virtualBgLiveCanvas');
+      const resultCanvas = document.getElementById('photoboothCanvas');
 
-      [pngBtn, goldBtn, cyberBtn].forEach(btn => {
+      [vbgBtn, pngBtn, goldBtn, cyberBtn].forEach(btn => {
         if (!btn) return;
-        btn.classList.remove('border-2', 'border-amber-500', 'border-cyan-400');
+        btn.classList.remove('border-2', 'border-amber-500', 'border-cyan-400', 'border-emerald-400');
         btn.classList.add('border', 'border-slate-700');
       });
 
-      if (theme === 'custom_png') {
+      const isCameraActive = boothStream && resultCanvas.classList.contains('hidden');
+
+      if (theme === 'virtual_bg') {
+        vbgBtn.classList.remove('border', 'border-slate-700');
+        vbgBtn.classList.add('border-2', 'border-emerald-400');
+        overlayImg.classList.add('hidden');
+        if (isCameraActive) {
+          videoEl.classList.add('hidden');
+          liveVbgCanvas.classList.remove('hidden');
+          if (!isVirtualBgLoopRunning) {
+            isVirtualBgLoopRunning = true;
+            runVirtualBgLoop();
+          }
+        }
+        if (!virtualBgImageObj) {
+          showToast('Klik "Pilih Fail JPG" di bawah untuk masukkan gambar latar belakang anda!', 'info');
+        }
+      } else if (theme === 'custom_png') {
         pngBtn.classList.remove('border', 'border-slate-700');
         pngBtn.classList.add('border-2', 'border-amber-500');
-        if (boothStream && !document.getElementById('photoboothVideo').classList.contains('hidden')) {
+        liveVbgCanvas.classList.add('hidden');
+        if (isCameraActive) {
+          videoEl.classList.remove('hidden');
           overlayImg.classList.remove('hidden');
         }
       } else if (theme === 'gold') {
         goldBtn.classList.remove('border', 'border-slate-700');
         goldBtn.classList.add('border-2', 'border-amber-500');
         overlayImg.classList.add('hidden');
+        liveVbgCanvas.classList.add('hidden');
+        if (isCameraActive) videoEl.classList.remove('hidden');
         if (isFallback) {
           showToast('Fail bingkai PNG belum dijumpai di folder GitHub; menggunakan bingkai Royal Gold.', 'info');
         }
@@ -2303,11 +2471,14 @@
         cyberBtn.classList.remove('border', 'border-slate-700');
         cyberBtn.classList.add('border-2', 'border-cyan-400');
         overlayImg.classList.add('hidden');
+        liveVbgCanvas.classList.add('hidden');
+        if (isCameraActive) videoEl.classList.remove('hidden');
       }
     }
 
     async function startPhotoboothCamera() {
       const video = document.getElementById('photoboothVideo');
+      const liveVbgCanvas = document.getElementById('virtualBgLiveCanvas');
       const canvas = document.getElementById('photoboothCanvas');
       const placeholder = document.getElementById('boothPlaceholder');
       const overlayImg = document.getElementById('boothOverlayImg');
@@ -2343,14 +2514,23 @@
         }
 
         video.srcObject = boothStream;
-        video.classList.remove('hidden');
         canvas.classList.add('hidden');
         placeholder.classList.add('hidden');
 
-        if (selectedBoothFrame === 'custom_png' && overlayImg.naturalHeight !== 0) {
-          overlayImg.classList.remove('hidden');
-        } else {
+        if (selectedBoothFrame === 'virtual_bg') {
+          video.classList.add('hidden');
+          liveVbgCanvas.classList.remove('hidden');
           overlayImg.classList.add('hidden');
+          isVirtualBgLoopRunning = true;
+          runVirtualBgLoop();
+        } else {
+          video.classList.remove('hidden');
+          liveVbgCanvas.classList.add('hidden');
+          if (selectedBoothFrame === 'custom_png' && overlayImg.naturalHeight !== 0) {
+            overlayImg.classList.remove('hidden');
+          } else {
+            overlayImg.classList.add('hidden');
+          }
         }
 
         document.getElementById('boothResultActions').classList.add('hidden');
@@ -2367,11 +2547,13 @@
     }
 
     function stopPhotoboothCamera() {
+      isVirtualBgLoopRunning = false;
       if (boothStream) {
         boothStream.getTracks().forEach(track => track.stop());
         boothStream = null;
       }
       document.getElementById('photoboothVideo').classList.add('hidden');
+      document.getElementById('virtualBgLiveCanvas').classList.add('hidden');
       document.getElementById('boothOverlayImg').classList.add('hidden');
       document.getElementById('boothPlaceholder').classList.remove('hidden');
       document.getElementById('btnStartBooth').classList.remove('hidden');
@@ -2381,7 +2563,8 @@
 
     function capturePhotobooth() {
       const video = document.getElementById('photoboothVideo');
-      if (!boothStream || video.classList.contains('hidden')) {
+      const liveVbgCanvas = document.getElementById('virtualBgLiveCanvas');
+      if (!boothStream || (video.classList.contains('hidden') && liveVbgCanvas.classList.contains('hidden'))) {
         showToast('Sila klik "Aktifkan Kamera Booth" terlebih dahulu!', 'warning');
         return;
       }
@@ -2409,6 +2592,7 @@
       snapSound.play().catch(() => {});
 
       const video = document.getElementById('photoboothVideo');
+      const liveVbgCanvas = document.getElementById('virtualBgLiveCanvas');
       const canvas = document.getElementById('photoboothCanvas');
       const overlayImg = document.getElementById('boothOverlayImg');
       const ctx = canvas.getContext('2d');
@@ -2421,94 +2605,144 @@
         canvas.height = 1080;
       }
 
-      let sWidth = video.videoWidth;
-      let sHeight = video.videoHeight;
-      let sx = 0, sy = 0;
-      const targetRatio = canvas.width / canvas.height;
-      const videoRatio = sWidth / sHeight;
-
-      if (videoRatio > targetRatio) {
-        let newWidth = sHeight * targetRatio;
-        sx = (sWidth - newWidth) / 2;
-        sWidth = newWidth;
-      } else {
-        let newHeight = sWidth / targetRatio;
-        sy = (sHeight - newHeight) / 2;
-        sHeight = newHeight;
-      }
-
-      if (boothFacingMode === "user") {
-        ctx.save();
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-        ctx.restore();
-      } else {
-        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-      }
-
       const guestName = document.getElementById('boothGuestName').value.trim() || 'Tetamu Kehormat DIVA 2026';
       const guestTitle = document.getElementById('boothGuestTitle').value.trim() || 'Red Carpet Gala Night';
       const includeNameOnPng = document.getElementById('chkIncludeNameOnPng').checked;
 
-      if (selectedBoothFrame === 'custom_png' && overlayImg.complete && overlayImg.naturalHeight !== 0) {
-        ctx.drawImage(overlayImg, 0, 0, canvas.width, canvas.height);
+      if (selectedBoothFrame === 'virtual_bg') {
+        // Lukis hasil gabungan subjek kamera + latar belakang JPG dari liveVbgCanvas
+        const srcW = liveVbgCanvas.width || 1280;
+        const srcH = liveVbgCanvas.height || 720;
+        let sx = 0, sy = 0, sWidth = srcW, sHeight = srcH;
+        const targetRatio = canvas.width / canvas.height;
+        const srcRatio = srcW / srcH;
+        if (srcRatio > targetRatio) {
+          sWidth = srcH * targetRatio;
+          sx = (srcW - sWidth) / 2;
+        } else {
+          sHeight = srcW / targetRatio;
+          sy = (srcH - sHeight) / 2;
+        }
+        ctx.drawImage(liveVbgCanvas, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
 
-        if (includeNameOnPng && document.getElementById('boothGuestName').value.trim() !== '') {
-          const badgeHeight = 110;
-          const grad = ctx.createLinearGradient(0, canvas.height - badgeHeight, 0, canvas.height);
+        // Tambah bingkai emas halus & nama tetamu di bahagian bawah jika ditanda
+        if (includeNameOnPng) {
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 24;
+          ctx.strokeRect(12, 12, canvas.width - 24, canvas.height - 24);
+
+          const grad = ctx.createLinearGradient(0, canvas.height - 170, 0, canvas.height);
           grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
           grad.addColorStop(0.4, 'rgba(2, 6, 23, 0.85)');
-          grad.addColorStop(1, 'rgba(2, 6, 23, 0.95)');
+          grad.addColorStop(1, 'rgba(2, 6, 23, 0.96)');
           ctx.fillStyle = grad;
-          ctx.fillRect(0, canvas.height - badgeHeight, canvas.width, badgeHeight);
-
-          ctx.textAlign = 'center';
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
-          ctx.fillText(guestName, canvas.width / 2, canvas.height - 56);
+          ctx.fillRect(24, canvas.height - 170, canvas.width - 48, 146);
 
           ctx.fillStyle = '#fbbf24';
-          ctx.font = '600 22px Plus Jakarta Sans, sans-serif';
-          ctx.fillText(guestTitle, canvas.width / 2, canvas.height - 24);
+          ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
+          ctx.fillText('DIVA 2026', 64, canvas.height - 92);
+
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = '500 18px Plus Jakarta Sans, sans-serif';
+          ctx.fillText('DIGITAL INNOVATIONS AND VISIONARIES AWARDS', 64, canvas.height - 58);
+
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 32px Plus Jakarta Sans, sans-serif';
+          ctx.fillText(guestName, canvas.width - 64, canvas.height - 92);
+
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = '600 20px Plus Jakarta Sans, sans-serif';
+          ctx.fillText(guestTitle, canvas.width - 64, canvas.height - 58);
           ctx.textAlign = 'left';
         }
       } else {
-        const isGold = selectedBoothFrame !== 'cyber';
-        const primaryColor = isGold ? '#f59e0b' : '#22d3ee';
-        const secondaryColor = isGold ? '#fbbf24' : '#38bdf8';
+        let sWidth = video.videoWidth;
+        let sHeight = video.videoHeight;
+        let sx = 0, sy = 0;
+        const targetRatio = canvas.width / canvas.height;
+        const videoRatio = sWidth / sHeight;
 
-        ctx.strokeStyle = primaryColor;
-        ctx.lineWidth = 32;
-        ctx.strokeRect(16, 16, canvas.width - 32, canvas.height - 32);
+        if (videoRatio > targetRatio) {
+          let newWidth = sHeight * targetRatio;
+          sx = (sWidth - newWidth) / 2;
+          sWidth = newWidth;
+        } else {
+          let newHeight = sWidth / targetRatio;
+          sy = (sHeight - newHeight) / 2;
+          sHeight = newHeight;
+        }
 
-        const grad = ctx.createLinearGradient(0, canvas.height - 200, 0, canvas.height);
-        grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
-        grad.addColorStop(0.35, 'rgba(2, 6, 23, 0.88)');
-        grad.addColorStop(1, 'rgba(2, 6, 23, 0.98)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(32, canvas.height - 200, canvas.width - 64, 168);
+        if (boothFacingMode === "user") {
+          ctx.save();
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+          ctx.restore();
+        } else {
+          ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+        }
 
-        ctx.fillStyle = secondaryColor;
-        ctx.font = 'bold 38px Plus Jakarta Sans, sans-serif';
-        ctx.fillText('DIVA 2026', 72, canvas.height - 110);
+        if (selectedBoothFrame === 'custom_png' && overlayImg.complete && overlayImg.naturalHeight !== 0) {
+          ctx.drawImage(overlayImg, 0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = '#e2e8f0';
-        ctx.font = '500 20px Plus Jakarta Sans, sans-serif';
-        ctx.fillText('DIGITAL INNOVATIONS AND VISIONARIES AWARDS', 72, canvas.height - 72);
+          if (includeNameOnPng && document.getElementById('boothGuestName').value.trim() !== '') {
+            const badgeHeight = 110;
+            const grad = ctx.createLinearGradient(0, canvas.height - badgeHeight, 0, canvas.height);
+            grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
+            grad.addColorStop(0.4, 'rgba(2, 6, 23, 0.85)');
+            grad.addColorStop(1, 'rgba(2, 6, 23, 0.95)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, canvas.height - badgeHeight, canvas.width, badgeHeight);
 
-        ctx.textAlign = 'right';
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
-        ctx.fillText(guestName, canvas.width - 72, canvas.height - 108);
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
+            ctx.fillText(guestName, canvas.width / 2, canvas.height - 56);
 
-        ctx.fillStyle = secondaryColor;
-        ctx.font = '600 22px Plus Jakarta Sans, sans-serif';
-        ctx.fillText(guestTitle, canvas.width - 72, canvas.height - 70);
-        ctx.textAlign = 'left';
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '600 22px Plus Jakarta Sans, sans-serif';
+            ctx.fillText(guestTitle, canvas.width / 2, canvas.height - 24);
+            ctx.textAlign = 'left';
+          }
+        } else {
+          const isGold = selectedBoothFrame !== 'cyber';
+          const primaryColor = isGold ? '#f59e0b' : '#22d3ee';
+          const secondaryColor = isGold ? '#fbbf24' : '#38bdf8';
+
+          ctx.strokeStyle = primaryColor;
+          ctx.lineWidth = 32;
+          ctx.strokeRect(16, 16, canvas.width - 32, canvas.height - 32);
+
+          const grad = ctx.createLinearGradient(0, canvas.height - 200, 0, canvas.height);
+          grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
+          grad.addColorStop(0.35, 'rgba(2, 6, 23, 0.88)');
+          grad.addColorStop(1, 'rgba(2, 6, 23, 0.98)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(32, canvas.height - 200, canvas.width - 64, 168);
+
+          ctx.fillStyle = secondaryColor;
+          ctx.font = 'bold 38px Plus Jakarta Sans, sans-serif';
+          ctx.fillText('DIVA 2026', 72, canvas.height - 110);
+
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = '500 20px Plus Jakarta Sans, sans-serif';
+          ctx.fillText('DIGITAL INNOVATIONS AND VISIONARIES AWARDS', 72, canvas.height - 72);
+
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
+          ctx.fillText(guestName, canvas.width - 72, canvas.height - 108);
+
+          ctx.fillStyle = secondaryColor;
+          ctx.font = '600 22px Plus Jakarta Sans, sans-serif';
+          ctx.fillText(guestTitle, canvas.width - 72, canvas.height - 70);
+          ctx.textAlign = 'left';
+        }
       }
 
       video.classList.add('hidden');
+      liveVbgCanvas.classList.add('hidden');
       overlayImg.classList.add('hidden');
       canvas.classList.remove('hidden');
       document.getElementById('boothResultActions').classList.remove('hidden');
@@ -2539,9 +2773,13 @@
 
     function retakePhotobooth() {
       document.getElementById('photoboothCanvas').classList.add('hidden');
-      document.getElementById('photoboothVideo').classList.remove('hidden');
-      if (selectedBoothFrame === 'custom_png' && document.getElementById('boothOverlayImg').naturalHeight !== 0) {
-        document.getElementById('boothOverlayImg').classList.remove('hidden');
+      if (selectedBoothFrame === 'virtual_bg') {
+        document.getElementById('virtualBgLiveCanvas').classList.remove('hidden');
+      } else {
+        document.getElementById('photoboothVideo').classList.remove('hidden');
+        if (selectedBoothFrame === 'custom_png' && document.getElementById('boothOverlayImg').naturalHeight !== 0) {
+          document.getElementById('boothOverlayImg').classList.remove('hidden');
+        }
       }
       document.getElementById('boothResultActions').classList.add('hidden');
     }
