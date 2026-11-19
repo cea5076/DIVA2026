@@ -17,7 +17,6 @@
   <!-- MediaPipe Hands untuk Pengesanan Isyarat Tapak Tangan (Palm Gesture Snap) -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
   <script>
-    // Takrifkan lebih awal di <head> supaya onerror pada <img> banner tidak membuang ReferenceError
     function tryNextBannerExtension(imgEl) {
       const candidates = [
         'banner_diva_2026.JPG',
@@ -489,14 +488,14 @@
               <i class="fa-solid fa-expand mr-1"></i>Lebar Penuh Kiri-Kanan (0.5x Wide) aktif tanpa potong tepi.
             </p>
 
-            <!-- Pelaras Kedudukan Atas/Bawah, Kiri/Kanan & Saiz Peserta -->
+            <!-- Pelaras Kedudukan Atas/Bawah, Kiri/Kanan & Saiz Peserta (Sekata) -->
             <div class="mt-2.5 pt-2.5 border-t border-slate-700/80 space-y-2.5">
               <div>
                 <div class="flex items-center justify-between text-[11px] mb-1">
                   <span class="text-amber-300 font-semibold"><i class="fa-solid fa-arrows-up-down mr-1"></i>Posisi Atas / Bawah:</span>
-                  <span id="subjectVerticalLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">-6% (Lebih Atas)</span>
+                  <span id="subjectVerticalLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">+2% (Atas)</span>
                 </div>
-                <input type="range" id="subjectVerticalSlider" min="-22" max="25" value="-6" oninput="updateSubjectVerticalLabel(this.value)" class="w-full accent-cyan-400 cursor-pointer">
+                <input type="range" id="subjectVerticalSlider" min="-20" max="25" value="2" oninput="updateSubjectVerticalLabel(this.value)" class="w-full accent-cyan-400 cursor-pointer">
               </div>
 
               <div>
@@ -509,10 +508,10 @@
 
               <div>
                 <div class="flex items-center justify-between text-[11px] mb-1">
-                  <span class="text-amber-300 font-semibold"><i class="fa-solid fa-up-right-and-down-left-from-center mr-1"></i>Saiz / Jarak Peserta:</span>
-                  <span id="subjectScaleLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">55% (Penuh Kiri-Kanan)</span>
+                  <span class="text-amber-300 font-semibold"><i class="fa-solid fa-up-right-and-down-left-from-center mr-1"></i>Saiz / Jarak Peserta (Sekata):</span>
+                  <span id="subjectScaleLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">72% (Jauh & Semula Jadi)</span>
                 </div>
-                <input type="range" id="subjectScaleSlider" min="40" max="100" value="55" oninput="updateSubjectScaleLabel(this.value)" class="w-full accent-amber-500 cursor-pointer">
+                <input type="range" id="subjectScaleSlider" min="45" max="100" value="72" oninput="updateSubjectScaleLabel(this.value)" class="w-full accent-amber-500 cursor-pointer">
               </div>
             </div>
           </div>
@@ -911,7 +910,6 @@
     // =========================================================================
     const ADMIN_PIN = "DIVA2026";
     const DEFAULT_FIREBASE_DB_URL = "https://diva-awards-2026-default-rtdb.asia-southeast1.firebasedatabase.app/";
-    const PHOTOBOOTH_GDRIVE_SCRIPT_URL = "";
 
     let isAdminUnlocked = sessionStorage.getItem('DIVA_ADMIN_UNLOCKED') === 'true';
     let firebaseDbUrl = localStorage.getItem('DIVA_FIREBASE_URL') || DEFAULT_FIREBASE_DB_URL;
@@ -943,11 +941,10 @@
     // Pembolehubah Photobooth Pintar (AI Selfie Segmentation + Latar JPG Shared Cloud + AR 3D + Wide Angle 360 + Palm Gesture)
     let boothStream = null;
     let boothFacingMode = "user";
-    let boothLensMode = "wide"; // 'normal' (1.0x), 'wide' (0.5x ultra-wide), 'fisheye360' (360 spherical wide)
-    let boothSubjectScale = 0.55; // Ketinggian menegak ruang kamera (100% lebar kiri ke kanan supaya tidak terpotong tepi!)
-    let boothSubjectOffsetX = 0.0; // Posisi mengufuk kiri / kanan (-0.25 hingga +0.25)
-    let boothSubjectOffsetY = -0.06; // Posisi menegak dari atas (-0.06 = -6% lebih tinggi ke atas)
-    let isBoothPortrait = true;
+    let boothLensMode = "wide";
+    let boothSubjectScale = 0.72;
+    let boothSubjectOffsetX = 0.0;
+    let boothSubjectOffsetY = 0.02;
     let isCountingDownSnap = false;
     let virtualBgImageObj = null;
     let sharedBoothTemplateDataUrl = localStorage.getItem('DIVA_SHARED_BOOTH_JPG') || "";
@@ -1272,7 +1269,6 @@
       reader.onload = function(e) {
         const rawImg = new Image();
         rawImg.onload = function() {
-          // Mampatkan ke resolusi HD menegak (maksimum 1280px, kualiti 0.80) supaya cepat dimuat naik ke Firebase
           const maxDim = 1280;
           let targetW = rawImg.width;
           let targetH = rawImg.height;
@@ -1392,30 +1388,22 @@
       );
 
       if (matches.length === 0) {
-        box.innerHTML = '<p class="text-xs text-rose-400 bg-rose-950/40 p-3 rounded-xl border border-rose-500/30">Tiada rekod institusi, nama atau ID dijumpai. Sila semak ejaan atau hubungi Urus Setia DIVA 2026.</p>';
+        box.innerHTML = '<p class="text-xs text-rose-400">Tiada rekod ditemui. Sila semak semula ejaan nama institusi/sekolah, nama anda atau hubungi Urus Setia.</p>';
         return;
       }
 
-      const headerInfo = `<p class="text-[11px] text-cyan-300 font-semibold mb-1.5"><i class="fa-solid fa-list-ul mr-1"></i>Dijumpai ${matches.length} penerima berkaitan "${q}" — Sila pilih nama untuk pengesahan RSVP:</p>`;
-
-      box.innerHTML = headerInfo + matches.map(g => {
+      box.innerHTML = `
+        <p class="text-[11px] text-slate-400 pb-1">Dijumpai <b class="text-amber-400">${matches.length} rekod</b> sepadan. Klik pada nama untuk mengesahkan kehadiran:</p>
+      ` + matches.map(g => {
         const isConfirmed = g.rsvpStatus === 'Sahkan Hadir' || g.rsvpStatus === 'Hantar Wakil';
-        const statusTag = g.rsvpStatus === 'Sahkan Hadir'
-          ? '<span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">Sahkan Hadir</span>'
-          : (g.rsvpStatus === 'Hantar Wakil'
-            ? '<span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold">Hantar Wakil</span>'
-            : (g.rsvpStatus === 'Tidak Hadir'
-              ? '<span class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-bold">Tidak Hadir</span>'
-              : '<span class="px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 text-[10px]">Menunggu RSVP</span>'));
-
         return `
-          <div onclick="selectGuestForRsvpForm('${g.id}')" class="cursor-pointer p-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/60 rounded-xl flex items-center justify-between gap-2 transition">
+          <div onclick="selectGuestForRsvpForm('${g.id}')" class="cursor-pointer p-3.5 bg-slate-900 hover:bg-slate-800 border ${isConfirmed ? 'border-emerald-500/40' : 'border-slate-700 hover:border-amber-500/50'} rounded-xl flex items-center justify-between gap-2 transition">
             <div>
-              <div class="flex flex-wrap items-center gap-1.5">
-                <span class="font-mono text-[11px] font-bold text-amber-400">${g.id}</span>
-                <span class="text-xs font-bold text-white">${g.name}</span>
-                ${statusTag}
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-mono text-amber-400 font-bold">${g.id}</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded ${isConfirmed ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'}">${g.rsvpStatus || 'Menunggu RSVP'}</span>
               </div>
+              <p class="text-xs sm:text-sm font-bold text-white mt-0.5">${g.name}</p>
               <p class="text-[11px] text-cyan-300/90 mt-0.5"><i class="fa-solid fa-school mr-1"></i>${g.institution || 'Institusi Jemputan Rasmi'}</p>
               <p class="text-[10px] text-slate-400 mt-0.5">${formatMejaLabel(g.seat)} • <span class="italic text-amber-400/80">Anugerah dirahsiakan</span></p>
             </div>
@@ -1729,21 +1717,21 @@
 
     function updateSubjectScaleLabel(val) {
       const parsed = parseInt(val, 10);
-      const num = isNaN(parsed) ? 55 : parsed;
+      const num = isNaN(parsed) ? 72 : parsed;
       boothSubjectScale = num / 100;
       const lbl = document.getElementById('subjectScaleLabel');
       if (lbl) {
-        lbl.innerText = num <= 60 ? `${num}% (Penuh Kiri-Kanan)` : (num <= 80 ? `${num}% (Sederhana)` : `${num}% (Penuh Skrin)`);
+        lbl.innerText = num <= 65 ? `${num}% (Sangat Jauh)` : (num <= 82 ? `${num}% (Jauh & Semula Jadi)` : `${num}% (Dekat / Penuh)`);
       }
     }
 
     function updateSubjectVerticalLabel(val) {
       const parsed = parseInt(val, 10);
-      const num = isNaN(parsed) ? -6 : parsed;
+      const num = isNaN(parsed) ? 2 : parsed;
       boothSubjectOffsetY = num / 100;
       const lbl = document.getElementById('subjectVerticalLabel');
       if (lbl) {
-        lbl.innerText = num < 0 ? `${num}% (Lebih Atas)` : (num <= 6 ? `${num}% (Atas)` : (num <= 15 ? `${num}% (Tengah)` : `${num}% (Bawah)`));
+        lbl.innerText = num < 0 ? `${num}% (Lebih Atas)` : (num <= 6 ? `+${num}% (Atas)` : (num <= 15 ? `+${num}% (Tengah)` : `+${num}% (Bawah)`));
       }
     }
 
@@ -1757,27 +1745,42 @@
       }
     }
 
-    function applySoftBottomFade(canvasEl) {
+    function applySoftEdgeFeather(canvasEl) {
       const ctx = canvasEl.getContext('2d');
       const w = canvasEl.width;
       const h = canvasEl.height;
       ctx.save();
       ctx.globalCompositeOperation = 'destination-out';
-      const fadeGrad = ctx.createLinearGradient(0, h * 0.76, 0, h);
-      fadeGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-      fadeGrad.addColorStop(1, 'rgba(0, 0, 0, 1)');
-      ctx.fillStyle = fadeGrad;
-      ctx.fillRect(0, h * 0.76, w, h * 0.24);
+
+      const bottomGrad = ctx.createLinearGradient(0, h * 0.72, 0, h);
+      bottomGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      bottomGrad.addColorStop(1, 'rgba(0, 0, 0, 1)');
+      ctx.fillStyle = bottomGrad;
+      ctx.fillRect(0, h * 0.72, w, h * 0.28);
+
+      if (boothSubjectScale < 0.96) {
+        const leftGrad = ctx.createLinearGradient(0, 0, w * 0.14, 0);
+        leftGrad.addColorStop(0, 'rgba(0, 0, 0, 1)');
+        leftGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = leftGrad;
+        ctx.fillRect(0, 0, w * 0.14, h);
+
+        const rightGrad = ctx.createLinearGradient(w * 0.86, 0, w, 0);
+        rightGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        rightGrad.addColorStop(1, 'rgba(0, 0, 0, 1)');
+        ctx.fillStyle = rightGrad;
+        ctx.fillRect(w * 0.86, 0, w * 0.14, h);
+      }
       ctx.restore();
     }
 
     function drawScaledSubjectLayer(ctx, sourceCanvas, targetW, targetH, isFinalCapture = false) {
-      const drawW = targetW;
+      const drawW = Math.round(targetW * boothSubjectScale);
       const drawH = Math.round(targetH * boothSubjectScale);
       const effectiveOffsetX = (boothFacingMode === "user" && isFinalCapture) ? -boothSubjectOffsetX : boothSubjectOffsetX;
-      const offsetX = Math.round(targetW * effectiveOffsetX);
+      const centerX = Math.round((targetW - drawW) / 2 + targetW * effectiveOffsetX);
       const offsetY = Math.round(targetH * boothSubjectOffsetY);
-      ctx.drawImage(sourceCanvas, offsetX, offsetY, drawW, drawH);
+      ctx.drawImage(sourceCanvas, centerX, offsetY, drawW, drawH);
     }
 
     function setBoothLensMode(mode) {
@@ -1981,39 +1984,41 @@
     function compositeAiCameraAndJpg(ctx, video, targetW, targetH, isFinalCapture = false) {
       const useAiJpg = (sharedBoothStyleMode === 'ai_jpg_background' && virtualBgImageObj && virtualBgImageObj.complete);
       const shouldMirror = (boothFacingMode === "user") && !isFinalCapture;
-      const srcCanvasH = Math.max(320, Math.round(targetH * boothSubjectScale));
+      const srcW = Math.max(360, Math.round(targetW * boothSubjectScale));
+      const srcH = Math.max(640, Math.round(targetH * boothSubjectScale));
 
       if (useAiJpg && latestSegmentationMask) {
         const personCanvas = document.createElement('canvas');
-        personCanvas.width = targetW;
-        personCanvas.height = srcCanvasH;
+        personCanvas.width = srcW;
+        personCanvas.height = srcH;
         const pCtx = personCanvas.getContext('2d');
 
+        pCtx.save();
+        pCtx.filter = 'blur(4px)';
         if (shouldMirror) {
-          pCtx.save();
-          pCtx.translate(targetW, 0);
+          pCtx.translate(srcW, 0);
           pCtx.scale(-1, 1);
-          pCtx.drawImage(latestSegmentationMask, 0, 0, targetW, srcCanvasH);
-          pCtx.restore();
+          pCtx.drawImage(latestSegmentationMask, 0, 0, srcW, srcH);
         } else {
-          pCtx.drawImage(latestSegmentationMask, 0, 0, targetW, srcCanvasH);
+          pCtx.drawImage(latestSegmentationMask, 0, 0, srcW, srcH);
         }
+        pCtx.restore();
 
         pCtx.globalCompositeOperation = 'source-in';
-        drawCroppedVideo(pCtx, video, targetW, srcCanvasH, shouldMirror);
-        applySoftBottomFade(personCanvas);
+        drawCroppedVideo(pCtx, video, srcW, srcH, shouldMirror);
+        applySoftEdgeFeather(personCanvas);
 
         drawCoverImage(ctx, virtualBgImageObj, targetW, targetH);
         drawScaledSubjectLayer(ctx, personCanvas, targetW, targetH, isFinalCapture);
       } else if (useAiJpg) {
         drawCoverImage(ctx, virtualBgImageObj, targetW, targetH);
         const tempVidCanvas = document.createElement('canvas');
-        tempVidCanvas.width = targetW;
-        tempVidCanvas.height = srcCanvasH;
-        drawCroppedVideo(tempVidCanvas.getContext('2d'), video, targetW, srcCanvasH, shouldMirror);
-        applySoftBottomFade(tempVidCanvas);
+        tempVidCanvas.width = srcW;
+        tempVidCanvas.height = srcH;
+        drawCroppedVideo(tempVidCanvas.getContext('2d'), video, srcW, srcH, shouldMirror);
+        applySoftEdgeFeather(tempVidCanvas);
         ctx.save();
-        ctx.globalAlpha = 0.92;
+        ctx.globalAlpha = 0.94;
         drawScaledSubjectLayer(ctx, tempVidCanvas, targetW, targetH, isFinalCapture);
         ctx.restore();
       } else {
