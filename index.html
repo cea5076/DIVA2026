@@ -467,9 +467,9 @@
               <div>
                 <div class="flex items-center justify-between text-[11px] mb-1">
                   <span class="text-amber-300 font-semibold"><i class="fa-solid fa-arrows-up-down mr-1"></i>Posisi Atas / Bawah:</span>
-                  <span id="subjectVerticalLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">4% (Atas)</span>
+                  <span id="subjectVerticalLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">-6% (Lebih Atas)</span>
                 </div>
-                <input type="range" id="subjectVerticalSlider" min="0" max="25" value="4" oninput="updateSubjectVerticalLabel(this.value)" class="w-full accent-cyan-400 cursor-pointer">
+                <input type="range" id="subjectVerticalSlider" min="-22" max="25" value="-6" oninput="updateSubjectVerticalLabel(this.value)" class="w-full accent-cyan-400 cursor-pointer">
               </div>
 
               <div>
@@ -917,7 +917,7 @@
     let boothFacingMode = "user";
     let boothLensMode = "wide"; // 'normal' (1.0x), 'wide' (0.5x ultra-wide), 'fisheye360' (360 spherical wide)
     let boothSubjectScale = 0.55; // Ketinggian menegak ruang kamera (100% lebar kiri ke kanan supaya tidak terpotong tepi!)
-    let boothSubjectOffsetY = 0.04; // Posisi menegak dari atas (0.04 = 4% dari atas)
+    let boothSubjectOffsetY = -0.06; // Posisi menegak dari atas (-0.06 = -6% lebih tinggi ke atas)
     let isBoothPortrait = true;
     let virtualBgImageObj = null;
     let sharedBoothTemplateDataUrl = localStorage.getItem('DIVA_SHARED_BOOTH_JPG') || "";
@@ -1501,11 +1501,12 @@
     }
 
     function updateSubjectVerticalLabel(val) {
-      const num = parseInt(val, 10) || 0;
+      const parsed = parseInt(val, 10);
+      const num = isNaN(parsed) ? -6 : parsed;
       boothSubjectOffsetY = num / 100;
       const lbl = document.getElementById('subjectVerticalLabel');
       if (lbl) {
-        lbl.innerText = num <= 6 ? `${num}% (Atas)` : (num <= 15 ? `${num}% (Tengah)` : `${num}% (Bawah)`);
+        lbl.innerText = num < 0 ? `${num}% (Lebih Atas)` : (num <= 6 ? `${num}% (Atas)` : (num <= 15 ? `${num}% (Tengah)` : `${num}% (Bawah)`));
       }
     }
 
