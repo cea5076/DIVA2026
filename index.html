@@ -408,11 +408,11 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">3. Pilih Template / Latar Belakang DIVA 2026:</label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">3. Pilih Template / Bingkai DIVA 2026:</label>
             <div class="grid grid-cols-2 gap-2">
               <button type="button" onclick="selectBoothFrame('virtual_bg')" id="frameBtnVirtualBg" class="frame-select-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-left transition">
-                <p class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Latar JPG (AI)</p>
-                <p class="text-[10px] text-slate-400">Buang Belakang Asal</p>
+                <p class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-layer-group mr-1"></i>Bingkai JPG (Depan)</p>
+                <p class="text-[10px] text-slate-400">JPG di Lapisan Hadapan</p>
               </button>
               <button type="button" onclick="selectBoothFrame('custom_png')" id="frameBtnPng" class="frame-select-btn p-2.5 rounded-xl border-2 border-amber-500 bg-slate-800 text-left transition">
                 <p class="text-xs font-bold text-amber-400"><i class="fa-solid fa-image mr-1"></i>Template PNG</p>
@@ -436,6 +436,32 @@
                 <button type="button" onclick="document.getElementById('virtualBgInput').click()" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/50 rounded-lg text-[11px] text-emerald-200 font-semibold transition">
                   <i class="fa-solid fa-upload mr-1"></i> Pilih Fail JPG
                 </button>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] text-slate-400">Atau Bingkai Lutsinar (PNG):</span>
+                <input type="file" id="customFrameInput" accept="image/png" class="hidden" onchange="handleCustomFrameUpload(event)">
+                <button type="button" onclick="document.getElementById('customFrameInput').click()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-[11px] text-amber-300 font-semibold transition">
+                  <i class="fa-solid fa-upload mr-1"></i> Pilih Fail PNG
+                </button>
+              </div>
+            </div>
+            <div class="mt-2 flex items-center gap-2">
+              <input type="checkbox" id="chkIncludeNameOnPng" checked class="rounded bg-slate-800 border-slate-600 text-amber-500 focus:ring-amber-500">
+            <!-- Muat Naik Gambar JPG sebagai Bingkai Lapisan Hadapan -->
+            <div class="mt-2.5 pt-2.5 border-t border-slate-800 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] text-emerald-300 font-semibold"><i class="fa-solid fa-panorama mr-1"></i>Muat Naik Bingkai Depan (JPG):</span>
+                <input type="file" id="virtualBgInput" accept="image/jpeg,image/jpg,image/png" class="hidden" onchange="handleVirtualBgUpload(event)">
+                <button type="button" onclick="document.getElementById('virtualBgInput').click()" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/50 rounded-lg text-[11px] text-emerald-200 font-semibold transition">
+                  <i class="fa-solid fa-upload mr-1"></i> Pilih Fail JPG
+                </button>
+              </div>
+              <div id="jpgTransparencyControl" class="hidden bg-slate-800/80 p-2 rounded-lg border border-emerald-500/30 space-y-1">
+                <div class="flex justify-between text-[10px] text-slate-300">
+                  <span>Saiz Tingkap Wajah (Tengah):</span>
+                  <span id="jpgWindowScaleLabel" class="text-emerald-400 font-bold">78%</span>
+                </div>
+                <input type="range" id="jpgWindowScaleSlider" min="50" max="92" value="78" oninput="document.getElementById('jpgWindowScaleLabel').innerText = this.value + '%'" class="w-full accent-emerald-400 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
               </div>
               <div class="flex items-center justify-between gap-2">
                 <span class="text-[11px] text-slate-400">Atau Bingkai Lutsinar (PNG):</span>
@@ -474,33 +500,7 @@
                 <i class="fa-solid fa-sparkles text-2xl"></i>
               </div>
               <p class="text-sm font-bold text-slate-200">Sedia untuk Sesi Fotografi Karpet Merah?</p>
-              <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik butang <b>"Aktifkan Kamera Booth"</b> di atas untuk memulakan pratonton langsung bersama bingkai atau latar belakang JPG anda.</p>
-            </div>
-          </div>
-
-          <div class="pt-1">
-            <button onclick="capturePhotobooth()" id="btnCapturePhoto" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-camera text-base"></i> SNAP GAMBAR SEKARANG (3s)
-            </button>
-          </div>
-        </div>
-
-        <div class="lg:col-span-7 space-y-4">
-          <div id="boothCameraWrapper" class="booth-stage bg-slate-950 rounded-2xl border-2 border-slate-700 flex items-center justify-center shadow-inner" style="aspect-ratio: 16 / 9;">
-            <video id="photoboothVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
-            <img id="boothOverlayImg" src="bingkai_diva_landscape.png" alt="Bingkai DIVA 2026" class="hidden" onerror="handleOverlayImgError()">
-            <canvas id="photoboothCanvas" class="w-full h-full object-contain hidden"></canvas>
-            
-            <div id="boothCountdown" class="hidden absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-20">
-              <span id="countdownNumber" class="text-7xl font-black text-amber-400 drop-shadow-lg">3</span>
-            </div>
-
-            <div id="boothPlaceholder" class="text-center p-6 space-y-2">
-              <div class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto text-amber-400">
-                <i class="fa-solid fa-sparkles text-2xl"></i>
-              </div>
-              <p class="text-sm font-bold text-slate-200">Sedia untuk Sesi Fotografi Karpet Merah?</p>
-              <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik butang <b>"Aktifkan Kamera Booth"</b> di atas untuk memulakan pratonton langsung bersama bingkai rasmi DIVA 2026.</p>
+              <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik butang <b>"Aktifkan Kamera Booth"</b> di atas untuk memulakan pratonton langsung bersama bingkai atau template JPG anda.</p>
             </div>
           </div>
 
@@ -2304,75 +2304,94 @@
         img.onload = function() {
           virtualBgImageObj = img;
           selectBoothFrame('virtual_bg');
-          showToast('Gambar JPG berjaya dimuatkan sebagai latar belakang maya!', 'success');
+          showToast('Gambar JPG berjaya dimuatkan sebagai lapisan hadapan!', 'success');
         };
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     }
 
-    function initSelfieSegmentation() {
-      if (selfieSegmentation || typeof SelfieSegmentation === 'undefined') return;
-      selfieSegmentation = new SelfieSegmentation({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
-      });
-      selfieSegmentation.setOptions({
-        modelSelection: 1,
-        selfieMode: false
-      });
-      selfieSegmentation.onResults(onVirtualBgResults);
+    function drawJpgForegroundLayer(ctx, w, h) {
+      if (!virtualBgImageObj || !virtualBgImageObj.complete) return;
+
+      const scaleSlider = document.getElementById('jpgWindowScaleSlider');
+      const windowScale = scaleSlider ? (parseInt(scaleSlider.value, 10) / 100) : 0.78;
+
+      // Lukis gambar JPG ke atas kanvas sementara dan jadikan bahagian tengah lutsinar supaya kamera kelihatan di belakang
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = w;
+      tempCanvas.height = h;
+      const tCtx = tempCanvas.getContext('2d');
+
+      const bgRatio = virtualBgImageObj.width / virtualBgImageObj.height;
+      const canvasRatio = w / h;
+      let drawW = w, drawH = h, offsetX = 0, offsetY = 0;
+      if (bgRatio > canvasRatio) {
+        drawW = h * bgRatio;
+        offsetX = (w - drawW) / 2;
+      } else {
+        drawH = w / bgRatio;
+        offsetY = (h - drawH) / 2;
+      }
+      tCtx.drawImage(virtualBgImageObj, offsetX, offsetY, drawW, drawH);
+
+      // Tebuk bahagian tengah secara lembut (feathered cutout) supaya orang di kamera berada di belakang bingkai JPG
+      const holeW = w * windowScale;
+      const holeH = h * (windowScale * 0.92);
+      const holeX = (w - holeW) / 2;
+      const holeY = (h - holeH) / 2 - (h * 0.02);
+
+      tCtx.globalCompositeOperation = 'destination-out';
+      const cx = holeX + holeW / 2;
+      const cy = holeY + holeH / 2;
+      const maxR = Math.max(holeW, holeH) / 2;
+
+      tCtx.save();
+      tCtx.translate(cx, cy);
+      tCtx.scale(holeW / (maxR * 2), holeH / (maxR * 2));
+      const radialGrad = tCtx.createRadialGradient(0, 0, maxR * 0.72, 0, 0, maxR);
+      radialGrad.addColorStop(0, 'rgba(0, 0, 0, 1)');
+      radialGrad.addColorStop(0.85, 'rgba(0, 0, 0, 0.92)');
+      radialGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      tCtx.fillStyle = radialGrad;
+      tCtx.beginPath();
+      tCtx.arc(0, 0, maxR, 0, Math.PI * 2);
+      tCtx.fill();
+      tCtx.restore();
+
+      // Lukis bingkai JPG tersebut di atas lapisan video (foreground)
+      ctx.drawImage(tempCanvas, 0, 0, w, h);
     }
 
-    function onVirtualBgResults(results) {
+    function renderVirtualBgPreviewFrame() {
       const liveCanvas = document.getElementById('virtualBgLiveCanvas');
-      if (!liveCanvas || selectedBoothFrame !== 'virtual_bg') return;
-      const ctx = liveCanvas.getContext('2d');
-      const w = results.image.width || 1280;
-      const h = results.image.height || 720;
+      const video = document.getElementById('photoboothVideo');
+      if (!liveCanvas || !video || selectedBoothFrame !== 'virtual_bg') return;
+
+      const w = video.videoWidth || 1280;
+      const h = video.videoHeight || 720;
       if (liveCanvas.width !== w || liveCanvas.height !== h) {
         liveCanvas.width = w;
         liveCanvas.height = h;
       }
 
+      const ctx = liveCanvas.getContext('2d');
       ctx.save();
       ctx.clearRect(0, 0, w, h);
 
-      // Lukis topeng subjek manusia (mask)
-      ctx.save();
+      // Lapisan 1 (Belakang): Paparan kamera langsung
       if (boothFacingMode === "user") {
+        ctx.save();
         ctx.translate(w, 0);
         ctx.scale(-1, 1);
-      }
-      ctx.drawImage(results.segmentationMask, 0, 0, w, h);
-
-      // Kekalkan hanya bahagian orang di hadapan
-      ctx.globalCompositeOperation = 'source-in';
-      ctx.drawImage(results.image, 0, 0, w, h);
-      ctx.restore();
-
-      // Lukis gambar latar belakang JPG di belakang orang tersebut
-      ctx.globalCompositeOperation = 'destination-over';
-      if (virtualBgImageObj && virtualBgImageObj.complete) {
-        const bgRatio = virtualBgImageObj.width / virtualBgImageObj.height;
-        const canvasRatio = w / h;
-        let drawW = w, drawH = h, offsetX = 0, offsetY = 0;
-        if (bgRatio > canvasRatio) {
-          drawW = h * bgRatio;
-          offsetX = (w - drawW) / 2;
-        } else {
-          drawH = w / bgRatio;
-          offsetY = (h - drawH) / 2;
-        }
-        ctx.drawImage(virtualBgImageObj, offsetX, offsetY, drawW, drawH);
+        ctx.drawImage(video, 0, 0, w, h);
+        ctx.restore();
       } else {
-        // Latar belakang lalai jika belum pilih fail JPG
-        const grad = ctx.createLinearGradient(0, 0, w, h);
-        grad.addColorStop(0, '#020a24');
-        grad.addColorStop(1, '#1e1b4b');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(video, 0, 0, w, h);
       }
 
+      // Lapisan 2 (Hadapan): Gambar JPG yang dimuat naik
+      drawJpgForegroundLayer(ctx, w, h);
       ctx.restore();
     }
 
@@ -2380,12 +2399,7 @@
       if (!isVirtualBgLoopRunning) return;
       const video = document.getElementById('photoboothVideo');
       if (selectedBoothFrame === 'virtual_bg' && boothStream && video && video.readyState >= 2) {
-        initSelfieSegmentation();
-        if (selfieSegmentation) {
-          try {
-            await selfieSegmentation.send({ image: video });
-          } catch (e) {}
-        }
+        renderVirtualBgPreviewFrame();
       }
       if (isVirtualBgLoopRunning) {
         requestAnimationFrame(runVirtualBgLoop);
@@ -2426,6 +2440,7 @@
       const videoEl = document.getElementById('photoboothVideo');
       const liveVbgCanvas = document.getElementById('virtualBgLiveCanvas');
       const resultCanvas = document.getElementById('photoboothCanvas');
+      const jpgSliderBox = document.getElementById('jpgTransparencyControl');
 
       [vbgBtn, pngBtn, goldBtn, cyberBtn].forEach(btn => {
         if (!btn) return;
@@ -2438,6 +2453,7 @@
       if (theme === 'virtual_bg') {
         vbgBtn.classList.remove('border', 'border-slate-700');
         vbgBtn.classList.add('border-2', 'border-emerald-400');
+        if (jpgSliderBox) jpgSliderBox.classList.remove('hidden');
         overlayImg.classList.add('hidden');
         if (isCameraActive) {
           videoEl.classList.add('hidden');
@@ -2448,11 +2464,12 @@
           }
         }
         if (!virtualBgImageObj) {
-          showToast('Klik "Pilih Fail JPG" di bawah untuk masukkan gambar latar belakang anda!', 'info');
+          showToast('Klik "Pilih Fail JPG" di bawah untuk masukkan gambar lapisan hadapan anda!', 'info');
         }
       } else if (theme === 'custom_png') {
         pngBtn.classList.remove('border', 'border-slate-700');
         pngBtn.classList.add('border-2', 'border-amber-500');
+        if (jpgSliderBox) jpgSliderBox.classList.add('hidden');
         liveVbgCanvas.classList.add('hidden');
         if (isCameraActive) {
           videoEl.classList.remove('hidden');
@@ -2461,6 +2478,7 @@
       } else if (theme === 'gold') {
         goldBtn.classList.remove('border', 'border-slate-700');
         goldBtn.classList.add('border-2', 'border-amber-500');
+        if (jpgSliderBox) jpgSliderBox.classList.add('hidden');
         overlayImg.classList.add('hidden');
         liveVbgCanvas.classList.add('hidden');
         if (isCameraActive) videoEl.classList.remove('hidden');
@@ -2470,6 +2488,7 @@
       } else {
         cyberBtn.classList.remove('border', 'border-slate-700');
         cyberBtn.classList.add('border-2', 'border-cyan-400');
+        if (jpgSliderBox) jpgSliderBox.classList.add('hidden');
         overlayImg.classList.add('hidden');
         liveVbgCanvas.classList.add('hidden');
         if (isCameraActive) videoEl.classList.remove('hidden');
@@ -2610,33 +2629,44 @@
       const includeNameOnPng = document.getElementById('chkIncludeNameOnPng').checked;
 
       if (selectedBoothFrame === 'virtual_bg') {
-        // Lukis hasil gabungan subjek kamera + latar belakang JPG dari liveVbgCanvas
-        const srcW = liveVbgCanvas.width || 1280;
-        const srcH = liveVbgCanvas.height || 720;
-        let sx = 0, sy = 0, sWidth = srcW, sHeight = srcH;
+        // Lapisan 1 (Belakang): Lukis gambar kamera langsung
+        let sWidth = video.videoWidth;
+        let sHeight = video.videoHeight;
+        let sx = 0, sy = 0;
         const targetRatio = canvas.width / canvas.height;
-        const srcRatio = srcW / srcH;
-        if (srcRatio > targetRatio) {
-          sWidth = srcH * targetRatio;
-          sx = (srcW - sWidth) / 2;
+        const videoRatio = sWidth / sHeight;
+
+        if (videoRatio > targetRatio) {
+          let newWidth = sHeight * targetRatio;
+          sx = (sWidth - newWidth) / 2;
+          sWidth = newWidth;
         } else {
-          sHeight = srcW / targetRatio;
-          sy = (srcH - sHeight) / 2;
+          let newHeight = sWidth / targetRatio;
+          sy = (sHeight - newHeight) / 2;
+          sHeight = newHeight;
         }
-        ctx.drawImage(liveVbgCanvas, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
 
-        // Tambah bingkai emas halus & nama tetamu di bahagian bawah jika ditanda
+        if (boothFacingMode === "user") {
+          ctx.save();
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+          ctx.restore();
+        } else {
+          ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+        }
+
+        // Lapisan 2 (Hadapan): Lukis gambar JPG yang dimuat naik sebagai bingkai lapisan hadapan
+        drawJpgForegroundLayer(ctx, canvas.width, canvas.height);
+
+        // Tambah nama tetamu di bahagian bawah jika ditanda
         if (includeNameOnPng) {
-          ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = 24;
-          ctx.strokeRect(12, 12, canvas.width - 24, canvas.height - 24);
-
           const grad = ctx.createLinearGradient(0, canvas.height - 170, 0, canvas.height);
           grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
           grad.addColorStop(0.4, 'rgba(2, 6, 23, 0.85)');
           grad.addColorStop(1, 'rgba(2, 6, 23, 0.96)');
           ctx.fillStyle = grad;
-          ctx.fillRect(24, canvas.height - 170, canvas.width - 48, 146);
+          ctx.fillRect(0, canvas.height - 170, canvas.width, 170);
 
           ctx.fillStyle = '#fbbf24';
           ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
