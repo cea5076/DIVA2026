@@ -462,14 +462,24 @@
               <i class="fa-solid fa-expand mr-1"></i>Sudut Luas (0.5x Ultra-Wide) aktif untuk gambar berkumpulan.
             </p>
 
-            <!-- Pelaras Jarak & Kedudukan Peserta Supaya Perkataan DIVA Pada Latar Jelas -->
-            <div class="mt-2.5 pt-2.5 border-t border-slate-700/80 space-y-1.5">
-              <div class="flex items-center justify-between text-[11px]">
-                <span class="text-amber-300 font-semibold"><i class="fa-solid fa-person-walking-arrow-right mr-1"></i>Jarak Peserta (Zoom Out):</span>
-                <span id="subjectScaleLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">60% (Jauh)</span>
+            <!-- Pelaras Jarak & Kedudukan Atas/Bawah Peserta Supaya Perkataan DIVA Pada Latar Jelas -->
+            <div class="mt-2.5 pt-2.5 border-t border-slate-700/80 space-y-2.5">
+              <div>
+                <div class="flex items-center justify-between text-[11px] mb-1">
+                  <span class="text-amber-300 font-semibold"><i class="fa-solid fa-arrows-up-down mr-1"></i>Posisi Atas / Bawah:</span>
+                  <span id="subjectVerticalLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">3% (Atas)</span>
+                </div>
+                <input type="range" id="subjectVerticalSlider" min="0" max="25" value="3" oninput="updateSubjectVerticalLabel(this.value)" class="w-full accent-cyan-400 cursor-pointer">
               </div>
-              <input type="range" id="subjectScaleSlider" min="45" max="100" value="60" oninput="updateSubjectScaleLabel(this.value)" class="w-full accent-amber-500 cursor-pointer">
-              <p class="text-[10px] text-slate-400">Geser ke kiri (45% - 65%) untuk menjauhkan badan peserta supaya tulisan <b>DIVA</b> pada latar belakang nampak jelas.</p>
+
+              <div>
+                <div class="flex items-center justify-between text-[11px] mb-1">
+                  <span class="text-amber-300 font-semibold"><i class="fa-solid fa-person-walking-arrow-right mr-1"></i>Jarak Peserta (Saiz):</span>
+                  <span id="subjectScaleLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">54% (Jauh)</span>
+                </div>
+                <input type="range" id="subjectScaleSlider" min="40" max="90" value="54" oninput="updateSubjectScaleLabel(this.value)" class="w-full accent-amber-500 cursor-pointer">
+              </div>
+              <p class="text-[10px] text-slate-400">Naikkan posisi ke atas (<b>0% - 5%</b>) supaya logo & teks <b>DIVA</b> di bahagian bawah terdedah sepenuhnya.</p>
             </div>
           </div>
 
@@ -906,7 +916,8 @@
     let boothStream = null;
     let boothFacingMode = "user";
     let boothLensMode = "wide"; // 'normal' (1.0x), 'wide' (0.5x ultra-wide), 'fisheye360' (360 spherical wide)
-    let boothSubjectScale = 0.60; // Skala jarak peserta (0.60 = jauh supaya tulisan DIVA di latar bawah tidak tertutup)
+    let boothSubjectScale = 0.54; // Skala jarak peserta (0.54 = jauh di bahagian atas supaya tulisan DIVA di bawah terdedah penuh)
+    let boothSubjectOffsetY = 0.03; // Posisi menegak dari atas (0.03 = 3% dari atas)
     let isBoothPortrait = true;
     let virtualBgImageObj = null;
     let sharedBoothTemplateDataUrl = localStorage.getItem('DIVA_SHARED_BOOTH_JPG') || "";
@@ -1381,7 +1392,7 @@
       ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
     }
 
-    function drawCroppedVideo(ctx, video, targetW, targetH) {
+    function drawCroppedVideo(ctx, video, targetW, targetH, flipHorizontal = false) {
       let sWidth = video.videoWidth || 1280;
       let sHeight = video.videoHeight || 720;
       let sx = 0, sy = 0;
@@ -1405,7 +1416,7 @@
         tempVid.width = targetW;
         tempVid.height = targetH;
         const tCtx = tempVid.getContext('2d');
-        if (boothFacingMode === "user") {
+        if (flipHorizontal) {
           tCtx.translate(targetW, 0);
           tCtx.scale(-1, 1);
         }
@@ -1423,7 +1434,7 @@
         return;
       }
 
-      if (boothFacingMode === "user") {
+      if (flipHorizontal) {
         ctx.save();
         ctx.translate(targetW, 0);
         ctx.scale(-1, 1);
@@ -1477,45 +1488,59 @@
     }
 
     function updateSubjectScaleLabel(val) {
-      const num = parseInt(val, 10) || 60;
+      const num = parseInt(val, 10) || 54;
       boothSubjectScale = num / 100;
       const lbl = document.getElementById('subjectScaleLabel');
       if (lbl) {
-        lbl.innerText = num <= 65 ? `${num}% (Jauh)` : (num <= 85 ? `${num}% (Sederhana)` : `${num}% (Dekat)`);
+        lbl.innerText = num <= 60 ? `${num}% (Jauh)` : (num <= 78 ? `${num}% (Sederhana)` : `${num}% (Dekat)`);
       }
     }
 
-    function drawScaledSubjectLayer(ctx, sourceCanvasOrVideo, targetW, targetH, isRawVideo = false) {
-      // Kira saiz & posisi peserta supaya berdiri lebih jauh (skala boothSubjectScale) dan tidak menutup tulisan DIVA di bawah
+    function updateSubjectVerticalLabel(val) {
+      const num = parseInt(val, 10) || 0;
+      boothSubjectOffsetY = num / 100;
+      const lbl = document.getElementById('subjectVerticalLabel');
+      if (lbl) {
+        lbl.innerText = num <= 6 ? `${num}% (Atas)` : (num <= 15 ? `${num}% (Tengah)` : `${num}% (Bawah)`);
+      }
+    }
+
+    function applySoftBottomFade(canvasEl) {
+      const ctx = canvasEl.getContext('2d');
+      const w = canvasEl.width;
+      const h = canvasEl.height;
+      // Cairkan 18% bahagian paling bawah potongan supaya tiada garis petak tajam kelihatan
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      const fadeGrad = ctx.createLinearGradient(0, h * 0.80, 0, h);
+      fadeGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      fadeGrad.addColorStop(1, 'rgba(0, 0, 0, 1)');
+      ctx.fillStyle = fadeGrad;
+      ctx.fillRect(0, h * 0.80, w, h * 0.20);
+      ctx.restore();
+    }
+
+    function drawScaledSubjectLayer(ctx, sourceCanvas, targetW, targetH) {
       const scale = boothSubjectScale;
       const drawW = Math.round(targetW * scale);
       const drawH = Math.round(targetH * scale);
       const offsetX = Math.round((targetW - drawW) / 2);
-      // Letak bahagian atas kepala pada 14% dari atas supaya ruang bawah (55% ke bawah) lapang untuk teks DIVA
-      const offsetY = Math.round(targetH * 0.14);
-
-      if (isRawVideo) {
-        const tempVidCanvas = document.createElement('canvas');
-        tempVidCanvas.width = drawW;
-        tempVidCanvas.height = drawH;
-        drawCroppedVideo(tempVidCanvas.getContext('2d'), sourceCanvasOrVideo, drawW, drawH);
-        ctx.drawImage(tempVidCanvas, offsetX, offsetY, drawW, drawH);
-      } else {
-        ctx.drawImage(sourceCanvasOrVideo, offsetX, offsetY, drawW, drawH);
-      }
+      const offsetY = Math.round(targetH * boothSubjectOffsetY);
+      ctx.drawImage(sourceCanvas, offsetX, offsetY, drawW, drawH);
     }
 
-    function compositeAiCameraAndJpg(ctx, video, targetW, targetH) {
+    function compositeAiCameraAndJpg(ctx, video, targetW, targetH, isFinalCapture = false) {
       const useAiJpg = (sharedBoothStyleMode === 'ai_jpg_background' && virtualBgImageObj && virtualBgImageObj.complete);
+      // Pada pratonton langsung kamera depan, cerminkan (mirror); pada gambar akhir yang disimpan, jangan cerminkan supaya tanda nama terbaca betul!
+      const shouldMirror = (boothFacingMode === "user") && !isFinalCapture;
 
       if (useAiJpg && latestSegmentationMask) {
-        // Langkah 1: Lukis peserta sahaja menggunakan topeng AI (MediaPipe Mask) pada kanvas penuh dahulu
         const personCanvas = document.createElement('canvas');
         personCanvas.width = targetW;
         personCanvas.height = targetH;
         const pCtx = personCanvas.getContext('2d');
 
-        if (boothFacingMode === "user") {
+        if (shouldMirror) {
           pCtx.save();
           pCtx.translate(targetW, 0);
           pCtx.scale(-1, 1);
@@ -1525,25 +1550,25 @@
           pCtx.drawImage(latestSegmentationMask, 0, 0, targetW, targetH);
         }
 
-        // Kekalkan bahagian tubuh peserta sahaja
         pCtx.globalCompositeOperation = 'source-in';
-        drawCroppedVideo(pCtx, video, targetW, targetH);
+        drawCroppedVideo(pCtx, video, targetW, targetH, shouldMirror);
+        applySoftBottomFade(personCanvas);
 
-        // Langkah 2: Lukis Latar Belakang JPG penuh yang dimuat naik Admin di lapisan bawah
         drawCoverImage(ctx, virtualBgImageObj, targetW, targetH);
-
-        // Langkah 3: Lukis potongan peserta AI dengan skala "Jauh" (boothSubjectScale) supaya perkataan DIVA pada template JPG tidak tertutup!
-        drawScaledSubjectLayer(ctx, personCanvas, targetW, targetH, false);
+        drawScaledSubjectLayer(ctx, personCanvas, targetW, targetH);
       } else if (useAiJpg) {
-        // Semasa AI sedang memanaskan badan (1 saat pertama), paparkan latar JPG + kamera berskala jauh
         drawCoverImage(ctx, virtualBgImageObj, targetW, targetH);
+        const tempVidCanvas = document.createElement('canvas');
+        tempVidCanvas.width = targetW;
+        tempVidCanvas.height = targetH;
+        drawCroppedVideo(tempVidCanvas.getContext('2d'), video, targetW, targetH, shouldMirror);
+        applySoftBottomFade(tempVidCanvas);
         ctx.save();
-        ctx.globalAlpha = 0.88;
-        drawScaledSubjectLayer(ctx, video, targetW, targetH, true);
+        ctx.globalAlpha = 0.9;
+        drawScaledSubjectLayer(ctx, tempVidCanvas, targetW, targetH);
         ctx.restore();
       } else {
-        // Mod AR 3D Lantai penuh (tanpa buang latar dewan)
-        drawCroppedVideo(ctx, video, targetW, targetH);
+        drawCroppedVideo(ctx, video, targetW, targetH, shouldMirror);
         drawDiva3DFloorArOverlay(ctx, targetW, targetH);
       }
     }
@@ -1563,7 +1588,7 @@
       const ctx = liveCanvas.getContext('2d');
       ctx.save();
       ctx.clearRect(0, 0, targetW, targetH);
-      compositeAiCameraAndJpg(ctx, video, targetW, targetH);
+      compositeAiCameraAndJpg(ctx, video, targetW, targetH, false);
       ctx.restore();
     }
 
@@ -1730,8 +1755,8 @@
       const guestTitle = document.getElementById('boothGuestTitle').value.trim();
       const includeNameOnPng = document.getElementById('chkIncludeNameOnPng').checked;
 
-      // Gabungkan potongan AI peserta + Latar JPG Admin (atau AR 3D Lantai)
-      compositeAiCameraAndJpg(ctx, video, canvas.width, canvas.height);
+      // Gabungkan potongan AI peserta + Latar JPG Admin (isFinalCapture = true supaya tanda nama tidak terbalik!)
+      compositeAiCameraAndJpg(ctx, video, canvas.width, canvas.height, true);
 
       // Tambah nama tetamu di penjuru bawah jika diisi & ditanda
       if (includeNameOnPng && guestName !== '') {
