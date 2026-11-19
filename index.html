@@ -407,73 +407,41 @@
             <input type="text" id="boothGuestTitle" placeholder="Contoh: SMK Ahmad / Penerima Anugerah DIVA 2026" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">3. Pilih Template / Bingkai DIVA 2026:</label>
-            <div class="grid grid-cols-2 gap-2">
-              <button type="button" onclick="selectBoothFrame('virtual_bg')" id="frameBtnVirtualBg" class="frame-select-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-left transition">
-                <p class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-layer-group mr-1"></i>Bingkai JPG (Depan)</p>
-                <p class="text-[10px] text-slate-400">JPG di Lapisan Hadapan</p>
-              </button>
-              <button type="button" onclick="selectBoothFrame('custom_png')" id="frameBtnPng" class="frame-select-btn p-2.5 rounded-xl border-2 border-amber-500 bg-slate-800 text-left transition">
-                <p class="text-xs font-bold text-amber-400"><i class="fa-solid fa-image mr-1"></i>Template PNG</p>
-                <p class="text-[10px] text-slate-400">Bingkai Lutsinar</p>
-              </button>
-              <button type="button" onclick="selectBoothFrame('gold')" id="frameBtnGold" class="frame-select-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-left transition">
-                <p class="text-xs font-bold text-amber-300">Royal Gold</p>
-                <p class="text-[10px] text-slate-400">Bingkai Emas Digital</p>
-              </button>
-              <button type="button" onclick="selectBoothFrame('cyber')" id="frameBtnCyber" class="frame-select-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-left transition">
-                <p class="text-xs font-bold text-cyan-400">Visionary</p>
-                <p class="text-[10px] text-slate-400">Bingkai Futuristik</p>
-              </button>
+          <!-- Template Rasmi Tunggal (Diuruskan oleh Admin & Auto-Sync ke Semua Peserta) -->
+          <div class="bg-slate-800/70 p-3.5 rounded-xl border border-emerald-500/30 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-image"></i> Template Rasmi DIVA 2026
+              </span>
+              <span id="boothTemplateStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold">
+                Sedia Digunakan
+              </span>
             </div>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              Template rasmi majlis diselaraskan secara automatik untuk semua peserta.
+            </p>
 
-            <!-- Muat Naik Gambar JPG sebagai Latar Belakang Maya (Virtual Background) -->
-            <div class="mt-2.5 pt-2.5 border-t border-slate-800 space-y-2">
+            <!-- Kawalan Khas Admin Sahaja (Upload Sekali untuk Semua Peserta) -->
+            <div id="adminBoothTemplateControls" class="hidden pt-2.5 border-t border-slate-700/80 space-y-2.5">
               <div class="flex items-center justify-between gap-2">
-                <span class="text-[11px] text-emerald-300 font-semibold"><i class="fa-solid fa-panorama mr-1"></i>Muat Naik Latar Belakang (JPG/PNG):</span>
-                <input type="file" id="virtualBgInput" accept="image/jpeg,image/jpg,image/png" class="hidden" onchange="handleVirtualBgUpload(event)">
-                <button type="button" onclick="document.getElementById('virtualBgInput').click()" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/50 rounded-lg text-[11px] text-emerald-200 font-semibold transition">
-                  <i class="fa-solid fa-upload mr-1"></i> Pilih Fail JPG
+                <span class="text-[11px] text-amber-300 font-bold"><i class="fa-solid fa-crown mr-1"></i>Admin: Muat Naik Template JPG</span>
+                <input type="file" id="virtualBgInput" accept="image/jpeg,image/jpg,image/png" class="hidden" onchange="handleAdminBoothTemplateUpload(event)">
+                <button type="button" onclick="document.getElementById('virtualBgInput').click()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-[11px] font-extrabold transition shadow">
+                  <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Pilih & Simpan JPG
                 </button>
               </div>
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-[11px] text-slate-400">Atau Bingkai Lutsinar (PNG):</span>
-                <input type="file" id="customFrameInput" accept="image/png" class="hidden" onchange="handleCustomFrameUpload(event)">
-                <button type="button" onclick="document.getElementById('customFrameInput').click()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-[11px] text-amber-300 font-semibold transition">
-                  <i class="fa-solid fa-upload mr-1"></i> Pilih Fail PNG
-                </button>
-              </div>
-            </div>
-            <div class="mt-2 flex items-center gap-2">
-              <input type="checkbox" id="chkIncludeNameOnPng" checked class="rounded bg-slate-800 border-slate-600 text-amber-500 focus:ring-amber-500">
-            <!-- Muat Naik Gambar JPG sebagai Bingkai Lapisan Hadapan -->
-            <div class="mt-2.5 pt-2.5 border-t border-slate-800 space-y-2">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-[11px] text-emerald-300 font-semibold"><i class="fa-solid fa-panorama mr-1"></i>Muat Naik Bingkai Depan (JPG):</span>
-                <input type="file" id="virtualBgInput" accept="image/jpeg,image/jpg,image/png" class="hidden" onchange="handleVirtualBgUpload(event)">
-                <button type="button" onclick="document.getElementById('virtualBgInput').click()" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/50 rounded-lg text-[11px] text-emerald-200 font-semibold transition">
-                  <i class="fa-solid fa-upload mr-1"></i> Pilih Fail JPG
-                </button>
-              </div>
-              <div id="jpgTransparencyControl" class="hidden bg-slate-800/80 p-2 rounded-lg border border-emerald-500/30 space-y-1">
+              <div class="bg-slate-900/90 p-2.5 rounded-lg border border-slate-700 space-y-1">
                 <div class="flex justify-between text-[10px] text-slate-300">
-                  <span>Saiz Tingkap Wajah (Tengah):</span>
+                  <span>Saiz Tingkap Wajah Peserta (Tengah):</span>
                   <span id="jpgWindowScaleLabel" class="text-emerald-400 font-bold">78%</span>
                 </div>
-                <input type="range" id="jpgWindowScaleSlider" min="50" max="92" value="78" oninput="document.getElementById('jpgWindowScaleLabel').innerText = this.value + '%'" class="w-full accent-emerald-400 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
-              </div>
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-[11px] text-slate-400">Atau Bingkai Lutsinar (PNG):</span>
-                <input type="file" id="customFrameInput" accept="image/png" class="hidden" onchange="handleCustomFrameUpload(event)">
-                <button type="button" onclick="document.getElementById('customFrameInput').click()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-[11px] text-amber-300 font-semibold transition">
-                  <i class="fa-solid fa-upload mr-1"></i> Pilih Fail PNG
-                </button>
+                <input type="range" id="jpgWindowScaleSlider" min="50" max="92" value="78" oninput="updateJpgWindowScale(this.value)" onchange="syncBoothTemplateSettingsToCloud()" class="w-full accent-emerald-400 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
               </div>
             </div>
-            <div class="mt-2 flex items-center gap-2">
+
+            <div class="pt-1 flex items-center gap-2">
               <input type="checkbox" id="chkIncludeNameOnPng" checked class="rounded bg-slate-800 border-slate-600 text-amber-500 focus:ring-amber-500">
-              <label for="chkIncludeNameOnPng" class="text-[11px] text-slate-300">Cetak nama tetamu & bingkai DIVA di hadapan</label>
+              <label for="chkIncludeNameOnPng" class="text-[11px] text-slate-300">Cetak nama tetamu & institusi di bahagian bawah</label>
             </div>
           </div>
 
@@ -488,7 +456,6 @@
           <div id="boothCameraWrapper" class="booth-stage bg-slate-950 rounded-2xl border-2 border-slate-700 flex items-center justify-center shadow-inner" style="aspect-ratio: 16 / 9;">
             <video id="photoboothVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
             <canvas id="virtualBgLiveCanvas" class="w-full h-full object-cover hidden"></canvas>
-            <img id="boothOverlayImg" src="bingkai_diva_landscape.png" alt="Bingkai DIVA 2026" class="hidden" onerror="handleOverlayImgError()">
             <canvas id="photoboothCanvas" class="w-full h-full object-contain hidden"></canvas>
             
             <div id="boothCountdown" class="hidden absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-20">
@@ -500,7 +467,7 @@
                 <i class="fa-solid fa-sparkles text-2xl"></i>
               </div>
               <p class="text-sm font-bold text-slate-200">Sedia untuk Sesi Fotografi Karpet Merah?</p>
-              <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik butang <b>"Aktifkan Kamera Booth"</b> di atas untuk memulakan pratonton langsung bersama bingkai atau template JPG anda.</p>
+              <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik butang <b>"Aktifkan Kamera Booth"</b> di atas untuk memulakan pratonton langsung bersama template rasmi DIVA 2026.</p>
             </div>
           </div>
 
@@ -881,12 +848,17 @@
       }
     }
 
+    function formatMejaLabel(seatText) {
+      if (!seatText) return '-';
+      return String(seatText).replace(/Kerusi/gi, 'Meja');
+    }
+
     // =========================================================================
-    // KONFIGURASI PIN ADMIN, FIREBASE RASMI & PHOTOBOOTH
+    // KONFIGURASI PIN ADMIN, FIREBASE RASMI & TEMPLATE PHOTOBOOTH
     // =========================================================================
     const ADMIN_PIN = "DIVA2026";
-    const DEFAULT_FIREBASE_DB_URL = "https://diva-awards-2026-default-rtdb.asia-southeast1.firebasedatabase.app/"; 
-    const PHOTOBOOTH_GDRIVE_SCRIPT_URL = ""; 
+    const DEFAULT_FIREBASE_DB_URL = "https://diva-awards-2026-default-rtdb.asia-southeast1.firebasedatabase.app/";
+    const PHOTOBOOTH_GDRIVE_SCRIPT_URL = "";
 
     let isAdminUnlocked = sessionStorage.getItem('DIVA_ADMIN_UNLOCKED') === 'true';
     let firebaseDbUrl = localStorage.getItem('DIVA_FIREBASE_URL') || DEFAULT_FIREBASE_DB_URL;
@@ -898,7 +870,7 @@
       return (currentRole === 'scanner' || currentRole === 'photobooth' || currentRole === 'rsvp');
     }
 
-    // Pangkalan Data Utama DIVA 2026 (Dilengkapi atribut institution & rsvpStatus)
+    // Pangkalan Data Utama DIVA 2026
     let attendees = [
       { id: "VIP-001", name: "YAB Dato' Sri Menteri Besar", institution: "Pejabat Menteri Besar Pahang", category: "VVIP", award: "Tetamu Kehormat Utama", session: "Perasmian", seat: "Meja VVIP 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 1" },
       { id: "VIP-002", name: "YBrs. Pegawai Pendidikan Daerah Pekan", institution: "PPD Pekan", category: "VVIP", award: "Tuan Rumah Majlis DIVA 2026", session: "Perasmian", seat: "Meja VVIP 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 2" },
@@ -906,9 +878,59 @@
       { id: "DIVA-002", name: "Cikgu Kamaruddin bin Mansor", institution: "SMK Dato' Mahmud Mat", category: "Penerima Anugerah", award: "Digital Transformation School", session: "Sesi 1 (Giliran #2)", seat: "Zon A - Meja 1", rsvpStatus: "Menunggu RSVP", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
       { id: "DIVA-003", name: "Puan Hajah Zarina binti Daud", institution: "SK Ahmad Pekan", category: "Penerima Anugerah", award: "Woman Innovator of The Year", session: "Sesi 2 (Giliran #3)", seat: "Zon A - Meja 2", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
       { id: "DIVA-004", name: "Encik Muhammad Farhan bin Zulkifli", institution: "SK Ahmad Pekan", category: "Penerima Anugerah", award: "Emerging AI Classroom Award", session: "Sesi 2 (Giliran #4)", seat: "Zon A - Meja 2", rsvpStatus: "Menunggu RSVP", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
-      { id: "DIVA-005", name: "Puan Noor Azlin binti Abdul Jalil", institution: "SMK Pekan", category: "Penerima Anugerah", award: "Smart Sustainability Pioneer", session: "Sesi 2 (Giliran #5)", seat: "Zon A - Meja 2", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
+      { id: "DIVA-005", name: "Puan Noor Azlin binti Abdul Jalil", institution: "SMK Pekan", category: "Penerima Anugerah", award: "Smart Sustainability Pioneer", session: "Sesi 2 (Giliran #5)", seat: "Zon A - Meja 3", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" },
       { id: "JM-101", name: "Dato' Sri Dr. Hj. Mohd Zaki", institution: "Yayasan Pahang", category: "Jemputan Khas", award: "Rakan Strategik Utama", session: "Perasmian", seat: "Meja Penaja 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" }
     ];
+
+    // Pembolehubah Photobooth Pintar (Satu Template Rasmi JPG Shared Semua Peserta)
+    let boothStream = null;
+    let boothFacingMode = "user";
+    let isBoothPortrait = false;
+    let virtualBgImageObj = null;
+    let sharedBoothTemplateDataUrl = localStorage.getItem('DIVA_SHARED_BOOTH_JPG') || "";
+    let sharedBoothWindowScale = parseInt(localStorage.getItem('DIVA_SHARED_BOOTH_SCALE') || '78', 10);
+    let isVirtualBgLoopRunning = false;
+    let capturedPhotos = [];
+
+    function applyBoothTemplateDataUrl(dataUrl, scaleVal) {
+      if (!dataUrl) return;
+      sharedBoothTemplateDataUrl = dataUrl;
+      localStorage.setItem('DIVA_SHARED_BOOTH_JPG', dataUrl);
+      if (scaleVal) {
+        sharedBoothWindowScale = parseInt(scaleVal, 10) || 78;
+        localStorage.setItem('DIVA_SHARED_BOOTH_SCALE', String(sharedBoothWindowScale));
+        const slider = document.getElementById('jpgWindowScaleSlider');
+        const lbl = document.getElementById('jpgWindowScaleLabel');
+        if (slider) slider.value = sharedBoothWindowScale;
+        if (lbl) lbl.innerText = sharedBoothWindowScale + '%';
+      }
+      const img = new Image();
+      img.onload = function() {
+        virtualBgImageObj = img;
+        const badge = document.getElementById('boothTemplateStatusBadge');
+        if (badge) badge.innerText = 'Template Rasmi Aktif';
+      };
+      img.src = dataUrl;
+    }
+
+    async function loadSharedBoothTemplate() {
+      if (sharedBoothTemplateDataUrl) {
+        applyBoothTemplateDataUrl(sharedBoothTemplateDataUrl, sharedBoothWindowScale);
+      }
+      if (!firebaseDbUrl) return;
+      const templateUrl = firebaseDbUrl.replace(/\/$/, '') + '/diva2026_booth_template.json';
+      try {
+        const res = await fetch(templateUrl);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.imageData) {
+            applyBoothTemplateDataUrl(data.imageData, data.windowScale || 78);
+          }
+        }
+      } catch (e) {
+        console.warn("Gagal memuatkan template photobooth dari cloud", e);
+      }
+    }
 
     let currentRole = 'all';
     let html5QrScanner = null;
@@ -916,23 +938,10 @@
     let activeTargetIdForProxy = null;
     let selectedGuestIdForRsvp = null;
 
-    // Pembolehubah Photobooth Pintar
-    let boothStream = null;
-    let boothFacingMode = "user";
-    let isBoothPortrait = false;
-    let selectedBoothFrame = 'custom_png';
-    let customUploadedFrameDataUrl = null;
-    let virtualBgImageObj = null;
-    let selfieSegmentation = null;
-    let isVirtualBgLoopRunning = false;
-    let capturedPhotos = [];
-
-    // =========================================================================
-    // ENJIN AUTO-SYNC AWAN (FIREBASE REST REALTIME SYNC)
-    // =========================================================================
     function updateSyncUI(state, message) {
       const dot = document.getElementById('syncIndicatorDot');
       const badge = document.getElementById('syncStatusBadge');
+      if (!dot || !badge) return;
       if (state === 'connected') {
         dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 badge-pulse';
         badge.className = 'text-emerald-400';
@@ -1092,6 +1101,7 @@
       }
 
       startCloudAutoSync();
+      loadSharedBoothTemplate();
 
       const roleParam = urlParams.get('role');
       if (roleParam && ['all', 'awardee', 'emcee', 'scanner', 'rsvp', 'photobooth'].includes(roleParam)) {
@@ -1166,16 +1176,19 @@
       const adminGroup = document.getElementById('adminControlsGroup');
       const lockedHint = document.getElementById('lockedAdminHint');
       const lockBtn = document.getElementById('btnAdminLock');
+      const adminBoothControls = document.getElementById('adminBoothTemplateControls');
 
       if (isAdminUnlocked) {
         adminGroup.classList.remove('hidden');
         lockedHint.classList.add('hidden');
+        if (adminBoothControls) adminBoothControls.classList.remove('hidden');
         lockBtn.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i>Admin Aktif';
         lockBtn.classList.remove('bg-slate-800', 'text-amber-400');
         lockBtn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-400');
       } else {
         adminGroup.classList.add('hidden');
         lockedHint.classList.remove('hidden');
+        if (adminBoothControls) adminBoothControls.classList.add('hidden');
         lockBtn.innerHTML = '<i class="fa-solid fa-lock mr-1"></i>Kunci Admin';
         lockBtn.classList.add('bg-slate-800', 'text-amber-400');
         lockBtn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-400');
@@ -1267,1055 +1280,118 @@
     }
 
     // =========================================================================
-    // MODUL PENGESAHAN KEHADIRAN AWAL (RSVP TETAMU & CARIAN INSTITUSI)
-    // =========================================================================
-    function formatMejaLabel(seatText) {
-      if (!seatText) return '-';
-      return seatText.replace(/kerusi/gi, 'Meja');
-    }
-
-    function searchGuestForRsvp() {
-      const query = document.getElementById('rsvpSearchInput').value.trim().toLowerCase();
-      const matchesBox = document.getElementById('rsvpSearchMatches');
-      matchesBox.innerHTML = '';
-      document.getElementById('rsvpFormCard').classList.add('hidden');
-      document.getElementById('rsvpEpassCard').classList.add('hidden');
-
-      if (!query || query.length < 2) {
-        showToast('Sila masukkan sekurang-kurangnya 2 aksara nama institusi, nama penerima atau ID.', 'warning');
-        return;
-      }
-
-      // Cari padanan pada ID, Nama Penerima, atau Nama Institusi
-      const matches = attendees.filter(g =>
-        g.id.toLowerCase().includes(query) ||
-        g.name.toLowerCase().includes(query) ||
-        (g.institution && g.institution.toLowerCase().includes(query))
-      );
-
-      if (matches.length === 0) {
-        matchesBox.innerHTML = `
-          <div class="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-200">
-            <i class="fa-solid fa-circle-exclamation mr-1.5 text-rose-400"></i>
-            Rekod tidak ditemui. Sila pastikan ejaan nama institusi/penerima tepat atau hubungi Urus Setia DIVA 2026.
-          </div>
-        `;
-        return;
-      }
-
-      // Jika carian adalah nama tepat ID dan cuma 1 rekod, terus buka borang
-      if (matches.length === 1 && matches[0].id.toLowerCase() === query) {
-        selectGuestForRsvp(matches[0].id);
-      } else {
-        matchesBox.innerHTML = `<p class="text-[11px] text-amber-300 font-semibold">Ditemui ${matches.length} penerima/jemputan sepadan. Klik pada nama untuk mengesahkan RSVP:</p>`;
-        matches.forEach(g => {
-          const rsvpStat = g.rsvpStatus || 'Menunggu RSVP';
-          let statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-600">${rsvpStat}</span>`;
-          if (rsvpStat === 'Sahkan Hadir') {
-            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold"><i class="fa-solid fa-check mr-1"></i>Sahkan Hadir</span>`;
-          } else if (rsvpStat === 'Hantar Wakil') {
-            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold"><i class="fa-solid fa-user-tag mr-1"></i>Hantar Wakil</span>`;
-          } else if (rsvpStat === 'Tidak Hadir') {
-            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">Tidak Hadir</span>`;
-          }
-
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.onclick = () => selectGuestForRsvp(g.id);
-          btn.className = 'w-full p-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/60 text-left flex items-center justify-between gap-3 transition';
-          btn.innerHTML = `
-            <div>
-              <div class="flex flex-wrap items-center gap-1.5">
-                <span class="font-mono text-[11px] text-amber-400 font-bold">${g.id}</span>
-                <span class="text-xs font-bold text-white">${g.name}</span>
-              </div>
-              <p class="text-[11px] text-cyan-300 font-medium mt-0.5"><i class="fa-solid fa-building-columns mr-1"></i>${g.institution || '-'}</p>
-              <p class="text-[10px] text-slate-400 mt-0.5">Tetamu Jemputan Rasmi • Lokasi Meja: ${formatMejaLabel(g.seat)}</p>
-            </div>
-            <div class="flex items-center gap-2 shrink-0">
-              ${statusTag}
-              <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
-            </div>
-          `;
-          matchesBox.appendChild(btn);
-        });
-      }
-    }
-
-    function selectGuestForRsvp(guestId) {
-      const guest = attendees.find(g => g.id === guestId);
-      if (!guest) return;
-
-      selectedGuestIdForRsvp = guest.id;
-      document.getElementById('rsvpSearchMatches').innerHTML = '';
-      document.getElementById('rsvpFormCard').classList.remove('hidden');
-      document.getElementById('rsvpEpassCard').classList.add('hidden');
-
-      document.getElementById('rsvpGuestIdBadge').innerText = guest.id;
-      document.getElementById('rsvpGuestInstitutionBadge').innerHTML = `<i class="fa-solid fa-building-columns mr-1"></i>${guest.institution || '-'}`;
-      document.getElementById('rsvpGuestNameDisplay').innerText = guest.name;
-      // Kategori (Penerima Anugerah/VIP), Nama Anugerah, dan Sesi dirahsiakan sepenuhnya semasa RSVP
-      document.getElementById('rsvpGuestMetaDisplay').innerText = `Tetamu Jemputan Rasmi • Lokasi Meja: ${formatMejaLabel(guest.seat)}`;
-      document.getElementById('rsvpCurrentStatusPill').innerText = `Status Semasa: ${guest.rsvpStatus || 'Menunggu RSVP'}`;
-
-      const radios = document.querySelectorAll('input[name="rsvpChoice"]');
-      radios.forEach(r => {
-        r.checked = (r.value === (guest.rsvpStatus === 'Hantar Wakil' || guest.rsvpStatus === 'Tidak Hadir' ? guest.rsvpStatus : 'Sahkan Hadir'));
-      });
-      document.getElementById('rsvpProxyNameInput').value = guest.proxyName || '';
-      toggleRsvpProxyInput();
-    }
-
-    function toggleRsvpProxyInput() {
-      const selected = document.querySelector('input[name="rsvpChoice"]:checked')?.value;
-      const box = document.getElementById('rsvpProxyFieldBox');
-      if (selected === 'Hantar Wakil') {
-        box.classList.remove('hidden');
-      } else {
-        box.classList.add('hidden');
-      }
-    }
-
-    function submitGuestRsvp() {
-      if (!selectedGuestIdForRsvp) return;
-      const guest = attendees.find(g => g.id === selectedGuestIdForRsvp);
-      if (!guest) return;
-
-      const choice = document.querySelector('input[name="rsvpChoice"]:checked')?.value || 'Sahkan Hadir';
-      const proxyInputVal = document.getElementById('rsvpProxyNameInput').value.trim();
-
-      if (choice === 'Hantar Wakil' && !proxyInputVal) {
-        showToast('Sila masukkan nama penuh wakil rasmi anda!', 'error');
-        return;
-      }
-
-      guest.rsvpStatus = choice;
-      if (choice === 'Hantar Wakil') {
-        guest.proxyName = proxyInputVal;
-      } else if (choice === 'Sahkan Hadir') {
-        guest.proxyName = '';
-      }
-
-      pushDataToCloud();
-      updateDashboardStats();
-      filterData();
-
-      document.getElementById('rsvpFormCard').classList.add('hidden');
-      const epassCard = document.getElementById('rsvpEpassCard');
-      epassCard.classList.remove('hidden');
-
-      document.getElementById('epassName').innerText = guest.name;
-      document.getElementById('epassInstitution').innerText = guest.institution || '-';
-      document.getElementById('epassCategorySeat').innerText = `Tetamu Jemputan Rasmi • Meja: ${formatMejaLabel(guest.seat)}`;
-      document.getElementById('epassIdText').innerText = guest.id;
-
-      const proxyNote = document.getElementById('epassProxyNote');
-      if (choice === 'Hantar Wakil') {
-        proxyNote.classList.remove('hidden');
-        proxyNote.innerText = `Wakil Disahkan: ${guest.proxyName}`;
-      } else if (choice === 'Tidak Hadir') {
-        proxyNote.classList.remove('hidden');
-        proxyNote.innerText = `Status: Tidak Dapat Hadir (Terima kasih atas maklum balas)`;
-      } else {
-        proxyNote.classList.add('hidden');
-      }
-
-      const qrContainer = document.getElementById('rsvpQrContainer');
-      qrContainer.innerHTML = '';
-      if (typeof QRCode !== 'undefined') {
-        new QRCode(qrContainer, {
-          text: guest.id,
-          width: 170,
-          height: 170,
-          colorDark: "#020617",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
-      }
-
-      showToast('Pengesahan RSVP berjaya dihantar & E-Pas dijana!', 'success');
-    }
-
-    function updateGuestRsvpDirectly(guestId, newRsvpStatus) {
-      const guest = attendees.find(g => g.id === guestId);
-      if (!guest) return;
-      guest.rsvpStatus = newRsvpStatus;
-      pushDataToCloud();
-      updateDashboardStats();
-      filterData();
-      showToast(`Status RSVP ${guest.name} dikemas kini kepada "${newRsvpStatus}".`, 'info');
-    }
-
-    // =========================================================================
-    // PENAPISAN, MUAT NAIK CSV & EKSPORT DATA
-    // =========================================================================
-    function getFilteredAttendees() {
-      const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
-      const catVal = document.getElementById('categoryFilter').value;
-      const tableVal = document.getElementById('tableFilter').value;
-      const rsvpVal = document.getElementById('rsvpFilter').value;
-      const statusVal = document.getElementById('statusFilter').value;
-      const hideAward = shouldHideAwardName();
-
-      return attendees.filter(g => {
-        const formattedSeat = formatMejaLabel(g.seat);
-        const matchesSearch = !searchText ||
-          g.name.toLowerCase().includes(searchText) ||
-          (g.institution && g.institution.toLowerCase().includes(searchText)) ||
-          g.id.toLowerCase().includes(searchText) ||
-          formattedSeat.toLowerCase().includes(searchText) ||
-          (!hideAward && g.award.toLowerCase().includes(searchText)) ||
-          (g.proxyName && g.proxyName.toLowerCase().includes(searchText));
-
-        const matchesCat = catVal === 'all' || g.category === catVal;
-        const matchesTable = tableVal === 'all' || formattedSeat === tableVal;
-        const currentRsvp = g.rsvpStatus || 'Menunggu RSVP';
-        const matchesRsvp = rsvpVal === 'all' || currentRsvp === rsvpVal;
-        const matchesStatus = statusVal === 'all' || g.status === statusVal;
-
-        return matchesSearch && matchesCat && matchesTable && matchesRsvp && matchesStatus;
-      });
-    }
-
-    function filterData() {
-      renderTable(getFilteredAttendees());
-    }
-
-    function printRsvpList() {
-      const listToPrint = getFilteredAttendees();
-      if (listToPrint.length === 0) {
-        showToast('Tiada rekod dalam tapisan semasa untuk dicetak.', 'warning');
-        return;
-      }
-
-      const nowStr = new Date().toLocaleString('ms-MY', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-
-      const sahkanHadirCount = listToPrint.filter(g => g.rsvpStatus === 'Sahkan Hadir').length;
-      const hantarWakilCount = listToPrint.filter(g => g.rsvpStatus === 'Hantar Wakil').length;
-      const menungguCount = listToPrint.filter(g => !g.rsvpStatus || g.rsvpStatus === 'Menunggu RSVP').length;
-      const tidakHadirCount = listToPrint.filter(g => g.rsvpStatus === 'Tidak Hadir').length;
-
-      const rowsHtml = listToPrint.map((g, index) => {
-        const rsvpVal = g.rsvpStatus || 'Menunggu RSVP';
-        let rsvpBadge = '';
-        let rowBg = '';
-        if (rsvpVal === 'Sahkan Hadir') {
-          rsvpBadge = '<strong style="color:#065f46;">SAHKAN HADIR</strong>';
-        } else if (rsvpVal === 'Hantar Wakil') {
-          rsvpBadge = `<strong style="color:#b45309;">HANTAR WAKIL</strong><br><span style="font-size:11px;color:#0f172a;">Wakil: <b>${g.proxyName || '-'}</b></span>`;
-          rowBg = 'background-color:#fffbeb;';
-        } else if (rsvpVal === 'Tidak Hadir') {
-          rsvpBadge = '<strong style="color:#be123c;">TIDAK HADIR</strong>';
-          rowBg = 'background-color:#fff1f2;color:#64748b;';
-        } else {
-          rsvpBadge = '<span style="color:#475569;font-weight:600;">MENUNGGU BALAS</span>';
-        }
-
-        return `
-          <tr style="${rowBg}">
-            <td style="text-align:center;font-weight:bold;">${index + 1}</td>
-            <td style="font-family:monospace;font-weight:bold;">${g.id}</td>
-            <td>
-              <div style="font-size:12px;font-weight:800;color:#0f172a;">${g.name}</div>
-              <div style="font-size:11px;color:#334155;margin-top:2px;">Institusi: <b>${g.institution || '-'}</b></div>
-              ${g.notes ? `<div style="font-size:10px;color:#b45309;margin-top:2px;">Catatan: ${g.notes}</div>` : ''}
-            </td>
-            <td>${g.category || '-'}<br><span style="font-size:11px;color:#475569;">Meja: <b>${formatMejaLabel(g.seat)}</b></span></td>
-            <td>${rsvpBadge}</td>
-          </tr>
-        `;
-      }).join('');
-
-      const printWin = window.open('', '_blank', 'width=1000,height=750');
-      if (!printWin) {
-        showToast('Sila benarkan pop-up pelayar web untuk mencetak senarai RSVP.', 'error');
-        return;
-      }
-
-      printWin.document.write(`
-        <!DOCTYPE html>
-        <html lang="ms">
-        <head>
-          <meta charset="UTF-8">
-          <title>Laporan Pengesahan RSVP - DIVA 2026</title>
-          <style>
-            body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; margin: 20px; }
-            .header { border-bottom: 3px solid #0f172a; padding-bottom: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end; }
-            .header h1 { margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
-            .header p { margin: 4px 0 0; font-size: 12px; color: #475569; }
-            .meta { text-align: right; font-size: 11px; color: #334155; }
-            .summary { display: flex; gap: 12px; margin-bottom: 14px; font-size: 11px; background: #f8fafc; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; }
-            table { width: 100%; border-collapse: collapse; font-size: 12px; }
-            th, td { border: 1px solid #94a3b8; padding: 7px 9px; vertical-align: top; text-align: left; }
-            th { background-color: #0f172a; color: #ffffff; font-size: 11px; text-transform: uppercase; }
-            @media print {
-              @page { size: A4 portrait; margin: 12mm; }
-              body { margin: 0; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div>
-              <h1>Laporan Pengesahan Kehadiran Awal (RSVP) — DIVA 2026</h1>
-              <p>Digital Innovations And Visionaries Awards 2026 • Pejabat Pendidikan Daerah Pekan</p>
-            </div>
-            <div class="meta">
-              <div>Dicetak pada: <b>${nowStr}</b></div>
-              <div>Jumlah Senarai: <b>${listToPrint.length} orang</b></div>
-            </div>
-          </div>
-          <div class="summary">
-            <span>Sahkan Hadir: <b style="color:#065f46;">${sahkanHadirCount}</b></span> |
-            <span>Hantar Wakil: <b style="color:#b45309;">${hantarWakilCount}</b></span> |
-            <span>Menunggu Balas: <b style="color:#475569;">${menungguCount}</b></span> |
-            <span>Tidak Hadir: <b style="color:#be123c;">${tidakHadirCount}</b></span>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th style="width:35px;text-align:center;">Bil</th>
-                <th style="width:85px;">ID</th>
-                <th>Nama Penuh & Institusi / Sekolah</th>
-                <th style="width:165px;">Kategori & Lokasi Meja</th>
-                <th style="width:175px;">Status RSVP & Maklumat Wakil</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-          <script>
-            window.onload = function() {
-              setTimeout(function() { window.print(); }, 300);
-            };
-          <\/script>
-        </body>
-        </html>
-      `);
-      printWin.document.close();
-    }
-
-    function printEmceeList() {
-      const listToPrint = getFilteredAttendees();
-      if (listToPrint.length === 0) {
-        showToast('Tiada rekod dalam tapisan semasa untuk dicetak.', 'warning');
-        return;
-      }
-
-      const nowStr = new Date().toLocaleString('ms-MY', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-
-      const rowsHtml = listToPrint.map((g, index) => {
-        let statusLabel = '';
-        let rowBg = '';
-        if (g.status === 'Hadir') {
-          statusLabel = '<strong style="color:#065f46;">HADIR SENDIRI</strong>';
-        } else if (g.status === 'Hadir Wakil') {
-          statusLabel = `<strong style="color:#b45309;">DIWAKILI OLEH:</strong><br><span style="font-size:13px;font-weight:800;color:#000;">${g.proxyName || '-'}</span>`;
-          rowBg = 'background-color:#fffbeb;';
-        } else {
-          statusLabel = '<span style="color:#be123c;font-weight:700;">BELUM TIBA / TIDAK HADIR</span>';
-          rowBg = 'background-color:#fff1f2;color:#64748b;';
-        }
-
-        return `
-          <tr style="${rowBg}">
-            <td style="text-align:center;font-weight:bold;">${index + 1}</td>
-            <td style="font-weight:600;">${g.session || '-'}</td>
-            <td>
-              <div style="font-size:13px;font-weight:800;color:#0f172a;">${g.name}</div>
-              <div style="font-size:11px;color:#334155;margin-top:2px;">Institusi: <b>${g.institution || '-'}</b> | ID: ${g.id}</div>
-              ${g.notes ? `<div style="font-size:11px;color:#b45309;margin-top:2px;">Catatan: ${g.notes}</div>` : ''}
-            </td>
-            <td style="font-weight:700;color:#1e293b;">${g.award || '-'}<br><span style="font-size:10px;font-weight:normal;color:#475569;">(${g.category})</span></td>
-            <td>${statusLabel}</td>
-          </tr>
-        `;
-      }).join('');
-
-      const printWin = window.open('', '_blank', 'width=1000,height=750');
-      if (!printWin) {
-        showToast('Sila benarkan pop-up pelayar web untuk mencetak senarai Emcee.', 'error');
-        return;
-      }
-
-      printWin.document.write(`
-        <!DOCTYPE html>
-        <html lang="ms">
-        <head>
-          <meta charset="UTF-8">
-          <title>Senarai Panggilan Emcee - DIVA 2026</title>
-          <style>
-            body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; margin: 20px; }
-            .header { border-bottom: 3px solid #0f172a; padding-bottom: 10px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
-            .header h1 { margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
-            .header p { margin: 4px 0 0; font-size: 12px; color: #475569; }
-            .meta { text-align: right; font-size: 11px; color: #334155; }
-            table { width: 100%; border-collapse: collapse; font-size: 12px; }
-            th, td { border: 1px solid #94a3b8; padding: 8px 10px; vertical-align: top; text-align: left; }
-            th { background-color: #0f172a; color: #ffffff; font-size: 11px; text-transform: uppercase; }
-            @media print {
-              @page { size: A4 portrait; margin: 12mm; }
-              body { margin: 0; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div>
-              <h1>Senarai Panggilan Pentas & Rujukan Emcee — DIVA 2026</h1>
-              <p>Digital Innovations And Visionaries Awards 2026 • Pejabat Pendidikan Daerah Pekan</p>
-            </div>
-            <div class="meta">
-              <div>Dicetak pada: <b>${nowStr}</b></div>
-              <div>Jumlah Rekod: <b>${listToPrint.length} orang</b></div>
-            </div>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th style="width:35px;text-align:center;">Bil</th>
-                <th style="width:110px;">Sesi / Giliran</th>
-                <th>Nama Penuh Penerima & Institusi</th>
-                <th style="width:190px;">Nama Anugerah</th>
-                <th style="width:185px;">Status Kehadiran & Nama Wakil</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-          <script>
-            window.onload = function() {
-              setTimeout(function() { window.print(); }, 300);
-            };
-          <\/script>
-        </body>
-        </html>
-      `);
-      printWin.document.close();
-    }
-
-    function handleCSVUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const text = e.target.result;
-        
-        // Parser robust yang menyokong baris baharu (new lines) dalam tanda petik CSV (Google Sheets / Excel multi-line cells)
-        const rows = [];
-        let currentRow = [];
-        let curVal = '';
-        let inQuotes = false;
-        
-        for (let i = 0; i < text.length; i++) {
-          let char = text[i];
-          let nextChar = text[i + 1];
-          
-          if (char === '"') {
-            if (inQuotes && nextChar === '"') {
-              curVal += '"';
-              i++; // skip escaped quote
-            } else {
-              inQuotes = !inQuotes;
-            }
-          } else if (char === ',' && !inQuotes) {
-            currentRow.push(curVal.trim());
-            curVal = '';
-          } else if ((char === '\r' || char === '\n') && !inQuotes) {
-            if (char === '\r' && nextChar === '\n') {
-              i++; // handle \r\n
-            }
-            currentRow.push(curVal.trim());
-            if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== '')) {
-              rows.push(currentRow);
-            }
-            currentRow = [];
-            curVal = '';
-          } else {
-            curVal += char;
-          }
-        }
-        // Masukkan lajur terakhir jika ada
-        if (curVal !== '' || currentRow.length > 0) {
-          currentRow.push(curVal.trim());
-          if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== '')) {
-            rows.push(currentRow);
-          }
-        }
-
-        if (rows.length <= 1) {
-          showToast('Fail CSV kosong atau tidak sah!', 'error');
-          return;
-        }
-
-        // Peta rekod sedia ada mengikut ID untuk mengekalkan respon RSVP & Foyer yang sudah diisi
-        const existingMap = new Map();
-        attendees.forEach(item => {
-          existingMap.set(item.id.toUpperCase(), item);
-        });
-
-        const newAttendees = [];
-        let preservedCount = 0;
-
-        // Mula dari indeks 1 untuk melangkau baris tajuk (header)
-        for (let i = 1; i < rows.length; i++) {
-          const cols = rows[i];
-          if (!cols || cols.length < 2 || !cols[1]) continue;
-
-          const rowId = cols[0] || `DIVA-${String(i).padStart(3, '0')}`;
-          const prev = existingMap.get(rowId.toUpperCase());
-
-          // Kekalkan respon RSVP & status Foyer jika rekod sedia ada sudah mempunyai maklum balas
-          const hasExistingRsvp = prev && prev.rsvpStatus && prev.rsvpStatus !== 'Menunggu RSVP';
-          const hasExistingFoyer = prev && prev.status && prev.status !== 'Belum Hadir';
-
-          if (hasExistingRsvp || hasExistingFoyer) {
-            preservedCount++;
-          }
-
-          newAttendees.push({
-            id: rowId,
-            name: cols[1],
-            institution: cols[2] && cols[2] !== '' ? cols[2] : '-',
-            category: cols[3] && cols[3] !== '' ? cols[3] : 'Jemputan Khas',
-            award: cols[4] && cols[4] !== '' ? cols[4] : '-',
-            session: cols[5] && cols[5] !== '' ? cols[5] : 'Sesi 1',
-            seat: cols[6] && cols[6] !== '' ? cols[6] : 'Zon Umum',
-            rsvpStatus: hasExistingRsvp ? prev.rsvpStatus : (cols[7] && cols[7] !== '' ? cols[7] : 'Menunggu RSVP'),
-            status: hasExistingFoyer ? prev.status : (cols[8] && cols[8] !== '' ? cols[8] : 'Belum Hadir'),
-            proxyName: (prev && prev.proxyName) ? prev.proxyName : (cols[9] || ''),
-            checkInTime: (prev && prev.checkInTime) ? prev.checkInTime : (cols[10] || ''),
-            notes: cols[11] || (prev ? prev.notes : '') || ''
-          });
-        }
-
-        if (newAttendees.length > 0) {
-          attendees = newAttendees;
-          pushDataToCloud();
-          populateTableFilterOptions();
-          updateDashboardStats();
-          filterData();
-          populateBoothGuestSuggestions();
-          const msg = preservedCount > 0
-            ? `Berjaya kemas kini ${newAttendees.length} rekod (${preservedCount} respon RSVP/Foyer sedia ada dikekalkan)!`
-            : `Berjaya memuat naik ${newAttendees.length} rekod CSV & diselaraskan ke semua AJK!`;
-          showToast(msg, 'success');
-        } else {
-          showToast('Tiada baris data sah ditemui dalam fail CSV. Sila semak format lajur.', 'error');
-        }
-      };
-      reader.readAsText(file);
-      event.target.value = '';
-    }
-
-    function downloadCSVTemplate() {
-      const templateCSV = [
-        "ID,Nama,Institusi,Kategori,Anugerah,Sesi,Zon_Meja,Status_RSVP,Status_Foyer,Wakil,Masa_Daftar,Nota",
-        '"VIP-001","YAB Dato\' Sri Contoh VVIP","Pejabat Menteri Besar Pahang","VVIP","Tetamu Kehormat","Perasmian","Meja VVIP 1","Sahkan Hadir","Belum Hadir","","","LO Protokol 1"',
-        '"DIVA-001","Cikgu Ahmad bin Ali","SMK Dato\' Mahmud Mat","Penerima Anugerah","Anugerah Inovasi Digital 2026","Sesi 1 (Giliran #1)","Zon A - Meja 1","Menunggu RSVP","Belum Hadir","","","Sedia di Holding Room"',
-        '"JM-001","Puan Siti Sarah","PPD Pekan","Jemputan Khas","Rakan Strategik","Perasmian","Meja Penaja 2","Sahkan Hadir","Belum Hadir","","",""'
-      ].join("\n");
-
-      const blob = new Blob([templateCSV], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", "Templat_Senarai_DIVA2026.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      showToast('Templat CSV dimuat turun! Buka dengan Excel untuk isi data.', 'info');
-    }
-
-    function exportReportCSV() {
-      const headers = ["ID", "Nama", "Institusi", "Kategori", "Anugerah", "Sesi", "Zon_Meja", "Status_RSVP", "Status_Foyer", "Wakil", "Masa_Daftar", "Nota"];
-      const rows = attendees.map(g => [
-        `"${g.id}"`,
-        `"${g.name.replace(/"/g, '""')}"`,
-        `"${(g.institution || '-').replace(/"/g, '""')}"`,
-        `"${g.category}"`,
-        `"${g.award.replace(/"/g, '""')}"`,
-        `"${g.session}"`,
-        `"${formatMejaLabel(g.seat)}"`,
-        `"${g.rsvpStatus || 'Menunggu RSVP'}"`,
-        `"${g.status}"`,
-        `"${(g.proxyName || '').replace(/"/g, '""')}"`,
-        `"${g.checkInTime || ''}"`,
-        `"${(g.notes || '').replace(/"/g, '""')}"`
-      ].join(","));
-
-      const csvContent = [headers.join(","), ...rows].join("\n");
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Laporan_Kehadiran_DIVA2026_${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      showToast('Laporan CSV berjaya dieksport!', 'success');
-    }
-
-    function openResetModal() {
-      document.getElementById('resetConfirmModal').classList.remove('hidden');
-    }
-
-    function closeResetModal() {
-      document.getElementById('resetConfirmModal').classList.add('hidden');
-    }
-
-    function executeResetAllData() {
-      attendees.forEach(g => {
-        g.status = 'Belum Hadir';
-        g.checkInTime = '';
-      });
-      pushDataToCloud();
-      closeResetModal();
-      updateDashboardStats();
-      filterData();
-      showToast('Semua status Pendaftaran Foyer telah ditetapkan semula.', 'info');
-    }
-
-    function executeClearAllGuests() {
-      attendees = [];
-      pushDataToCloud();
-      closeResetModal();
-      populateTableFilterOptions();
-      updateDashboardStats();
-      filterData();
-      populateBoothGuestSuggestions();
-      showToast('Semua data sedia ada telah dipadam! Sila muat naik CSV atau tambah tetamu.', 'warning');
-    }
-
-    function deleteSingleGuest(guestId) {
-      const idx = attendees.findIndex(a => a.id === guestId);
-      if (idx === -1) return;
-      const removed = attendees.splice(idx, 1)[0];
-      pushDataToCloud();
-      populateTableFilterOptions();
-      updateDashboardStats();
-      filterData();
-      populateBoothGuestSuggestions();
-      showToast(`Rekod ${removed.name} (${removed.id}) telah dipadam.`, 'info');
-    }
-
-    function openAddGuestModal() {
-      document.getElementById('newGuestId').value = `DIVA-${String(attendees.length + 1).padStart(3, '0')}`;
-      document.getElementById('newGuestName').value = '';
-      document.getElementById('newGuestInstitution').value = '';
-      document.getElementById('newGuestAward').value = '';
-      document.getElementById('newGuestSession').value = 'Sesi 1';
-      document.getElementById('newGuestSeat').value = '';
-      document.getElementById('newGuestRsvp').value = 'Menunggu RSVP';
-      document.getElementById('newGuestNotes').value = '';
-      document.getElementById('addGuestModal').classList.remove('hidden');
-    }
-
-    function closeAddGuestModal() {
-      document.getElementById('addGuestModal').classList.add('hidden');
-    }
-
-    function saveNewGuest() {
-      const id = document.getElementById('newGuestId').value.trim();
-      const name = document.getElementById('newGuestName').value.trim();
-      if (!id || !name) {
-        showToast('Sila isi sekurang-kurangnya ID Unik dan Nama Penuh!', 'error');
-        return;
-      }
-      if (attendees.some(a => a.id.toUpperCase() === id.toUpperCase())) {
-        showToast(`ID ${id} sudah wujud! Sila guna ID lain.`, 'error');
-        return;
-      }
-      attendees.push({
-        id: id,
-        name: name,
-        institution: document.getElementById('newGuestInstitution').value.trim() || '-',
-        category: document.getElementById('newGuestCategory').value,
-        award: document.getElementById('newGuestAward').value.trim() || '-',
-        session: document.getElementById('newGuestSession').value.trim() || 'Sesi 1',
-        seat: document.getElementById('newGuestSeat').value.trim() || 'Zon Umum',
-        rsvpStatus: document.getElementById('newGuestRsvp').value,
-        status: 'Belum Hadir',
-        proxyName: '',
-        checkInTime: '',
-        notes: document.getElementById('newGuestNotes').value.trim()
-      });
-      pushDataToCloud();
-      closeAddGuestModal();
-      populateTableFilterOptions();
-      updateDashboardStats();
-      filterData();
-      populateBoothGuestSuggestions();
-      showToast(`Berjaya menambah ${name} & diselaraskan ke semua AJK!`, 'success');
-    }
-
-    function openEditGuestModal(guestId) {
-      const guest = attendees.find(g => g.id === guestId);
-      if (!guest) return;
-      document.getElementById('editGuestIdDisplay').innerText = guest.id;
-      document.getElementById('editGuestId').value = guest.id;
-      document.getElementById('editGuestCategory').value = guest.category || 'Penerima Anugerah';
-      document.getElementById('editGuestName').value = guest.name || '';
-      document.getElementById('editGuestInstitution').value = (guest.institution && guest.institution !== '-') ? guest.institution : '';
-      document.getElementById('editGuestAward').value = (guest.award && guest.award !== '-') ? guest.award : '';
-      document.getElementById('editGuestSession').value = guest.session || '';
-      document.getElementById('editGuestSeat').value = guest.seat || '';
-      document.getElementById('editGuestProxy').value = guest.proxyName || '';
-      document.getElementById('editGuestNotes').value = guest.notes || '';
-      document.getElementById('editGuestModal').classList.remove('hidden');
-    }
-
-    function closeEditGuestModal() {
-      document.getElementById('editGuestModal').classList.add('hidden');
-    }
-
-    function saveEditedGuest() {
-      const id = document.getElementById('editGuestId').value.trim();
-      const name = document.getElementById('editGuestName').value.trim();
-      if (!name) {
-        showToast('Nama penuh tidak boleh dikosongkan!', 'error');
-        return;
-      }
-      const guest = attendees.find(g => g.id === id);
-      if (!guest) return;
-
-      guest.category = document.getElementById('editGuestCategory').value;
-      guest.name = name;
-      guest.institution = document.getElementById('editGuestInstitution').value.trim() || '-';
-      guest.award = document.getElementById('editGuestAward').value.trim() || '-';
-      guest.session = document.getElementById('editGuestSession').value.trim() || 'Sesi 1';
-      guest.seat = document.getElementById('editGuestSeat').value.trim() || 'Zon Umum';
-      guest.proxyName = document.getElementById('editGuestProxy').value.trim();
-      guest.notes = document.getElementById('editGuestNotes').value.trim();
-
-      pushDataToCloud();
-      closeEditGuestModal();
-      populateTableFilterOptions();
-      updateDashboardStats();
-      filterData();
-      populateBoothGuestSuggestions();
-      showToast(`Maklumat ${guest.name} berjaya dikemas kini tanpa mengubah status RSVP!`, 'success');
-    }
-
-    // =========================================================================
-    // TINDAKAN KEHADIRAN HARI KEJADIAN & WAKIL (PROXY)
-    // =========================================================================
-    function getCurrentTimeStr() {
-      return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
-
-    function markSelfPresent(guestId) {
-      const guest = attendees.find(g => g.id.toUpperCase() === guestId.toUpperCase());
-      if (!guest) return false;
-      guest.status = 'Hadir';
-      guest.proxyName = '';
-      guest.checkInTime = getCurrentTimeStr();
-      pushDataToCloud();
-      updateDashboardStats();
-      filterData();
-      showToast(`${guest.name} disahkan tiba di dewan!`, 'success');
-      return guest;
-    }
-
-    function resetStatus(guestId) {
-      const guest = attendees.find(g => g.id === guestId);
-      if (!guest) return;
-      guest.status = 'Belum Hadir';
-      guest.checkInTime = '';
-      pushDataToCloud();
-      updateDashboardStats();
-      filterData();
-      showToast(`Status ketibaan ${guest.name} dibatalkan.`, 'info');
-    }
-
-    function openProxyModal(guestId) {
-      const guest = attendees.find(g => g.id === guestId);
-      if (!guest) return;
-      activeTargetIdForProxy = guestId;
-      document.getElementById('modalOriginalName').innerText = guest.name;
-      if (shouldHideAwardName()) {
-        document.getElementById('modalOriginalCategory').innerText = `${guest.institution || '-'} • ${guest.category} • Meja: ${formatMejaLabel(guest.seat)}`;
-      } else {
-        document.getElementById('modalOriginalCategory').innerText = `${guest.institution || '-'} • ${guest.category} (${guest.award})`;
-      }
-      document.getElementById('proxyNameInput').value = guest.proxyName || '';
-      document.getElementById('proxyRelationInput').value = '';
-      document.getElementById('proxyModal').classList.remove('hidden');
-    }
-
-    function closeProxyModal() {
-      activeTargetIdForProxy = null;
-      document.getElementById('proxyModal').classList.add('hidden');
-    }
-
-    function submitProxyCheckIn() {
-      if (!activeTargetIdForProxy) return;
-      const proxyName = document.getElementById('proxyNameInput').value.trim();
-      const proxyRel = document.getElementById('proxyRelationInput').value.trim();
-
-      if (!proxyName) {
-        showToast('Sila masukkan nama wakil untuk rujukan Emcee!', 'error');
-        return;
-      }
-
-      const guest = attendees.find(g => g.id === activeTargetIdForProxy);
-      if (guest) {
-        guest.status = 'Hadir Wakil';
-        guest.proxyName = proxyRel ? `${proxyName} (${proxyRel})` : proxyName;
-        guest.checkInTime = getCurrentTimeStr();
-        pushDataToCloud();
-        updateDashboardStats();
-        filterData();
-        showToast(`Wakil bagi ${guest.name} berjaya didaftarkan tiba!`, 'success');
-      }
-      closeProxyModal();
-    }
-
-    // =========================================================================
-    // PENGIMBAS KOD QR (CAMERA & MANUAL - TANPA MENDEDAHKAN NAMA ANUGERAH)
-    // =========================================================================
-    function toggleScanner() {
-      if (isScannerRunning) {
-        if (html5QrScanner) {
-          html5QrScanner.stop().then(() => {
-            html5QrScanner.clear();
-            isScannerRunning = false;
-            document.getElementById('scannerPlaceholder').classList.remove('hidden');
-            showToast('Kamera pengimbas dihentikan.', 'info');
-          }).catch(err => console.warn(err));
-        }
-      } else {
-        document.getElementById('scannerPlaceholder').classList.add('hidden');
-        html5QrScanner = new Html5Qrcode("reader");
-        html5QrScanner.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 220, height: 220 } },
-          (decodedText) => {
-            processScannedCode(decodedText.trim());
-          },
-          () => {}
-        ).then(() => {
-          isScannerRunning = true;
-          showToast('Kamera pengimbas QR aktif!', 'success');
-        }).catch(() => {
-          document.getElementById('scannerPlaceholder').classList.remove('hidden');
-          showToast('Gagal membuka kamera. Pastikan kebenaran kamera diberikan.', 'error');
-        });
-      }
-    }
-
-    function handleManualCheckIn() {
-      const input = document.getElementById('manualInput');
-      const code = input.value.trim();
-      if (!code) {
-        showToast('Sila masukkan nama, institusi atau ID tetamu terlebih dahulu.', 'warning');
-        return;
-      }
-
-      // Semak jika padanan ID tepat wujud
-      const exactIdMatch = attendees.find(g => g.id.toUpperCase() === code.toUpperCase());
-      if (exactIdMatch) {
-        document.getElementById('manualSearchMatches').innerHTML = '';
-        processScannedCode(exactIdMatch.id);
-        input.value = '';
-        return;
-      }
-
-      // Jika bukan ID tepat, paparkan senarai carian mengikut nama atau institusi
-      searchManualCheckInMatches(true);
-    }
-
-    function searchManualCheckInMatches(showEmptyWarning = false) {
-      const input = document.getElementById('manualInput');
-      const query = input.value.trim().toLowerCase();
-      const matchesBox = document.getElementById('manualSearchMatches');
-      matchesBox.innerHTML = '';
-
-      if (query.length < 2) {
-        if (showEmptyWarning) {
-          showToast('Sila taip sekurang-kurangnya 2 aksara nama atau institusi.', 'warning');
-        }
-        return;
-      }
-
-      const matches = attendees.filter(g =>
-        g.id.toLowerCase().includes(query) ||
-        g.name.toLowerCase().includes(query) ||
-        (g.institution && g.institution.toLowerCase().includes(query))
-      );
-
-      if (matches.length === 0) {
-        if (showEmptyWarning) {
-          processScannedCode(input.value.trim());
-        } else {
-          matchesBox.innerHTML = `<p class="text-[11px] text-rose-400 italic py-1">Tiada padanan ditemui untuk "${input.value.trim()}".</p>`;
-        }
-        return;
-      }
-
-      matches.forEach(g => {
-        const isCheckedIn = g.status !== 'Belum Hadir';
-        const statusPill = isCheckedIn
-          ? `<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">${g.status}</span>`
-          : `<span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-600">Belum Tiba</span>`;
-
-        const row = document.createElement('div');
-        row.className = 'p-2.5 rounded-lg bg-slate-800/90 border border-slate-700 flex items-center justify-between gap-2';
-        row.innerHTML = `
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-1.5">
-              <span class="font-mono text-[10px] font-bold text-amber-400">${g.id}</span>
-              <span class="text-xs font-bold text-white truncate">${g.name}</span>
-            </div>
-            <p class="text-[10px] text-cyan-300 truncate">${g.institution || '-'} • Meja: ${formatMejaLabel(g.seat)}</p>
-          </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            ${statusPill}
-            <button type="button" onclick="selectManualGuestCheckIn('${g.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold transition">
-              Daftar Tiba
-            </button>
-            <button type="button" onclick="openProxyModal('${g.id}')" class="px-2 py-1 bg-slate-700 hover:bg-amber-600 text-slate-200 hover:text-white rounded text-[11px] font-semibold transition" title="Daftar Wakil">
-              Wakil
-            </button>
-          </div>
-        `;
-        matchesBox.appendChild(row);
-      });
-    }
-
-    function selectManualGuestCheckIn(guestId) {
-      document.getElementById('manualInput').value = '';
-      document.getElementById('manualSearchMatches').innerHTML = '';
-      processScannedCode(guestId);
-    }
-
-    function processScannedCode(code) {
-      const resultBox = document.getElementById('scanResultBox');
-      resultBox.classList.remove('hidden', 'bg-emerald-950/70', 'border-emerald-500', 'bg-rose-950/70', 'border-rose-500');
-
-      const guest = attendees.find(g => g.id.toUpperCase() === code.toUpperCase());
-      if (guest) {
-        if (guest.rsvpStatus === 'Hantar Wakil' && guest.proxyName) {
-          guest.status = 'Hadir Wakil';
-          guest.checkInTime = getCurrentTimeStr();
-          pushDataToCloud();
-          updateDashboardStats();
-          filterData();
-          showToast(`Wakil berdaftar (${guest.proxyName}) disahkan tiba!`, 'success');
-        } else {
-          markSelfPresent(guest.id);
-        }
-
-        resultBox.classList.add('bg-emerald-950/70', 'border-emerald-500');
-        resultBox.innerHTML = `
-          <div class="flex items-start gap-3">
-            <i class="fa-solid fa-circle-check text-emerald-400 text-xl mt-0.5"></i>
-            <div>
-              <p class="text-xs font-extrabold text-emerald-400 uppercase">Pendaftaran Foyer Berjaya (${guest.id})</p>
-              <p class="text-sm font-bold text-white mt-0.5">${guest.name}</p>
-              <p class="text-xs text-cyan-300 font-semibold mt-0.5"><i class="fa-solid fa-building-columns mr-1"></i>${guest.institution || '-'}</p>
-              <p class="text-xs text-slate-300 mt-1">Kategori: <b>${guest.category}</b> • Meja: <b>${formatMejaLabel(guest.seat)}</b></p>
-              <p class="text-xs text-cyan-300 mt-0.5">Status RSVP Awal: <b>${guest.rsvpStatus || 'Menunggu RSVP'}</b></p>
-              ${guest.proxyName ? `<p class="text-xs text-amber-300 mt-0.5">Wakil: <b>${guest.proxyName}</b></p>` : ''}
-              ${guest.notes ? `<p class="text-xs text-amber-300 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${guest.notes}</p>` : ''}
-            </div>
-          </div>
-        `;
-      } else {
-        resultBox.classList.add('bg-rose-950/70', 'border-rose-500');
-        resultBox.innerHTML = `
-          <div class="flex items-start gap-3">
-            <i class="fa-solid fa-circle-xmark text-rose-400 text-xl mt-0.5"></i>
-            <div>
-              <p class="text-xs font-extrabold text-rose-400 uppercase">ID Tidak Ditemui: "${code}"</p>
-              <p class="text-xs text-slate-300 mt-0.5">Sila semak ejaan ID atau rujuk Meja Penyelesaian Masalah (Troubleshooting Desk).</p>
-            </div>
-          </div>
-        `;
-        showToast(`ID "${code}" tiada dalam pangkalan data!`, 'error');
-      }
-    }
-
-    // =========================================================================
-    // MODUL PHOTOBOOTH DIGITAL DIVA 2026
+    // MODUL PHOTOBOOTH DIGITAL DIVA 2026 (TEMPLATE JPG TUNGGAL SHARED CLOUD)
     // =========================================================================
     function checkBoothOrientation() {
       const wrapper = document.getElementById('boothCameraWrapper');
-      const overlayImg = document.getElementById('boothOverlayImg');
-      if (!wrapper || !overlayImg) return;
+      if (!wrapper) return;
 
       if (window.innerHeight > window.innerWidth) {
         isBoothPortrait = true;
         wrapper.style.aspectRatio = "9 / 16";
         wrapper.style.maxWidth = "440px";
-        if (!customUploadedFrameDataUrl) {
-          overlayImg.src = "bingkai_diva_portrait.png";
-        }
       } else {
         isBoothPortrait = false;
         wrapper.style.aspectRatio = "16 / 9";
         wrapper.style.maxWidth = "100%";
-        if (!customUploadedFrameDataUrl) {
-          overlayImg.src = "bingkai_diva_landscape.png";
-        }
       }
     }
 
-    function handleOverlayImgError() {
-      const overlayImg = document.getElementById('boothOverlayImg');
-      if (overlayImg) overlayImg.classList.add('hidden');
-      if (selectedBoothFrame === 'custom_png' && !customUploadedFrameDataUrl) {
-        selectBoothFrame('gold', true);
+    function updateJpgWindowScale(val) {
+      sharedBoothWindowScale = parseInt(val, 10) || 78;
+      const lbl = document.getElementById('jpgWindowScaleLabel');
+      if (lbl) lbl.innerText = sharedBoothWindowScale + '%';
+    }
+
+    async function syncBoothTemplateSettingsToCloud() {
+      if (!firebaseDbUrl || !sharedBoothTemplateDataUrl) return;
+      const templateUrl = firebaseDbUrl.replace(/\/$/, '') + '/diva2026_booth_template.json';
+      try {
+        await fetch(templateUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageData: sharedBoothTemplateDataUrl,
+            windowScale: sharedBoothWindowScale,
+            updatedAt: new Date().toISOString()
+          })
+        });
+        showToast('Saiz tingkap template dikemas kini untuk semua peserta!', 'success');
+      } catch (e) {
+        showToast('Disimpan secara tempatan.', 'info');
       }
     }
 
-    function handleCustomFrameUpload(event) {
+    function handleAdminBoothTemplateUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
-        customUploadedFrameDataUrl = e.target.result;
-        const overlayImg = document.getElementById('boothOverlayImg');
-        overlayImg.src = customUploadedFrameDataUrl;
-        selectBoothFrame('custom_png');
-        if (boothStream) {
-          overlayImg.classList.remove('hidden');
-        }
-        showToast('Bingkai PNG pilihan anda berjaya dimuatkan!', 'success');
-      };
-      reader.readAsDataURL(file);
-    }
+        const rawImg = new Image();
+        rawImg.onload = async function() {
+          // Mampatkan resolusi imej secara optimum (maksimum lebar 1600px, kualiti 0.85) supaya pantas dimuat turun oleh semua telefon peserta dari Firebase
+          const maxDim = 1600;
+          let targetW = rawImg.width;
+          let targetH = rawImg.height;
+          if (targetW > maxDim || targetH > maxDim) {
+            if (targetW > targetH) {
+              targetH = Math.round((targetH * maxDim) / targetW);
+              targetW = maxDim;
+            } else {
+              targetW = Math.round((targetW * maxDim) / targetH);
+              targetH = maxDim;
+            }
+          }
+          const compressCanvas = document.createElement('canvas');
+          compressCanvas.width = targetW;
+          compressCanvas.height = targetH;
+          const cCtx = compressCanvas.getContext('2d');
+          cCtx.drawImage(rawImg, 0, 0, targetW, targetH);
 
-    function handleVirtualBgUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          virtualBgImageObj = img;
-          selectBoothFrame('virtual_bg');
-          showToast('Gambar JPG berjaya dimuatkan sebagai lapisan hadapan!', 'success');
+          const optimizedDataUrl = compressCanvas.toDataURL('image/jpeg', 0.85);
+          applyBoothTemplateDataUrl(optimizedDataUrl, sharedBoothWindowScale);
+
+          if (firebaseDbUrl) {
+            const templateUrl = firebaseDbUrl.replace(/\/$/, '') + '/diva2026_booth_template.json';
+            try {
+              const res = await fetch(templateUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  imageData: optimizedDataUrl,
+                  windowScale: sharedBoothWindowScale,
+                  updatedAt: new Date().toISOString()
+                })
+              });
+              if (res.ok) {
+                showToast('Template JPG berjaya dimuat naik & kini aktif untuk SEMUA peserta!', 'success');
+              } else {
+                showToast('Template dimuatkan secara tempatan (Semak sambungan Firebase).', 'warning');
+              }
+            } catch (err) {
+              showToast('Template dimuatkan secara tempatan.', 'warning');
+            }
+          } else {
+            showToast('Template JPG berjaya dimuatkan!', 'success');
+          }
         };
-        img.src = e.target.result;
+        rawImg.src = e.target.result;
       };
       reader.readAsDataURL(file);
+      event.target.value = '';
     }
 
     function drawJpgForegroundLayer(ctx, w, h) {
-      if (!virtualBgImageObj || !virtualBgImageObj.complete) return;
+      if (!virtualBgImageObj || !virtualBgImageObj.complete) {
+        // Bingkai sandaran elegan jika Admin belum memuat naik gambar JPG lagi
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 28;
+        ctx.strokeRect(14, 14, w - 28, h - 28);
+        return;
+      }
 
       const scaleSlider = document.getElementById('jpgWindowScaleSlider');
-      const windowScale = scaleSlider ? (parseInt(scaleSlider.value, 10) / 100) : 0.78;
+      const windowScale = scaleSlider ? (parseInt(scaleSlider.value, 10) / 100) : (sharedBoothWindowScale / 100);
 
       // Lukis gambar JPG ke atas kanvas sementara dan jadikan bahagian tengah lutsinar supaya kamera kelihatan di belakang
       const tempCanvas = document.createElement('canvas');
@@ -2335,7 +1411,7 @@
       }
       tCtx.drawImage(virtualBgImageObj, offsetX, offsetY, drawW, drawH);
 
-      // Tebuk bahagian tengah secara lembut (feathered cutout) supaya orang di kamera berada di belakang bingkai JPG
+      // Tebuk bahagian tengah secara lembut supaya orang di kamera berada di belakang bingkai JPG
       const holeW = w * windowScale;
       const holeH = h * (windowScale * 0.92);
       const holeX = (w - holeW) / 2;
@@ -2359,14 +1435,14 @@
       tCtx.fill();
       tCtx.restore();
 
-      // Lukis bingkai JPG tersebut di atas lapisan video (foreground)
+      // Lukis bingkai JPG tersebut di atas lapisan video (foreground layer)
       ctx.drawImage(tempCanvas, 0, 0, w, h);
     }
 
     function renderVirtualBgPreviewFrame() {
       const liveCanvas = document.getElementById('virtualBgLiveCanvas');
       const video = document.getElementById('photoboothVideo');
-      if (!liveCanvas || !video || selectedBoothFrame !== 'virtual_bg') return;
+      if (!liveCanvas || !video) return;
 
       const w = video.videoWidth || 1280;
       const h = video.videoHeight || 720;
@@ -2390,7 +1466,7 @@
         ctx.drawImage(video, 0, 0, w, h);
       }
 
-      // Lapisan 2 (Hadapan): Gambar JPG yang dimuat naik
+      // Lapisan 2 (Hadapan): Template JPG Rasmi yang dimuat naik oleh Admin
       drawJpgForegroundLayer(ctx, w, h);
       ctx.restore();
     }
@@ -2398,7 +1474,7 @@
     async function runVirtualBgLoop() {
       if (!isVirtualBgLoopRunning) return;
       const video = document.getElementById('photoboothVideo');
-      if (selectedBoothFrame === 'virtual_bg' && boothStream && video && video.readyState >= 2) {
+      if (boothStream && video && video.readyState >= 2) {
         renderVirtualBgPreviewFrame();
       }
       if (isVirtualBgLoopRunning) {
@@ -2430,77 +1506,16 @@
       }
     }
 
-    function selectBoothFrame(theme, isFallback = false) {
-      selectedBoothFrame = theme;
-      const vbgBtn = document.getElementById('frameBtnVirtualBg');
-      const pngBtn = document.getElementById('frameBtnPng');
-      const goldBtn = document.getElementById('frameBtnGold');
-      const cyberBtn = document.getElementById('frameBtnCyber');
-      const overlayImg = document.getElementById('boothOverlayImg');
-      const videoEl = document.getElementById('photoboothVideo');
-      const liveVbgCanvas = document.getElementById('virtualBgLiveCanvas');
-      const resultCanvas = document.getElementById('photoboothCanvas');
-      const jpgSliderBox = document.getElementById('jpgTransparencyControl');
-
-      [vbgBtn, pngBtn, goldBtn, cyberBtn].forEach(btn => {
-        if (!btn) return;
-        btn.classList.remove('border-2', 'border-amber-500', 'border-cyan-400', 'border-emerald-400');
-        btn.classList.add('border', 'border-slate-700');
-      });
-
-      const isCameraActive = boothStream && resultCanvas.classList.contains('hidden');
-
-      if (theme === 'virtual_bg') {
-        vbgBtn.classList.remove('border', 'border-slate-700');
-        vbgBtn.classList.add('border-2', 'border-emerald-400');
-        if (jpgSliderBox) jpgSliderBox.classList.remove('hidden');
-        overlayImg.classList.add('hidden');
-        if (isCameraActive) {
-          videoEl.classList.add('hidden');
-          liveVbgCanvas.classList.remove('hidden');
-          if (!isVirtualBgLoopRunning) {
-            isVirtualBgLoopRunning = true;
-            runVirtualBgLoop();
-          }
-        }
-        if (!virtualBgImageObj) {
-          showToast('Klik "Pilih Fail JPG" di bawah untuk masukkan gambar lapisan hadapan anda!', 'info');
-        }
-      } else if (theme === 'custom_png') {
-        pngBtn.classList.remove('border', 'border-slate-700');
-        pngBtn.classList.add('border-2', 'border-amber-500');
-        if (jpgSliderBox) jpgSliderBox.classList.add('hidden');
-        liveVbgCanvas.classList.add('hidden');
-        if (isCameraActive) {
-          videoEl.classList.remove('hidden');
-          overlayImg.classList.remove('hidden');
-        }
-      } else if (theme === 'gold') {
-        goldBtn.classList.remove('border', 'border-slate-700');
-        goldBtn.classList.add('border-2', 'border-amber-500');
-        if (jpgSliderBox) jpgSliderBox.classList.add('hidden');
-        overlayImg.classList.add('hidden');
-        liveVbgCanvas.classList.add('hidden');
-        if (isCameraActive) videoEl.classList.remove('hidden');
-        if (isFallback) {
-          showToast('Fail bingkai PNG belum dijumpai di folder GitHub; menggunakan bingkai Royal Gold.', 'info');
-        }
-      } else {
-        cyberBtn.classList.remove('border', 'border-slate-700');
-        cyberBtn.classList.add('border-2', 'border-cyan-400');
-        if (jpgSliderBox) jpgSliderBox.classList.add('hidden');
-        overlayImg.classList.add('hidden');
-        liveVbgCanvas.classList.add('hidden');
-        if (isCameraActive) videoEl.classList.remove('hidden');
-      }
-    }
-
     async function startPhotoboothCamera() {
       const video = document.getElementById('photoboothVideo');
       const liveVbgCanvas = document.getElementById('virtualBgLiveCanvas');
       const canvas = document.getElementById('photoboothCanvas');
       const placeholder = document.getElementById('boothPlaceholder');
-      const overlayImg = document.getElementById('boothOverlayImg');
+
+      // Pastikan template terkini ditarik jika belum dimuatkan
+      if (!virtualBgImageObj) {
+        loadSharedBoothTemplate();
+      }
 
       if (boothStream) {
         boothStream.getTracks().forEach(track => track.stop());
@@ -2536,21 +1551,10 @@
         canvas.classList.add('hidden');
         placeholder.classList.add('hidden');
 
-        if (selectedBoothFrame === 'virtual_bg') {
-          video.classList.add('hidden');
-          liveVbgCanvas.classList.remove('hidden');
-          overlayImg.classList.add('hidden');
-          isVirtualBgLoopRunning = true;
-          runVirtualBgLoop();
-        } else {
-          video.classList.remove('hidden');
-          liveVbgCanvas.classList.add('hidden');
-          if (selectedBoothFrame === 'custom_png' && overlayImg.naturalHeight !== 0) {
-            overlayImg.classList.remove('hidden');
-          } else {
-            overlayImg.classList.add('hidden');
-          }
-        }
+        video.classList.add('hidden');
+        liveVbgCanvas.classList.remove('hidden');
+        isVirtualBgLoopRunning = true;
+        runVirtualBgLoop();
 
         document.getElementById('boothResultActions').classList.add('hidden');
         document.getElementById('btnStartBooth').classList.add('hidden');
@@ -2573,7 +1577,6 @@
       }
       document.getElementById('photoboothVideo').classList.add('hidden');
       document.getElementById('virtualBgLiveCanvas').classList.add('hidden');
-      document.getElementById('boothOverlayImg').classList.add('hidden');
       document.getElementById('boothPlaceholder').classList.remove('hidden');
       document.getElementById('btnStartBooth').classList.remove('hidden');
       document.getElementById('btnStopBooth').classList.add('hidden');
@@ -2613,7 +1616,6 @@
       const video = document.getElementById('photoboothVideo');
       const liveVbgCanvas = document.getElementById('virtualBgLiveCanvas');
       const canvas = document.getElementById('photoboothCanvas');
-      const overlayImg = document.getElementById('boothOverlayImg');
       const ctx = canvas.getContext('2d');
 
       if (isBoothPortrait) {
@@ -2628,152 +1630,66 @@
       const guestTitle = document.getElementById('boothGuestTitle').value.trim() || 'Red Carpet Gala Night';
       const includeNameOnPng = document.getElementById('chkIncludeNameOnPng').checked;
 
-      if (selectedBoothFrame === 'virtual_bg') {
-        // Lapisan 1 (Belakang): Lukis gambar kamera langsung
-        let sWidth = video.videoWidth;
-        let sHeight = video.videoHeight;
-        let sx = 0, sy = 0;
-        const targetRatio = canvas.width / canvas.height;
-        const videoRatio = sWidth / sHeight;
+      // Lapisan 1 (Belakang): Lukis gambar kamera langsung
+      let sWidth = video.videoWidth;
+      let sHeight = video.videoHeight;
+      let sx = 0, sy = 0;
+      const targetRatio = canvas.width / canvas.height;
+      const videoRatio = sWidth / sHeight;
 
-        if (videoRatio > targetRatio) {
-          let newWidth = sHeight * targetRatio;
-          sx = (sWidth - newWidth) / 2;
-          sWidth = newWidth;
-        } else {
-          let newHeight = sWidth / targetRatio;
-          sy = (sHeight - newHeight) / 2;
-          sHeight = newHeight;
-        }
-
-        if (boothFacingMode === "user") {
-          ctx.save();
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-          ctx.restore();
-        } else {
-          ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-        }
-
-        // Lapisan 2 (Hadapan): Lukis gambar JPG yang dimuat naik sebagai bingkai lapisan hadapan
-        drawJpgForegroundLayer(ctx, canvas.width, canvas.height);
-
-        // Tambah nama tetamu di bahagian bawah jika ditanda
-        if (includeNameOnPng) {
-          const grad = ctx.createLinearGradient(0, canvas.height - 170, 0, canvas.height);
-          grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
-          grad.addColorStop(0.4, 'rgba(2, 6, 23, 0.85)');
-          grad.addColorStop(1, 'rgba(2, 6, 23, 0.96)');
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, canvas.height - 170, canvas.width, 170);
-
-          ctx.fillStyle = '#fbbf24';
-          ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
-          ctx.fillText('DIVA 2026', 64, canvas.height - 92);
-
-          ctx.fillStyle = '#e2e8f0';
-          ctx.font = '500 18px Plus Jakarta Sans, sans-serif';
-          ctx.fillText('DIGITAL INNOVATIONS AND VISIONARIES AWARDS', 64, canvas.height - 58);
-
-          ctx.textAlign = 'right';
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 32px Plus Jakarta Sans, sans-serif';
-          ctx.fillText(guestName, canvas.width - 64, canvas.height - 92);
-
-          ctx.fillStyle = '#fbbf24';
-          ctx.font = '600 20px Plus Jakarta Sans, sans-serif';
-          ctx.fillText(guestTitle, canvas.width - 64, canvas.height - 58);
-          ctx.textAlign = 'left';
-        }
+      if (videoRatio > targetRatio) {
+        let newWidth = sHeight * targetRatio;
+        sx = (sWidth - newWidth) / 2;
+        sWidth = newWidth;
       } else {
-        let sWidth = video.videoWidth;
-        let sHeight = video.videoHeight;
-        let sx = 0, sy = 0;
-        const targetRatio = canvas.width / canvas.height;
-        const videoRatio = sWidth / sHeight;
+        let newHeight = sWidth / targetRatio;
+        sy = (sHeight - newHeight) / 2;
+        sHeight = newHeight;
+      }
 
-        if (videoRatio > targetRatio) {
-          let newWidth = sHeight * targetRatio;
-          sx = (sWidth - newWidth) / 2;
-          sWidth = newWidth;
-        } else {
-          let newHeight = sWidth / targetRatio;
-          sy = (sHeight - newHeight) / 2;
-          sHeight = newHeight;
-        }
+      if (boothFacingMode === "user") {
+        ctx.save();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      } else {
+        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+      }
 
-        if (boothFacingMode === "user") {
-          ctx.save();
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-          ctx.restore();
-        } else {
-          ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-        }
+      // Lapisan 2 (Hadapan): Lukis template JPG yang dimuat naik oleh Admin
+      drawJpgForegroundLayer(ctx, canvas.width, canvas.height);
 
-        if (selectedBoothFrame === 'custom_png' && overlayImg.complete && overlayImg.naturalHeight !== 0) {
-          ctx.drawImage(overlayImg, 0, 0, canvas.width, canvas.height);
+      // Tambah nama tetamu di bahagian bawah jika ditanda
+      if (includeNameOnPng) {
+        const grad = ctx.createLinearGradient(0, canvas.height - 170, 0, canvas.height);
+        grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
+        grad.addColorStop(0.4, 'rgba(2, 6, 23, 0.85)');
+        grad.addColorStop(1, 'rgba(2, 6, 23, 0.96)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, canvas.height - 170, canvas.width, 170);
 
-          if (includeNameOnPng && document.getElementById('boothGuestName').value.trim() !== '') {
-            const badgeHeight = 110;
-            const grad = ctx.createLinearGradient(0, canvas.height - badgeHeight, 0, canvas.height);
-            grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
-            grad.addColorStop(0.4, 'rgba(2, 6, 23, 0.85)');
-            grad.addColorStop(1, 'rgba(2, 6, 23, 0.95)');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, canvas.height - badgeHeight, canvas.width, badgeHeight);
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
+        ctx.fillText('DIVA 2026', 64, canvas.height - 92);
 
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
-            ctx.fillText(guestName, canvas.width / 2, canvas.height - 56);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '500 18px Plus Jakarta Sans, sans-serif';
+        ctx.fillText('DIGITAL INNOVATIONS AND VISIONARIES AWARDS', 64, canvas.height - 58);
 
-            ctx.fillStyle = '#fbbf24';
-            ctx.font = '600 22px Plus Jakarta Sans, sans-serif';
-            ctx.fillText(guestTitle, canvas.width / 2, canvas.height - 24);
-            ctx.textAlign = 'left';
-          }
-        } else {
-          const isGold = selectedBoothFrame !== 'cyber';
-          const primaryColor = isGold ? '#f59e0b' : '#22d3ee';
-          const secondaryColor = isGold ? '#fbbf24' : '#38bdf8';
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 32px Plus Jakarta Sans, sans-serif';
+        ctx.fillText(guestName, canvas.width - 64, canvas.height - 92);
 
-          ctx.strokeStyle = primaryColor;
-          ctx.lineWidth = 32;
-          ctx.strokeRect(16, 16, canvas.width - 32, canvas.height - 32);
-
-          const grad = ctx.createLinearGradient(0, canvas.height - 200, 0, canvas.height);
-          grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
-          grad.addColorStop(0.35, 'rgba(2, 6, 23, 0.88)');
-          grad.addColorStop(1, 'rgba(2, 6, 23, 0.98)');
-          ctx.fillStyle = grad;
-          ctx.fillRect(32, canvas.height - 200, canvas.width - 64, 168);
-
-          ctx.fillStyle = secondaryColor;
-          ctx.font = 'bold 38px Plus Jakarta Sans, sans-serif';
-          ctx.fillText('DIVA 2026', 72, canvas.height - 110);
-
-          ctx.fillStyle = '#e2e8f0';
-          ctx.font = '500 20px Plus Jakarta Sans, sans-serif';
-          ctx.fillText('DIGITAL INNOVATIONS AND VISIONARIES AWARDS', 72, canvas.height - 72);
-
-          ctx.textAlign = 'right';
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
-          ctx.fillText(guestName, canvas.width - 72, canvas.height - 108);
-
-          ctx.fillStyle = secondaryColor;
-          ctx.font = '600 22px Plus Jakarta Sans, sans-serif';
-          ctx.fillText(guestTitle, canvas.width - 72, canvas.height - 70);
-          ctx.textAlign = 'left';
-        }
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '600 20px Plus Jakarta Sans, sans-serif';
+        ctx.fillText(guestTitle, canvas.width - 64, canvas.height - 58);
+        ctx.textAlign = 'left';
       }
 
       video.classList.add('hidden');
       liveVbgCanvas.classList.add('hidden');
-      overlayImg.classList.add('hidden');
       canvas.classList.remove('hidden');
       document.getElementById('boothResultActions').classList.remove('hidden');
 
@@ -2803,14 +1719,7 @@
 
     function retakePhotobooth() {
       document.getElementById('photoboothCanvas').classList.add('hidden');
-      if (selectedBoothFrame === 'virtual_bg') {
-        document.getElementById('virtualBgLiveCanvas').classList.remove('hidden');
-      } else {
-        document.getElementById('photoboothVideo').classList.remove('hidden');
-        if (selectedBoothFrame === 'custom_png' && document.getElementById('boothOverlayImg').naturalHeight !== 0) {
-          document.getElementById('boothOverlayImg').classList.remove('hidden');
-        }
-      }
+      document.getElementById('virtualBgLiveCanvas').classList.remove('hidden');
       document.getElementById('boothResultActions').classList.add('hidden');
     }
 
