@@ -459,7 +459,7 @@
               </button>
             </div>
             <p id="lensStatusHint" class="text-[10px] text-cyan-300 mt-1">
-              <i class="fa-solid fa-expand mr-1"></i>Sudut Luas (0.5x Ultra-Wide) aktif untuk gambar berkumpulan.
+              <i class="fa-solid fa-expand mr-1"></i>Lebar Penuh Kiri-Kanan (0.5x Wide) aktif tanpa potong tepi.
             </p>
 
             <!-- Pelaras Jarak & Kedudukan Atas/Bawah Peserta Supaya Perkataan DIVA Pada Latar Jelas -->
@@ -467,19 +467,19 @@
               <div>
                 <div class="flex items-center justify-between text-[11px] mb-1">
                   <span class="text-amber-300 font-semibold"><i class="fa-solid fa-arrows-up-down mr-1"></i>Posisi Atas / Bawah:</span>
-                  <span id="subjectVerticalLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">3% (Atas)</span>
+                  <span id="subjectVerticalLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">4% (Atas)</span>
                 </div>
-                <input type="range" id="subjectVerticalSlider" min="0" max="25" value="3" oninput="updateSubjectVerticalLabel(this.value)" class="w-full accent-cyan-400 cursor-pointer">
+                <input type="range" id="subjectVerticalSlider" min="0" max="25" value="4" oninput="updateSubjectVerticalLabel(this.value)" class="w-full accent-cyan-400 cursor-pointer">
               </div>
 
               <div>
                 <div class="flex items-center justify-between text-[11px] mb-1">
-                  <span class="text-amber-300 font-semibold"><i class="fa-solid fa-person-walking-arrow-right mr-1"></i>Jarak Peserta (Saiz):</span>
-                  <span id="subjectScaleLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">54% (Jauh)</span>
+                  <span class="text-amber-300 font-semibold"><i class="fa-solid fa-person-walking-arrow-right mr-1"></i>Ketinggian Badan (Zoom Out):</span>
+                  <span id="subjectScaleLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">55% (Penuh Kiri-Kanan)</span>
                 </div>
-                <input type="range" id="subjectScaleSlider" min="40" max="90" value="54" oninput="updateSubjectScaleLabel(this.value)" class="w-full accent-amber-500 cursor-pointer">
+                <input type="range" id="subjectScaleSlider" min="40" max="90" value="55" oninput="updateSubjectScaleLabel(this.value)" class="w-full accent-amber-500 cursor-pointer">
               </div>
-              <p class="text-[10px] text-slate-400">Naikkan posisi ke atas (<b>0% - 5%</b>) supaya logo & teks <b>DIVA</b> di bahagian bawah terdedah sepenuhnya.</p>
+              <p class="text-[10px] text-slate-400">Ruang kamera kini merentangi <b>100% lebar kiri ke kanan</b> supaya peserta berkumpulan tidak terpotong tepi.</p>
             </div>
           </div>
 
@@ -916,8 +916,8 @@
     let boothStream = null;
     let boothFacingMode = "user";
     let boothLensMode = "wide"; // 'normal' (1.0x), 'wide' (0.5x ultra-wide), 'fisheye360' (360 spherical wide)
-    let boothSubjectScale = 0.54; // Skala jarak peserta (0.54 = jauh di bahagian atas supaya tulisan DIVA di bawah terdedah penuh)
-    let boothSubjectOffsetY = 0.03; // Posisi menegak dari atas (0.03 = 3% dari atas)
+    let boothSubjectScale = 0.55; // Ketinggian menegak ruang kamera (100% lebar kiri ke kanan supaya tidak terpotong tepi!)
+    let boothSubjectOffsetY = 0.04; // Posisi menegak dari atas (0.04 = 4% dari atas)
     let isBoothPortrait = true;
     let virtualBgImageObj = null;
     let sharedBoothTemplateDataUrl = localStorage.getItem('DIVA_SHARED_BOOTH_JPG') || "";
@@ -1412,6 +1412,7 @@
       }
 
       if (boothLensMode === 'fisheye360') {
+        // Unjuran kanta sfera 360° sudut ultra-luas (memampatkan bahagian tepi masuk ke dalam supaya semua orang di kiri/kanan masuk penuh)
         const tempVid = document.createElement('canvas');
         tempVid.width = targetW;
         tempVid.height = targetH;
@@ -1422,14 +1423,17 @@
         }
         tCtx.drawImage(video, 0, 0, sWidth, sHeight, 0, 0, targetW, targetH);
 
-        const slices = 36;
-        const sliceH = targetH / slices;
-        for (let i = 0; i < slices; i++) {
-          const normY = (i / (slices - 1)) * 2 - 1;
-          const bulge = 1 + 0.16 * (1 - normY * normY);
-          const drawW = targetW * bulge;
-          const drawX = (targetW - drawW) / 2;
-          ctx.drawImage(tempVid, 0, i * sliceH, targetW, sliceH + 1, drawX, i * sliceH, drawW, sliceH + 1);
+        const strips = 48;
+        const stripW = targetW / strips;
+        for (let i = 0; i < strips; i++) {
+          const u = (i / (strips - 1)) * 2 - 1; // -1 (kiri) hingga +1 (kanan)
+          // Pemetaan sfera (barrel/fisheye compression): bahagian tengah lebih fokus, tepi kiri-kanan ditarik masuk
+          const mappedU = Math.sign(u) * Math.pow(Math.abs(u), 0.72);
+          const srcX = ((mappedU + 1) / 2) * (targetW - stripW);
+          const archCurve = 1 - 0.14 * (u * u);
+          const drawH = targetH * archCurve;
+          const drawY = (targetH - drawH) / 2;
+          ctx.drawImage(tempVid, srcX, 0, stripW + 1, targetH, i * stripW, drawY, stripW + 1, drawH);
         }
         return;
       }
@@ -1462,9 +1466,9 @@
       const hint = document.getElementById('lensStatusHint');
       if (hint) {
         if (mode === 'fisheye360') {
-          hint.innerHTML = `<i class="fa-solid fa-globe mr-1"></i>Mod 360° Wide Angle (Sfera Panorama) aktif!`;
+          hint.innerHTML = `<i class="fa-solid fa-globe mr-1"></i>Mod 360° Wide Angle (Sfera Panorama Kiri-Kanan) aktif!`;
         } else if (mode === 'wide') {
-          hint.innerHTML = `<i class="fa-solid fa-expand mr-1"></i>Sudut Luas (0.5x Ultra-Wide) aktif untuk gambar berkumpulan.`;
+          hint.innerHTML = `<i class="fa-solid fa-expand mr-1"></i>Lebar Penuh Kiri-Kanan (0.5x Wide) aktif tanpa potong tepi.`;
         } else {
           hint.innerHTML = `<i class="fa-solid fa-user mr-1"></i>Sudut Standard (1.0x Normal) aktif.`;
         }
@@ -1488,11 +1492,11 @@
     }
 
     function updateSubjectScaleLabel(val) {
-      const num = parseInt(val, 10) || 54;
+      const num = parseInt(val, 10) || 55;
       boothSubjectScale = num / 100;
       const lbl = document.getElementById('subjectScaleLabel');
       if (lbl) {
-        lbl.innerText = num <= 60 ? `${num}% (Jauh)` : (num <= 78 ? `${num}% (Sederhana)` : `${num}% (Dekat)`);
+        lbl.innerText = num <= 62 ? `${num}% (Penuh Kiri-Kanan)` : (num <= 78 ? `${num}% (Sederhana)` : `${num}% (Tinggi)`);
       }
     }
 
@@ -1509,22 +1513,22 @@
       const ctx = canvasEl.getContext('2d');
       const w = canvasEl.width;
       const h = canvasEl.height;
-      // Cairkan 18% bahagian paling bawah potongan supaya tiada garis petak tajam kelihatan
+      // Cairkan 22% bahagian paling bawah potongan supaya bercantum lembut di atas logo DIVA tanpa garis petak tajam
       ctx.save();
       ctx.globalCompositeOperation = 'destination-out';
-      const fadeGrad = ctx.createLinearGradient(0, h * 0.80, 0, h);
+      const fadeGrad = ctx.createLinearGradient(0, h * 0.76, 0, h);
       fadeGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
       fadeGrad.addColorStop(1, 'rgba(0, 0, 0, 1)');
       ctx.fillStyle = fadeGrad;
-      ctx.fillRect(0, h * 0.80, w, h * 0.20);
+      ctx.fillRect(0, h * 0.76, w, h * 0.24);
       ctx.restore();
     }
 
     function drawScaledSubjectLayer(ctx, sourceCanvas, targetW, targetH) {
-      const scale = boothSubjectScale;
-      const drawW = Math.round(targetW * scale);
-      const drawH = Math.round(targetH * scale);
-      const offsetX = Math.round((targetW - drawW) / 2);
+      // Sentiasa guna LEBAR PENUH (100% dari hujung kiri ke hujung kanan) supaya bahu/lengan peserta kiri-kanan TIDAK terpotong kotak!
+      const drawW = targetW;
+      const drawH = Math.round(targetH * boothSubjectScale);
+      const offsetX = 0;
       const offsetY = Math.round(targetH * boothSubjectOffsetY);
       ctx.drawImage(sourceCanvas, offsetX, offsetY, drawW, drawH);
     }
@@ -1534,24 +1538,27 @@
       // Pada pratonton langsung kamera depan, cerminkan (mirror); pada gambar akhir yang disimpan, jangan cerminkan supaya tanda nama terbaca betul!
       const shouldMirror = (boothFacingMode === "user") && !isFinalCapture;
 
+      // Nisbah tinggi kanvas sumber dipadankan dengan tinggi paparan supaya wajah/badan kekal berkadaran semula jadi (tidak penyek/lonjong)
+      const srcCanvasH = Math.max(320, Math.round(targetH * boothSubjectScale));
+
       if (useAiJpg && latestSegmentationMask) {
         const personCanvas = document.createElement('canvas');
         personCanvas.width = targetW;
-        personCanvas.height = targetH;
+        personCanvas.height = srcCanvasH;
         const pCtx = personCanvas.getContext('2d');
 
         if (shouldMirror) {
           pCtx.save();
           pCtx.translate(targetW, 0);
           pCtx.scale(-1, 1);
-          pCtx.drawImage(latestSegmentationMask, 0, 0, targetW, targetH);
+          pCtx.drawImage(latestSegmentationMask, 0, 0, targetW, srcCanvasH);
           pCtx.restore();
         } else {
-          pCtx.drawImage(latestSegmentationMask, 0, 0, targetW, targetH);
+          pCtx.drawImage(latestSegmentationMask, 0, 0, targetW, srcCanvasH);
         }
 
         pCtx.globalCompositeOperation = 'source-in';
-        drawCroppedVideo(pCtx, video, targetW, targetH, shouldMirror);
+        drawCroppedVideo(pCtx, video, targetW, srcCanvasH, shouldMirror);
         applySoftBottomFade(personCanvas);
 
         drawCoverImage(ctx, virtualBgImageObj, targetW, targetH);
@@ -1560,11 +1567,11 @@
         drawCoverImage(ctx, virtualBgImageObj, targetW, targetH);
         const tempVidCanvas = document.createElement('canvas');
         tempVidCanvas.width = targetW;
-        tempVidCanvas.height = targetH;
-        drawCroppedVideo(tempVidCanvas.getContext('2d'), video, targetW, targetH, shouldMirror);
+        tempVidCanvas.height = srcCanvasH;
+        drawCroppedVideo(tempVidCanvas.getContext('2d'), video, targetW, srcCanvasH, shouldMirror);
         applySoftBottomFade(tempVidCanvas);
         ctx.save();
-        ctx.globalAlpha = 0.9;
+        ctx.globalAlpha = 0.92;
         drawScaledSubjectLayer(ctx, tempVidCanvas, targetW, targetH);
         ctx.restore();
       } else {
@@ -1653,16 +1660,32 @@
       video.style.transform = (boothFacingMode === "user") ? "scaleX(-1)" : "scaleX(1)";
 
       setTimeout(async () => {
+        // Cuba kesan peranti kamera sudut ultra-luas (0.5x / ultra-wide) jika disokong oleh telefon
+        let preferredDeviceId = null;
         try {
-          const constraints = {
-            video: {
-              facingMode: boothFacingMode === "environment" ? { exact: "environment" } : "user",
-              width: { ideal: 1920 },
-              height: { ideal: 1080 }
-            },
-            audio: false
-          };
-          boothStream = await navigator.mediaDevices.getUserMedia(constraints);
+          if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoInputs = devices.filter(d => d.kind === 'videoinput');
+            const targetHint = boothFacingMode === "user" ? "front" : "back";
+            const ultraWideCam = videoInputs.find(d => {
+              const lbl = (d.label || '').toLowerCase();
+              return lbl.includes(targetHint) && (lbl.includes('ultra') || lbl.includes('wide') || lbl.includes('0.5') || lbl.includes('0.6'));
+            });
+            if (ultraWideCam && boothLensMode !== 'normal') {
+              preferredDeviceId = ultraWideCam.deviceId;
+            }
+          }
+        } catch (e) {}
+
+        try {
+          const videoConstraints = preferredDeviceId
+            ? { deviceId: { exact: preferredDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+            : {
+                facingMode: boothFacingMode === "environment" ? { exact: "environment" } : "user",
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
+              };
+          boothStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
         } catch (err) {
           try {
             boothStream = await navigator.mediaDevices.getUserMedia({
