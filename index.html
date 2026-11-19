@@ -424,18 +424,18 @@
             <!-- Kawalan Khas Admin Sahaja (Upload Sekali untuk Semua Peserta) -->
             <div id="adminBoothTemplateControls" class="hidden pt-2.5 border-t border-slate-700/80 space-y-2.5">
               <div class="flex items-center justify-between gap-2">
-                <span class="text-[11px] text-amber-300 font-bold"><i class="fa-solid fa-crown mr-1"></i>Admin: Muat Naik Template JPG</span>
+                <span class="text-[11px] text-amber-300 font-bold"><i class="fa-solid fa-crown mr-1"></i>Admin: Muat Naik Latar JPG (Portrait)</span>
                 <input type="file" id="virtualBgInput" accept="image/jpeg,image/jpg,image/png" class="hidden" onchange="handleAdminBoothTemplateUpload(event)">
                 <button type="button" onclick="document.getElementById('virtualBgInput').click()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-[11px] font-extrabold transition shadow">
-                  <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Pilih & Simpan JPG
+                  <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Pilih Fail JPG
                 </button>
               </div>
-              <div class="bg-slate-900/90 p-2.5 rounded-lg border border-slate-700 space-y-1">
-                <div class="flex justify-between text-[10px] text-slate-300">
-                  <span>Saiz Tingkap Wajah Peserta (Tengah):</span>
-                  <span id="jpgWindowScaleLabel" class="text-emerald-400 font-bold">78%</span>
-                </div>
-                <input type="range" id="jpgWindowScaleSlider" min="50" max="92" value="78" oninput="updateJpgWindowScale(this.value)" onchange="syncBoothTemplateSettingsToCloud()" class="w-full accent-emerald-400 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+              <div class="flex items-center justify-between gap-2 text-[11px] text-slate-300">
+                <span>Mod Efek Photobooth:</span>
+                <select id="boothArStyleSelect" onchange="syncBoothTemplateSettingsToCloud()" class="px-2 py-1 bg-slate-900 border border-slate-700 rounded text-[11px] text-emerald-300">
+                  <option value="ai_jpg_background">AI Buang Latar + Latar JPG Anda (Disyorkan)</option>
+                  <option value="ar_3d_floor">AR 3D Lantai & Jata KPM (Kamera Penuh)</option>
+                </select>
               </div>
             </div>
 
@@ -453,7 +453,7 @@
         </div>
 
         <div class="lg:col-span-7 space-y-4">
-          <div id="boothCameraWrapper" class="booth-stage bg-slate-950 rounded-2xl border-2 border-slate-700 flex items-center justify-center shadow-inner" style="aspect-ratio: 16 / 9;">
+          <div id="boothCameraWrapper" class="booth-stage bg-slate-950 rounded-2xl border-2 border-slate-700 flex items-center justify-center shadow-inner" style="aspect-ratio: 9 / 16; max-width: 440px;">
             <video id="photoboothVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
             <canvas id="virtualBgLiveCanvas" class="w-full h-full object-cover hidden"></canvas>
             <canvas id="photoboothCanvas" class="w-full h-full object-contain hidden"></canvas>
@@ -466,8 +466,8 @@
               <div class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto text-amber-400">
                 <i class="fa-solid fa-sparkles text-2xl"></i>
               </div>
-              <p class="text-sm font-bold text-slate-200">Sedia untuk Sesi Fotografi Karpet Merah?</p>
-              <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik butang <b>"Aktifkan Kamera Booth"</b> di atas untuk memulakan pratonton langsung bersama template rasmi DIVA 2026.</p>
+              <p class="text-sm font-bold text-slate-200">Sedia untuk Sesi Fotografi AR 3D DIVA 2026?</p>
+              <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik butang <b>"Aktifkan Kamera Booth"</b> di atas untuk memulakan pratonton langsung dengan efek lantai 3D & lencana KPM PPD Pekan.</p>
             </div>
           </div>
 
@@ -844,17 +844,18 @@
         imgEl.src = candidates[attempt] + '?v=' + new Date().getTime();
       } else {
         imgEl.style.display = 'none';
-        document.getElementById('bannerFallbackBox').classList.remove('hidden');
+        const fallback = document.getElementById('bannerFallbackBox');
+        if (fallback) fallback.classList.remove('hidden');
       }
     }
 
     function formatMejaLabel(seatText) {
       if (!seatText) return '-';
-      return String(seatText).replace(/Kerusi/gi, 'Meja');
+      return seatText.replace(/Kerusi/gi, 'Meja');
     }
 
     // =========================================================================
-    // KONFIGURASI PIN ADMIN, FIREBASE RASMI & TEMPLATE PHOTOBOOTH
+    // KONFIGURASI PIN ADMIN, FIREBASE RASMI & PANGKALAN DATA UTAMA
     // =========================================================================
     const ADMIN_PIN = "DIVA2026";
     const DEFAULT_FIREBASE_DB_URL = "https://diva-awards-2026-default-rtdb.asia-southeast1.firebasedatabase.app/";
@@ -865,12 +866,6 @@
     let syncInterval = null;
     let lastSyncedHash = "";
 
-    function shouldHideAwardName() {
-      if (isAdminUnlocked) return false;
-      return (currentRole === 'scanner' || currentRole === 'photobooth' || currentRole === 'rsvp');
-    }
-
-    // Pangkalan Data Utama DIVA 2026
     let attendees = [
       { id: "VIP-001", name: "YAB Dato' Sri Menteri Besar", institution: "Pejabat Menteri Besar Pahang", category: "VVIP", award: "Tetamu Kehormat Utama", session: "Perasmian", seat: "Meja VVIP 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 1" },
       { id: "VIP-002", name: "YBrs. Pegawai Pendidikan Daerah Pekan", institution: "PPD Pekan", category: "VVIP", award: "Tuan Rumah Majlis DIVA 2026", session: "Perasmian", seat: "Meja VVIP 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "Iringan Pegawai Protokol 2" },
@@ -882,40 +877,76 @@
       { id: "JM-101", name: "Dato' Sri Dr. Hj. Mohd Zaki", institution: "Yayasan Pahang", category: "Jemputan Khas", award: "Rakan Strategik Utama", session: "Perasmian", seat: "Meja Penaja 1", rsvpStatus: "Sahkan Hadir", status: "Belum Hadir", proxyName: "", checkInTime: "", notes: "" }
     ];
 
-    // Pembolehubah Photobooth Pintar (Satu Template Rasmi JPG Shared Semua Peserta)
+    let currentRole = 'all';
+    let html5QrScanner = null;
+    let isScannerRunning = false;
+    let activeTargetIdForProxy = null;
+    let selectedGuestIdForRsvp = null;
+
+    function shouldHideAwardName() {
+      if (isAdminUnlocked) return false;
+      return (currentRole === 'scanner' || currentRole === 'photobooth' || currentRole === 'rsvp');
+    }
+
+    // Pembolehubah Photobooth Pintar (AI Selfie Segmentation + Latar JPG Shared Cloud + AR 3D)
     let boothStream = null;
     let boothFacingMode = "user";
-    let isBoothPortrait = false;
+    let isBoothPortrait = true;
     let virtualBgImageObj = null;
     let sharedBoothTemplateDataUrl = localStorage.getItem('DIVA_SHARED_BOOTH_JPG') || "";
-    let sharedBoothWindowScale = parseInt(localStorage.getItem('DIVA_SHARED_BOOTH_SCALE') || '78', 10);
+    let sharedBoothStyleMode = localStorage.getItem('DIVA_SHARED_BOOTH_STYLE') || "ai_jpg_background";
+    let selfieSegmenter = null;
+    let latestSegmentationMask = null;
     let isVirtualBgLoopRunning = false;
+    let isSegmentingFrame = false;
     let capturedPhotos = [];
+    let jataKpmImgObj = null;
 
-    function applyBoothTemplateDataUrl(dataUrl, scaleVal) {
+    // Muatkan imej Jata Negara KPM untuk digunakan dalam lencana atas AR 3D
+    (function preloadArAssets() {
+      const jImg = new Image();
+      jImg.crossOrigin = 'anonymous';
+      jImg.onload = function() { jataKpmImgObj = jImg; };
+      jImg.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Coat_of_arms_of_Malaysia.svg/240px-Coat_of_arms_of_Malaysia.svg.png';
+    })();
+
+    function initSelfieSegmenter() {
+      if (selfieSegmenter || typeof SelfieSegmentation === 'undefined') return;
+      try {
+        selfieSegmenter = new SelfieSegmentation({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
+        });
+        selfieSegmenter.setOptions({ modelSelection: 1, selfieMode: false });
+        selfieSegmenter.onResults((results) => {
+          latestSegmentationMask = results.segmentationMask;
+        });
+      } catch (e) {
+        console.warn("MediaPipe AI fallback aktif", e);
+      }
+    }
+
+    function applyBoothTemplateDataUrl(dataUrl, styleMode) {
+      if (styleMode) {
+        sharedBoothStyleMode = styleMode;
+        localStorage.setItem('DIVA_SHARED_BOOTH_STYLE', styleMode);
+        const sel = document.getElementById('boothArStyleSelect');
+        if (sel) sel.value = styleMode;
+      }
       if (!dataUrl) return;
       sharedBoothTemplateDataUrl = dataUrl;
       localStorage.setItem('DIVA_SHARED_BOOTH_JPG', dataUrl);
-      if (scaleVal) {
-        sharedBoothWindowScale = parseInt(scaleVal, 10) || 78;
-        localStorage.setItem('DIVA_SHARED_BOOTH_SCALE', String(sharedBoothWindowScale));
-        const slider = document.getElementById('jpgWindowScaleSlider');
-        const lbl = document.getElementById('jpgWindowScaleLabel');
-        if (slider) slider.value = sharedBoothWindowScale;
-        if (lbl) lbl.innerText = sharedBoothWindowScale + '%';
-      }
       const img = new Image();
       img.onload = function() {
         virtualBgImageObj = img;
         const badge = document.getElementById('boothTemplateStatusBadge');
-        if (badge) badge.innerText = 'Template Rasmi Aktif';
+        if (badge) badge.innerText = 'AI + Latar JPG Aktif';
       };
       img.src = dataUrl;
     }
 
     async function loadSharedBoothTemplate() {
       if (sharedBoothTemplateDataUrl) {
-        applyBoothTemplateDataUrl(sharedBoothTemplateDataUrl, sharedBoothWindowScale);
+        applyBoothTemplateDataUrl(sharedBoothTemplateDataUrl, sharedBoothStyleMode);
       }
       if (!firebaseDbUrl) return;
       const templateUrl = firebaseDbUrl.replace(/\/$/, '') + '/diva2026_booth_template.json';
@@ -923,20 +954,14 @@
         const res = await fetch(templateUrl);
         if (res.ok) {
           const data = await res.json();
-          if (data && data.imageData) {
-            applyBoothTemplateDataUrl(data.imageData, data.windowScale || 78);
+          if (data) {
+            applyBoothTemplateDataUrl(data.imageData || sharedBoothTemplateDataUrl, data.styleMode || 'ai_jpg_background');
           }
         }
       } catch (e) {
         console.warn("Gagal memuatkan template photobooth dari cloud", e);
       }
     }
-
-    let currentRole = 'all';
-    let html5QrScanner = null;
-    let isScannerRunning = false;
-    let activeTargetIdForProxy = null;
-    let selectedGuestIdForRsvp = null;
 
     function updateSyncUI(state, message) {
       const dot = document.getElementById('syncIndicatorDot');
@@ -1069,242 +1094,31 @@
     }
 
     // =========================================================================
-    // INISIALISASI & KAWALAN PERANAN
-    // =========================================================================
-    function loadSavedData() {
-      const saved = localStorage.getItem('DIVA_ATTENDEES_DATA');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          attendees = parsed.map(item => ({
-            institution: item.institution || '-',
-            rsvpStatus: item.rsvpStatus || 'Menunggu RSVP',
-            ...item
-          }));
-        } catch(e) {
-          console.warn("Gagal memuatkan data tempatan", e);
-        }
-      }
-    }
-
-    window.onload = function() {
-      loadSavedData();
-      populateTableFilterOptions();
-      populateBoothGuestSuggestions();
-      checkBoothOrientation();
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const syncParam = urlParams.get('sync');
-      if (syncParam && syncParam.startsWith('https://')) {
-        firebaseDbUrl = syncParam;
-        localStorage.setItem('DIVA_FIREBASE_URL', syncParam);
-      }
-
-      startCloudAutoSync();
-      loadSharedBoothTemplate();
-
-      const roleParam = urlParams.get('role');
-      if (roleParam && ['all', 'awardee', 'emcee', 'scanner', 'rsvp', 'photobooth'].includes(roleParam)) {
-        switchRole(roleParam);
-      } else {
-        updateAdminUIState();
-        updateDashboardStats();
-        renderTable();
-      }
-    };
-
-    function populateTableFilterOptions() {
-      const tableSelect = document.getElementById('tableFilter');
-      if (!tableSelect) return;
-      const currentVal = tableSelect.value;
-      const uniqueTables = [...new Set(
-        attendees
-          .map(g => formatMejaLabel(g.seat))
-          .filter(s => s && s !== '-')
-      )].sort((a, b) => a.localeCompare(b, 'ms', { numeric: true }));
-
-      tableSelect.innerHTML = '<option value="all">Semua Meja</option>';
-      uniqueTables.forEach(meja => {
-        const opt = document.createElement('option');
-        opt.value = meja;
-        const count = attendees.filter(g => formatMejaLabel(g.seat) === meja).length;
-        opt.textContent = `${meja} (${count} org)`;
-        tableSelect.appendChild(opt);
-      });
-
-      if (uniqueTables.includes(currentVal)) {
-        tableSelect.value = currentVal;
-      }
-    }
-
-    window.addEventListener('resize', checkBoothOrientation);
-    window.addEventListener('orientationchange', () => setTimeout(checkBoothOrientation, 200));
-
-    function toggleAdminLock() {
-      if (isAdminUnlocked) {
-        isAdminUnlocked = false;
-        sessionStorage.removeItem('DIVA_ADMIN_UNLOCKED');
-        updateAdminUIState();
-        filterData();
-        showToast('Mod Admin dikunci semula.', 'info');
-      } else {
-        document.getElementById('adminPinInput').value = '';
-        document.getElementById('adminPinModal').classList.remove('hidden');
-        setTimeout(() => document.getElementById('adminPinInput').focus(), 100);
-      }
-    }
-
-    function closeAdminPinModal() {
-      document.getElementById('adminPinModal').classList.add('hidden');
-    }
-
-    function verifyAdminPin() {
-      const entered = document.getElementById('adminPinInput').value.trim();
-      if (entered === ADMIN_PIN) {
-        isAdminUnlocked = true;
-        sessionStorage.setItem('DIVA_ADMIN_UNLOCKED', 'true');
-        closeAdminPinModal();
-        updateAdminUIState();
-        filterData();
-        showToast('Akses Admin dibuka! Semua kawalan penuh aktif.', 'success');
-      } else {
-        showToast('PIN Admin tidak sah!', 'error');
-      }
-    }
-
-    function updateAdminUIState() {
-      const adminGroup = document.getElementById('adminControlsGroup');
-      const lockedHint = document.getElementById('lockedAdminHint');
-      const lockBtn = document.getElementById('btnAdminLock');
-      const adminBoothControls = document.getElementById('adminBoothTemplateControls');
-
-      if (isAdminUnlocked) {
-        adminGroup.classList.remove('hidden');
-        lockedHint.classList.add('hidden');
-        if (adminBoothControls) adminBoothControls.classList.remove('hidden');
-        lockBtn.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i>Admin Aktif';
-        lockBtn.classList.remove('bg-slate-800', 'text-amber-400');
-        lockBtn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-400');
-      } else {
-        adminGroup.classList.add('hidden');
-        lockedHint.classList.remove('hidden');
-        if (adminBoothControls) adminBoothControls.classList.add('hidden');
-        lockBtn.innerHTML = '<i class="fa-solid fa-lock mr-1"></i>Kunci Admin';
-        lockBtn.classList.add('bg-slate-800', 'text-amber-400');
-        lockBtn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-400');
-      }
-    }
-
-    function switchRole(role) {
-      currentRole = role;
-      updateAdminUIState();
-
-      const roleMap = {
-        all: 'btnRoleAll',
-        awardee: 'btnRoleAward',
-        emcee: 'btnRoleEmcee',
-        scanner: 'btnRoleScan',
-        rsvp: 'btnRoleRsvp',
-        photobooth: 'btnRolePhotobooth'
-      };
-
-      document.querySelectorAll('.role-btn').forEach(btn => {
-        btn.classList.remove('bg-amber-500', 'text-slate-950');
-        btn.classList.add('text-slate-400', 'hover:text-white');
-      });
-
-      const activeBtn = document.getElementById(roleMap[role]);
-      if (activeBtn) {
-        activeBtn.classList.remove('text-slate-400', 'hover:text-white');
-        activeBtn.classList.add('bg-amber-500', 'text-slate-950');
-      }
-
-      const roleSwitcherBar = document.getElementById('roleSwitcherBar');
-      const syncStatusBar = document.getElementById('syncStatusBar');
-      const statsSection = document.getElementById('statsSection');
-      const rsvpPortalSection = document.getElementById('rsvpPortalSection');
-      const scannerSection = document.getElementById('scannerSection');
-      const photoboothSection = document.getElementById('photoboothSection');
-      const dashboardTableSection = document.getElementById('dashboardTableSection');
-      const tableHeading = document.getElementById('tableHeading');
-      const categoryFilter = document.getElementById('categoryFilter');
-      const thCategoryAward = document.getElementById('thCategoryAward');
-
-      const urlRole = new URLSearchParams(window.location.search).get('role');
-
-      roleSwitcherBar.classList.remove('hidden');
-      syncStatusBar.classList.remove('hidden');
-      rsvpPortalSection.classList.add('hidden');
-      scannerSection.classList.add('hidden');
-      photoboothSection.classList.add('hidden');
-      statsSection.classList.remove('hidden');
-      dashboardTableSection.classList.remove('hidden');
-
-      if (role === 'rsvp') {
-        rsvpPortalSection.classList.remove('hidden');
-        statsSection.classList.add('hidden');
-        dashboardTableSection.classList.add('hidden');
-        if (urlRole === 'rsvp' && !isAdminUnlocked) {
-          roleSwitcherBar.classList.add('hidden');
-          syncStatusBar.classList.add('hidden');
-        }
-      } else if (role === 'scanner') {
-        scannerSection.classList.remove('hidden');
-        tableHeading.innerHTML = `<i class="fa-solid fa-qrcode text-amber-400"></i> Log Pendaftaran Kaunter Foyer (Hari Kejadian)`;
-        thCategoryAward.innerText = "Kategori & Sesi (Anugerah Dirahsiakan)";
-        categoryFilter.value = 'all';
-      } else if (role === 'photobooth') {
-        photoboothSection.classList.remove('hidden');
-        statsSection.classList.add('hidden');
-        dashboardTableSection.classList.add('hidden');
-        if (urlRole === 'photobooth' && !isAdminUnlocked) {
-          roleSwitcherBar.classList.add('hidden');
-          syncStatusBar.classList.add('hidden');
-        }
-      } else if (role === 'awardee') {
-        tableHeading.innerHTML = `<i class="fa-solid fa-medal text-amber-400"></i> Senarai Penerima Anugerah (Holding Room)`;
-        thCategoryAward.innerText = "Kategori & Anugerah";
-        categoryFilter.value = 'Penerima Anugerah';
-      } else if (role === 'emcee') {
-        tableHeading.innerHTML = `<i class="fa-solid fa-microphone text-amber-400"></i> Senarai Protokol Pentas & Wakil (Emcee)`;
-        thCategoryAward.innerText = "Kategori & Anugerah";
-        categoryFilter.value = 'all';
-      } else {
-        tableHeading.innerHTML = `<i class="fa-solid fa-list-check text-amber-400"></i> Papan Pemuka Utama DIVA 2026`;
-        thCategoryAward.innerText = "Kategori & Anugerah";
-        categoryFilter.value = 'all';
-      }
-
-      updateDashboardStats();
-      filterData();
-    }
-
-    // =========================================================================
-    // MODUL PHOTOBOOTH DIGITAL DIVA 2026 (TEMPLATE JPG TUNGGAL SHARED CLOUD)
+    // MODUL PHOTOBOOTH DIGITAL DIVA 2026 (AR 3D LANTAI & JATA KPM SEPERTI CONTOH)
     // =========================================================================
     function checkBoothOrientation() {
       const wrapper = document.getElementById('boothCameraWrapper');
       if (!wrapper) return;
 
-      if (window.innerHeight > window.innerWidth) {
+      // Utamakan nisbah menegak (9:16) pada telefon & paparan potret seperti contoh gambar WTCKL
+      if (window.innerWidth < 768 || window.innerHeight >= window.innerWidth) {
         isBoothPortrait = true;
         wrapper.style.aspectRatio = "9 / 16";
         wrapper.style.maxWidth = "440px";
       } else {
-        isBoothPortrait = false;
-        wrapper.style.aspectRatio = "16 / 9";
-        wrapper.style.maxWidth = "100%";
+        isBoothPortrait = true;
+        wrapper.style.aspectRatio = "3 / 4";
+        wrapper.style.maxWidth = "480px";
       }
     }
 
-    function updateJpgWindowScale(val) {
-      sharedBoothWindowScale = parseInt(val, 10) || 78;
-      const lbl = document.getElementById('jpgWindowScaleLabel');
-      if (lbl) lbl.innerText = sharedBoothWindowScale + '%';
-    }
-
     async function syncBoothTemplateSettingsToCloud() {
-      if (!firebaseDbUrl || !sharedBoothTemplateDataUrl) return;
+      const sel = document.getElementById('boothArStyleSelect');
+      if (sel) {
+        sharedBoothStyleMode = sel.value;
+        localStorage.setItem('DIVA_SHARED_BOOTH_STYLE', sharedBoothStyleMode);
+      }
+      if (!firebaseDbUrl) return;
       const templateUrl = firebaseDbUrl.replace(/\/$/, '') + '/diva2026_booth_template.json';
       try {
         await fetch(templateUrl, {
@@ -1312,11 +1126,11 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             imageData: sharedBoothTemplateDataUrl,
-            windowScale: sharedBoothWindowScale,
+            styleMode: sharedBoothStyleMode,
             updatedAt: new Date().toISOString()
           })
         });
-        showToast('Saiz tingkap template dikemas kini untuk semua peserta!', 'success');
+        showToast('Tetapan paparan photobooth dikemas kini untuk semua peserta!', 'success');
       } catch (e) {
         showToast('Disimpan secara tempatan.', 'info');
       }
@@ -1329,7 +1143,6 @@
       reader.onload = function(e) {
         const rawImg = new Image();
         rawImg.onload = async function() {
-          // Mampatkan resolusi imej secara optimum (maksimum lebar 1600px, kualiti 0.85) supaya pantas dimuat turun oleh semua telefon peserta dari Firebase
           const maxDim = 1600;
           let targetW = rawImg.width;
           let targetH = rawImg.height;
@@ -1348,8 +1161,13 @@
           const cCtx = compressCanvas.getContext('2d');
           cCtx.drawImage(rawImg, 0, 0, targetW, targetH);
 
-          const optimizedDataUrl = compressCanvas.toDataURL('image/jpeg', 0.85);
-          applyBoothTemplateDataUrl(optimizedDataUrl, sharedBoothWindowScale);
+          const isPng = file.type === 'image/png';
+          const optimizedDataUrl = isPng
+            ? compressCanvas.toDataURL('image/png')
+            : compressCanvas.toDataURL('image/jpeg', 0.85);
+
+          sharedBoothStyleMode = 'ai_jpg_background';
+          applyBoothTemplateDataUrl(optimizedDataUrl, 'ai_jpg_background');
 
           if (firebaseDbUrl) {
             const templateUrl = firebaseDbUrl.replace(/\/$/, '') + '/diva2026_booth_template.json';
@@ -1359,20 +1177,18 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   imageData: optimizedDataUrl,
-                  windowScale: sharedBoothWindowScale,
+                  styleMode: 'ai_jpg_background',
                   updatedAt: new Date().toISOString()
                 })
               });
               if (res.ok) {
-                showToast('Template JPG berjaya dimuat naik & kini aktif untuk SEMUA peserta!', 'success');
-              } else {
-                showToast('Template dimuatkan secara tempatan (Semak sambungan Firebase).', 'warning');
+                showToast('Latar JPG berjaya dimuat naik & AI aktif untuk SEMUA peserta!', 'success');
               }
             } catch (err) {
-              showToast('Template dimuatkan secara tempatan.', 'warning');
+              showToast('Latar JPG dimuatkan secara tempatan.', 'warning');
             }
           } else {
-            showToast('Template JPG berjaya dimuatkan!', 'success');
+            showToast('Latar JPG & AI berjaya dimuatkan!', 'success');
           }
         };
         rawImg.src = e.target.result;
@@ -1381,62 +1197,240 @@
       event.target.value = '';
     }
 
-    function drawJpgForegroundLayer(ctx, w, h) {
-      if (!virtualBgImageObj || !virtualBgImageObj.complete) {
-        // Bingkai sandaran elegan jika Admin belum memuat naik gambar JPG lagi
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 28;
-        ctx.strokeRect(14, 14, w - 28, h - 28);
-        return;
+    // Melukis efek AR 3D Lantai & Jata KPM (PPD Pekan) persis seperti gambar rujukan pengguna
+    function drawDiva3DFloorArOverlay(ctx, w, h) {
+      ctx.save();
+
+      // 1. BAHAGIAN ATAS: Jata Negara & Kementerian Pendidikan (PPD Pekan)
+      const topCenterX = w * 0.5;
+      const topY = h * 0.032;
+      const crestH = Math.round(h * 0.068);
+      const crestW = Math.round(crestH * 1.32);
+
+      // Cahaya latar lembut di belakang Jata supaya jelas di atas mana-mana latar dewan
+      const topGlow = ctx.createRadialGradient(topCenterX, topY + crestH * 0.55, 5, topCenterX, topY + crestH * 0.55, crestW * 1.4);
+      topGlow.addColorStop(0, 'rgba(255, 255, 255, 0.72)');
+      topGlow.addColorStop(0.6, 'rgba(255, 255, 255, 0.25)');
+      topGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = topGlow;
+      ctx.fillRect(topCenterX - crestW * 1.5, topY - 10, crestW * 3, crestH * 1.9);
+
+      if (jataKpmImgObj && jataKpmImgObj.complete && jataKpmImgObj.naturalWidth > 0) {
+        ctx.drawImage(jataKpmImgObj, topCenterX - crestW / 2, topY, crestW, crestH);
       }
 
-      const scaleSlider = document.getElementById('jpgWindowScaleSlider');
-      const windowScale = scaleSlider ? (parseInt(scaleSlider.value, 10) / 100) : (sharedBoothWindowScale / 100);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#0f172a';
+      ctx.shadowColor = 'rgba(255,255,255,0.95)';
+      ctx.shadowBlur = 8;
+      ctx.font = `800 ${Math.round(w * 0.025)}px Plus Jakarta Sans, sans-serif`;
+      ctx.fillText('KEMENTERIAN PENDIDIKAN', topCenterX, topY + crestH + Math.round(h * 0.022));
+      ctx.font = `700 ${Math.round(w * 0.02)}px Plus Jakarta Sans, sans-serif`;
+      ctx.fillText('PEJABAT PENDIDIKAN DAERAH PEKAN', topCenterX, topY + crestH + Math.round(h * 0.042));
+      ctx.shadowBlur = 0;
 
-      // Lukis gambar JPG ke atas kanvas sementara dan jadikan bahagian tengah lutsinar supaya kamera kelihatan di belakang
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = w;
-      tempCanvas.height = h;
-      const tCtx = tempCanvas.getContext('2d');
+      // 2. BAHAGIAN BAWAH: Jalur Grafik Biru Gelap & Cahaya Biru/Emas
+      const ribbonGrad = ctx.createLinearGradient(0, h * 0.84, w, h);
+      ribbonGrad.addColorStop(0, 'rgba(2, 12, 46, 0.94)');
+      ribbonGrad.addColorStop(0.5, 'rgba(7, 37, 110, 0.95)');
+      ribbonGrad.addColorStop(1, 'rgba(3, 18, 66, 0.96)');
 
-      const bgRatio = virtualBgImageObj.width / virtualBgImageObj.height;
-      const canvasRatio = w / h;
-      let drawW = w, drawH = h, offsetX = 0, offsetY = 0;
-      if (bgRatio > canvasRatio) {
-        drawW = h * bgRatio;
-        offsetX = (w - drawW) / 2;
+      ctx.fillStyle = ribbonGrad;
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.87);
+      ctx.lineTo(w, h * 0.94);
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+      ctx.fill();
+
+      // Garis cahaya neon biru & emas menyerong di bahagian bawah
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = Math.max(3, Math.round(h * 0.004));
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.87);
+      ctx.lineTo(w, h * 0.94);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = Math.max(2, Math.round(h * 0.0025));
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.895);
+      ctx.lineTo(w, h * 0.965);
+      ctx.stroke();
+
+      // 3. BAHAGIAN TENGAH-BAWAH: Teks Perspektif Lantai 3D ("DIGITAL INNOVATIONS AND VISIONARIES AWARDS")
+      // Bayang gelap lembut di atas lantai supaya tulisan 3D timbul dengan jelas
+      const floorShadow = ctx.createLinearGradient(0, h * 0.45, 0, h * 0.88);
+      floorShadow.addColorStop(0, 'rgba(2, 6, 23, 0)');
+      floorShadow.addColorStop(0.45, 'rgba(2, 6, 23, 0.42)');
+      floorShadow.addColorStop(1, 'rgba(2, 6, 23, 0.72)');
+      ctx.fillStyle = floorShadow;
+      ctx.fillRect(0, h * 0.45, w, h * 0.43);
+
+      // Transformasi perspektif 3D condong ke lantai (seperti dalam contoh)
+      ctx.save();
+      ctx.translate(w * 0.49, h * 0.67);
+      ctx.transform(1, 0.21, -0.34, 0.84, 0, 0);
+
+      // Baris 1: DIGITAL INNOVATIONS
+      ctx.textAlign = 'center';
+      ctx.font = `900 ${Math.round(w * 0.068)}px Plus Jakarta Sans, sans-serif`;
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText('DIGITAL INNOVATIONS', 4, -Math.round(h * 0.092) + 5);
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillText('DIGITAL INNOVATIONS', 0, -Math.round(h * 0.092));
+
+      // Baris 2: AND VISIONARIES AWARDS
+      ctx.font = `900 ${Math.round(w * 0.056)}px Plus Jakarta Sans, sans-serif`;
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText('AND VISIONARIES AWARDS', 4, -Math.round(h * 0.042) + 5);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText('AND VISIONARIES AWARDS', 0, -Math.round(h * 0.042));
+
+      // Baris 3 Utama Besar: DIVA 2026 (Efek 3D Biru & Emas)
+      const divaFontSize = Math.round(w * 0.145);
+      ctx.font = `900 ${divaFontSize}px Plus Jakarta Sans, sans-serif`;
+      // Lapisan ketebalan 3D di bawah teks
+      for (let depth = 10; depth >= 1; depth--) {
+        ctx.fillStyle = depth > 5 ? '#031542' : '#0245a3';
+        ctx.fillText('DIVA 2026', depth * 0.7, Math.round(h * 0.048) + depth * 1.1);
+      }
+      const divaGrad = ctx.createLinearGradient(-w * 0.3, 0, w * 0.3, 0);
+      divaGrad.addColorStop(0, '#38bdf8');
+      divaGrad.addColorStop(0.5, '#0ea5e9');
+      divaGrad.addColorStop(0.8, '#fbbf24');
+      divaGrad.addColorStop(1, '#f59e0b');
+      ctx.fillStyle = divaGrad;
+      ctx.fillText('DIVA 2026', 0, Math.round(h * 0.048));
+
+      // Piksel digital hiasan di sebelah kanan DIVA 2026 (seperti dalam contoh)
+      const pxStartX = w * 0.35;
+      const pxStartY = -Math.round(h * 0.02);
+      const pxSize = Math.round(w * 0.022);
+      const pixels = [
+        [0, 0, '#38bdf8'], [1, 0, '#ffffff'], [2, 1, '#0284c7'],
+        [0, 1, '#0ea5e9'], [1, 2, '#fbbf24'], [2, 2, '#38bdf8'],
+        [3, 1, '#ffffff'], [1, -1, '#38bdf8']
+      ];
+      pixels.forEach(([gx, gy, col]) => {
+        ctx.fillStyle = col;
+        ctx.fillRect(pxStartX + gx * (pxSize + 3), pxStartY + gy * (pxSize + 3), pxSize, pxSize);
+      });
+
+      // Baris 4: PERINGKAT DAERAH PEKAN 2026
+      ctx.font = `800 ${Math.round(w * 0.042)}px Plus Jakarta Sans, sans-serif`;
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText('PERINGKAT DAERAH PEKAN 2026', 3, Math.round(h * 0.092) + 3);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('PERINGKAT DAERAH PEKAN 2026', 0, Math.round(h * 0.092));
+
+      // Garis pemisah nipis putih
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-w * 0.34, Math.round(h * 0.106));
+      ctx.lineTo(w * 0.34, Math.round(h * 0.106));
+      ctx.stroke();
+
+      // Baris 5: @PPD Pekan, Pahang
+      ctx.font = `700 ${Math.round(w * 0.044)}px Plus Jakarta Sans, sans-serif`;
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText('@PPD Pekan, Pahang', 0, Math.round(h * 0.142));
+
+      // Baris 6: Tarikh & Lokasi di bahagian bawah lantai 3D
+      ctx.font = `600 ${Math.round(w * 0.028)}px Plus Jakarta Sans, sans-serif`;
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText('📅 14 November 2026   |   📍 Daerah Pekan, Pahang', 0, Math.round(h * 0.182));
+
+      ctx.restore();
+      ctx.restore();
+    }
+
+    function drawCoverImage(ctx, img, targetW, targetH) {
+      const imgRatio = img.width / img.height;
+      const targetRatio = targetW / targetH;
+      let drawW = targetW, drawH = targetH, offsetX = 0, offsetY = 0;
+      if (imgRatio > targetRatio) {
+        drawW = targetH * imgRatio;
+        offsetX = (targetW - drawW) / 2;
       } else {
-        drawH = w / bgRatio;
-        offsetY = (h - drawH) / 2;
+        drawH = targetW / imgRatio;
+        offsetY = (targetH - drawH) / 2;
       }
-      tCtx.drawImage(virtualBgImageObj, offsetX, offsetY, drawW, drawH);
+      ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+    }
 
-      // Tebuk bahagian tengah secara lembut supaya orang di kamera berada di belakang bingkai JPG
-      const holeW = w * windowScale;
-      const holeH = h * (windowScale * 0.92);
-      const holeX = (w - holeW) / 2;
-      const holeY = (h - holeH) / 2 - (h * 0.02);
+    function drawCroppedVideo(ctx, video, targetW, targetH) {
+      let sWidth = video.videoWidth || 1280;
+      let sHeight = video.videoHeight || 720;
+      let sx = 0, sy = 0;
+      const targetRatio = targetW / targetH;
+      const videoRatio = sWidth / sHeight;
 
-      tCtx.globalCompositeOperation = 'destination-out';
-      const cx = holeX + holeW / 2;
-      const cy = holeY + holeH / 2;
-      const maxR = Math.max(holeW, holeH) / 2;
+      if (videoRatio > targetRatio) {
+        let newWidth = sHeight * targetRatio;
+        sx = (sWidth - newWidth) / 2;
+        sWidth = newWidth;
+      } else {
+        let newHeight = sWidth / targetRatio;
+        sy = (sHeight - newHeight) / 2;
+        sHeight = newHeight;
+      }
 
-      tCtx.save();
-      tCtx.translate(cx, cy);
-      tCtx.scale(holeW / (maxR * 2), holeH / (maxR * 2));
-      const radialGrad = tCtx.createRadialGradient(0, 0, maxR * 0.72, 0, 0, maxR);
-      radialGrad.addColorStop(0, 'rgba(0, 0, 0, 1)');
-      radialGrad.addColorStop(0.85, 'rgba(0, 0, 0, 0.92)');
-      radialGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      tCtx.fillStyle = radialGrad;
-      tCtx.beginPath();
-      tCtx.arc(0, 0, maxR, 0, Math.PI * 2);
-      tCtx.fill();
-      tCtx.restore();
+      if (boothFacingMode === "user") {
+        ctx.save();
+        ctx.translate(targetW, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
+        ctx.restore();
+      } else {
+        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
+      }
+    }
 
-      // Lukis bingkai JPG tersebut di atas lapisan video (foreground layer)
-      ctx.drawImage(tempCanvas, 0, 0, w, h);
+    function compositeAiCameraAndJpg(ctx, video, targetW, targetH) {
+      const useAiJpg = (sharedBoothStyleMode === 'ai_jpg_background' && virtualBgImageObj && virtualBgImageObj.complete);
+
+      if (useAiJpg && latestSegmentationMask) {
+        // Langkah 1: Lukis peserta sahaja menggunakan topeng AI (MediaPipe Mask)
+        const personCanvas = document.createElement('canvas');
+        personCanvas.width = targetW;
+        personCanvas.height = targetH;
+        const pCtx = personCanvas.getContext('2d');
+
+        // Lukis topeng AI (diselaraskan dengan flip cermin kamera depan)
+        if (boothFacingMode === "user") {
+          pCtx.save();
+          pCtx.translate(targetW, 0);
+          pCtx.scale(-1, 1);
+          pCtx.drawImage(latestSegmentationMask, 0, 0, targetW, targetH);
+          pCtx.restore();
+        } else {
+          pCtx.drawImage(latestSegmentationMask, 0, 0, targetW, targetH);
+        }
+
+        // Kekalkan bahagian tubuh peserta sahaja
+        pCtx.globalCompositeOperation = 'source-in';
+        drawCroppedVideo(pCtx, video, targetW, targetH);
+
+        // Langkah 2: Lukis Latar Belakang JPG yang dimuat naik Admin di lapisan bawah
+        drawCoverImage(ctx, virtualBgImageObj, targetW, targetH);
+
+        // Langkah 3: Tindih potongan peserta AI di atas latar JPG tersebut
+        ctx.drawImage(personCanvas, 0, 0, targetW, targetH);
+      } else if (useAiJpg) {
+        // Semasa AI sedang memanaskan badan (1 saat pertama), paparkan latar JPG + kamera
+        drawCoverImage(ctx, virtualBgImageObj, targetW, targetH);
+        ctx.save();
+        ctx.globalAlpha = 0.85;
+        drawCroppedVideo(ctx, video, targetW, targetH);
+        ctx.restore();
+      } else {
+        // Mod AR 3D Lantai penuh (tanpa buang latar dewan)
+        drawCroppedVideo(ctx, video, targetW, targetH);
+        drawDiva3DFloorArOverlay(ctx, targetW, targetH);
+      }
     }
 
     function renderVirtualBgPreviewFrame() {
@@ -1444,30 +1438,17 @@
       const video = document.getElementById('photoboothVideo');
       if (!liveCanvas || !video) return;
 
-      const w = video.videoWidth || 1280;
-      const h = video.videoHeight || 720;
-      if (liveCanvas.width !== w || liveCanvas.height !== h) {
-        liveCanvas.width = w;
-        liveCanvas.height = h;
+      const targetW = 720;
+      const targetH = 1280;
+      if (liveCanvas.width !== targetW || liveCanvas.height !== targetH) {
+        liveCanvas.width = targetW;
+        liveCanvas.height = targetH;
       }
 
       const ctx = liveCanvas.getContext('2d');
       ctx.save();
-      ctx.clearRect(0, 0, w, h);
-
-      // Lapisan 1 (Belakang): Paparan kamera langsung
-      if (boothFacingMode === "user") {
-        ctx.save();
-        ctx.translate(w, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, 0, 0, w, h);
-        ctx.restore();
-      } else {
-        ctx.drawImage(video, 0, 0, w, h);
-      }
-
-      // Lapisan 2 (Hadapan): Template JPG Rasmi yang dimuat naik oleh Admin
-      drawJpgForegroundLayer(ctx, w, h);
+      ctx.clearRect(0, 0, targetW, targetH);
+      compositeAiCameraAndJpg(ctx, video, targetW, targetH);
       ctx.restore();
     }
 
@@ -1475,6 +1456,13 @@
       if (!isVirtualBgLoopRunning) return;
       const video = document.getElementById('photoboothVideo');
       if (boothStream && video && video.readyState >= 2) {
+        if (sharedBoothStyleMode === 'ai_jpg_background' && selfieSegmenter && !isSegmentingFrame) {
+          isSegmentingFrame = true;
+          try {
+            await selfieSegmenter.send({ image: video });
+          } catch (e) {}
+          isSegmentingFrame = false;
+        }
         renderVirtualBgPreviewFrame();
       }
       if (isVirtualBgLoopRunning) {
@@ -1512,7 +1500,7 @@
       const canvas = document.getElementById('photoboothCanvas');
       const placeholder = document.getElementById('boothPlaceholder');
 
-      // Pastikan template terkini ditarik jika belum dimuatkan
+      initSelfieSegmenter();
       if (!virtualBgImageObj) {
         loadSharedBoothTemplate();
       }
@@ -1618,73 +1606,36 @@
       const canvas = document.getElementById('photoboothCanvas');
       const ctx = canvas.getContext('2d');
 
-      if (isBoothPortrait) {
-        canvas.width = 1080;
-        canvas.height = 1920;
-      } else {
-        canvas.width = 1920;
-        canvas.height = 1080;
-      }
+      // Resolusi tinggi menegak 1080x1920 (Portrait 9:16)
+      canvas.width = 1080;
+      canvas.height = 1920;
 
-      const guestName = document.getElementById('boothGuestName').value.trim() || 'Tetamu Kehormat DIVA 2026';
-      const guestTitle = document.getElementById('boothGuestTitle').value.trim() || 'Red Carpet Gala Night';
+      const guestName = document.getElementById('boothGuestName').value.trim();
+      const guestTitle = document.getElementById('boothGuestTitle').value.trim();
       const includeNameOnPng = document.getElementById('chkIncludeNameOnPng').checked;
 
-      // Lapisan 1 (Belakang): Lukis gambar kamera langsung
-      let sWidth = video.videoWidth;
-      let sHeight = video.videoHeight;
-      let sx = 0, sy = 0;
-      const targetRatio = canvas.width / canvas.height;
-      const videoRatio = sWidth / sHeight;
+      // Gabungkan potongan AI peserta + Latar JPG Admin (atau AR 3D Lantai)
+      compositeAiCameraAndJpg(ctx, video, canvas.width, canvas.height);
 
-      if (videoRatio > targetRatio) {
-        let newWidth = sHeight * targetRatio;
-        sx = (sWidth - newWidth) / 2;
-        sWidth = newWidth;
-      } else {
-        let newHeight = sWidth / targetRatio;
-        sy = (sHeight - newHeight) / 2;
-        sHeight = newHeight;
-      }
-
-      if (boothFacingMode === "user") {
-        ctx.save();
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-        ctx.restore();
-      } else {
-        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-      }
-
-      // Lapisan 2 (Hadapan): Lukis template JPG yang dimuat naik oleh Admin
-      drawJpgForegroundLayer(ctx, canvas.width, canvas.height);
-
-      // Tambah nama tetamu di bahagian bawah jika ditanda
-      if (includeNameOnPng) {
-        const grad = ctx.createLinearGradient(0, canvas.height - 170, 0, canvas.height);
+      // Tambah nama tetamu di penjuru bawah jika diisi & ditanda
+      if (includeNameOnPng && guestName !== '') {
+        const grad = ctx.createLinearGradient(0, canvas.height - 140, 0, canvas.height);
         grad.addColorStop(0, 'rgba(2, 6, 23, 0)');
-        grad.addColorStop(0.4, 'rgba(2, 6, 23, 0.85)');
-        grad.addColorStop(1, 'rgba(2, 6, 23, 0.96)');
+        grad.addColorStop(0.5, 'rgba(2, 6, 23, 0.8)');
+        grad.addColorStop(1, 'rgba(2, 6, 23, 0.95)');
         ctx.fillStyle = grad;
-        ctx.fillRect(0, canvas.height - 170, canvas.width, 170);
+        ctx.fillRect(0, canvas.height - 140, canvas.width, 140);
 
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
-        ctx.fillText('DIVA 2026', 64, canvas.height - 92);
-
-        ctx.fillStyle = '#e2e8f0';
-        ctx.font = '500 18px Plus Jakarta Sans, sans-serif';
-        ctx.fillText('DIGITAL INNOVATIONS AND VISIONARIES AWARDS', 64, canvas.height - 58);
-
-        ctx.textAlign = 'right';
+        ctx.textAlign = 'center';
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 32px Plus Jakarta Sans, sans-serif';
-        ctx.fillText(guestName, canvas.width - 64, canvas.height - 92);
+        ctx.font = 'bold 34px Plus Jakarta Sans, sans-serif';
+        ctx.fillText(guestName, canvas.width / 2, canvas.height - 68);
 
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = '600 20px Plus Jakarta Sans, sans-serif';
-        ctx.fillText(guestTitle, canvas.width - 64, canvas.height - 58);
+        if (guestTitle !== '') {
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = '600 24px Plus Jakarta Sans, sans-serif';
+          ctx.fillText(guestTitle, canvas.width / 2, canvas.height - 32);
+        }
         ctx.textAlign = 'left';
       }
 
@@ -1694,7 +1645,8 @@
       document.getElementById('boothResultActions').classList.remove('hidden');
 
       const dataUrl = canvas.toDataURL('image/png');
-      const fileName = `DIVA2026_Photobooth_${guestName.replace(/\s+/g, '_')}_${Date.now()}.png`;
+      const safeName = (guestName || 'Tetamu_DIVA2026').replace(/\s+/g, '_');
+      const fileName = `DIVA2026_Photobooth_${safeName}_${Date.now()}.png`;
 
       if (PHOTOBOOTH_GDRIVE_SCRIPT_URL) {
         fetch(PHOTOBOOTH_GDRIVE_SCRIPT_URL, {
@@ -1712,9 +1664,9 @@
         autoLink.click();
       }, 500);
 
-      capturedPhotos.unshift({ url: dataUrl, name: guestName });
+      capturedPhotos.unshift({ url: dataUrl, name: guestName || 'Tetamu DIVA 2026' });
       updateBoothGallery();
-      showToast('Gambar berbingkai DIVA 2026 berjaya dirakam!', 'success');
+      showToast('Gambar AR 3D DIVA 2026 berjaya dirakam!', 'success');
     }
 
     function retakePhotobooth() {
@@ -1749,6 +1701,1188 @@
         `;
         grid.appendChild(div);
       });
+    }
+
+    // =========================================================================
+    // INISIALISASI, KAWALAN PERANAN, RSVP, CSV, CETAKAN & JADUAL UTAMA
+    // =========================================================================
+    function loadSavedData() {
+      const saved = localStorage.getItem('DIVA_ATTENDEES_DATA');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          attendees = parsed.map(item => ({
+            institution: item.institution || '-',
+            rsvpStatus: item.rsvpStatus || 'Menunggu RSVP',
+            ...item
+          }));
+        } catch(e) {
+          console.warn("Gagal memuatkan data tempatan", e);
+        }
+      }
+    }
+
+    window.onload = function() {
+      loadSavedData();
+      populateTableFilterOptions();
+      populateBoothGuestSuggestions();
+      checkBoothOrientation();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const syncParam = urlParams.get('sync');
+      if (syncParam && syncParam.startsWith('https://')) {
+        firebaseDbUrl = syncParam;
+        localStorage.setItem('DIVA_FIREBASE_URL', syncParam);
+      }
+
+      loadSharedBoothTemplate();
+      startCloudAutoSync();
+
+      const roleParam = urlParams.get('role');
+      if (roleParam && ['all', 'awardee', 'emcee', 'scanner', 'rsvp', 'photobooth'].includes(roleParam)) {
+        switchRole(roleParam);
+      } else {
+        updateAdminUIState();
+        updateDashboardStats();
+        renderTable();
+      }
+    };
+
+    window.addEventListener('resize', checkBoothOrientation);
+    window.addEventListener('orientationchange', () => setTimeout(checkBoothOrientation, 200));
+
+    function toggleAdminLock() {
+      if (isAdminUnlocked) {
+        isAdminUnlocked = false;
+        sessionStorage.removeItem('DIVA_ADMIN_UNLOCKED');
+        updateAdminUIState();
+        filterData();
+        showToast('Mod Admin dikunci semula.', 'info');
+      } else {
+        document.getElementById('adminPinInput').value = '';
+        document.getElementById('adminPinModal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('adminPinInput').focus(), 100);
+      }
+    }
+
+    function closeAdminPinModal() {
+      document.getElementById('adminPinModal').classList.add('hidden');
+    }
+
+    function verifyAdminPin() {
+      const entered = document.getElementById('adminPinInput').value.trim();
+      if (entered === ADMIN_PIN) {
+        isAdminUnlocked = true;
+        sessionStorage.setItem('DIVA_ADMIN_UNLOCKED', 'true');
+        closeAdminPinModal();
+        updateAdminUIState();
+        filterData();
+        showToast('Akses Admin dibuka! Semua kawalan penuh aktif.', 'success');
+      } else {
+        showToast('PIN Admin tidak sah!', 'error');
+      }
+    }
+
+    function updateAdminUIState() {
+      const adminGroup = document.getElementById('adminControlsGroup');
+      const lockedHint = document.getElementById('lockedAdminHint');
+      const lockBtn = document.getElementById('btnAdminLock');
+      const adminBoothControls = document.getElementById('adminBoothTemplateControls');
+
+      if (isAdminUnlocked) {
+        if (adminGroup) adminGroup.classList.remove('hidden');
+        if (lockedHint) lockedHint.classList.add('hidden');
+        if (adminBoothControls) adminBoothControls.classList.remove('hidden');
+        if (lockBtn) {
+          lockBtn.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i>Admin Aktif';
+          lockBtn.classList.remove('bg-slate-800', 'text-amber-400');
+          lockBtn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-400');
+        }
+      } else {
+        if (adminGroup) adminGroup.classList.add('hidden');
+        if (lockedHint) lockedHint.classList.remove('hidden');
+        if (adminBoothControls) adminBoothControls.classList.add('hidden');
+        if (lockBtn) {
+          lockBtn.innerHTML = '<i class="fa-solid fa-lock mr-1"></i>Kunci Admin';
+          lockBtn.classList.add('bg-slate-800', 'text-amber-400');
+          lockBtn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-400');
+        }
+      }
+    }
+
+    function switchRole(role) {
+      currentRole = role;
+      updateAdminUIState();
+
+      const roleMap = {
+        all: 'btnRoleAll',
+        awardee: 'btnRoleAward',
+        emcee: 'btnRoleEmcee',
+        scanner: 'btnRoleScan',
+        rsvp: 'btnRoleRsvp',
+        photobooth: 'btnRolePhotobooth'
+      };
+
+      document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.remove('bg-amber-500', 'text-slate-950');
+        btn.classList.add('text-slate-400', 'hover:text-white');
+      });
+
+      const activeBtn = document.getElementById(roleMap[role]);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-400', 'hover:text-white');
+        activeBtn.classList.add('bg-amber-500', 'text-slate-950');
+      }
+
+      const roleSwitcherBar = document.getElementById('roleSwitcherBar');
+      const syncStatusBar = document.getElementById('syncStatusBar');
+      const statsSection = document.getElementById('statsSection');
+      const rsvpPortalSection = document.getElementById('rsvpPortalSection');
+      const scannerSection = document.getElementById('scannerSection');
+      const photoboothSection = document.getElementById('photoboothSection');
+      const dashboardTableSection = document.getElementById('dashboardTableSection');
+      const tableHeading = document.getElementById('tableHeading');
+      const categoryFilter = document.getElementById('categoryFilter');
+      const thCategoryAward = document.getElementById('thCategoryAward');
+
+      const urlRole = new URLSearchParams(window.location.search).get('role');
+
+      roleSwitcherBar.classList.remove('hidden');
+      syncStatusBar.classList.remove('hidden');
+      rsvpPortalSection.classList.add('hidden');
+      scannerSection.classList.add('hidden');
+      photoboothSection.classList.add('hidden');
+      statsSection.classList.remove('hidden');
+      dashboardTableSection.classList.remove('hidden');
+
+      if (role === 'rsvp') {
+        rsvpPortalSection.classList.remove('hidden');
+        statsSection.classList.add('hidden');
+        dashboardTableSection.classList.add('hidden');
+        if (urlRole === 'rsvp' && !isAdminUnlocked) {
+          roleSwitcherBar.classList.add('hidden');
+          syncStatusBar.classList.add('hidden');
+        }
+      } else if (role === 'scanner') {
+        scannerSection.classList.remove('hidden');
+        tableHeading.innerHTML = `<i class="fa-solid fa-qrcode text-amber-400"></i> Log Pendaftaran Kaunter Foyer (Hari Kejadian)`;
+        thCategoryAward.innerText = "Kategori & Sesi (Anugerah Dirahsiakan)";
+        categoryFilter.value = 'all';
+      } else if (role === 'photobooth') {
+        photoboothSection.classList.remove('hidden');
+        statsSection.classList.add('hidden');
+        dashboardTableSection.classList.add('hidden');
+        if (urlRole === 'photobooth' && !isAdminUnlocked) {
+          roleSwitcherBar.classList.add('hidden');
+          syncStatusBar.classList.add('hidden');
+        }
+      } else if (role === 'awardee') {
+        tableHeading.innerHTML = `<i class="fa-solid fa-medal text-amber-400"></i> Senarai Penerima Anugerah (Holding Room)`;
+        thCategoryAward.innerText = "Kategori & Anugerah";
+        categoryFilter.value = 'Penerima Anugerah';
+      } else if (role === 'emcee') {
+        tableHeading.innerHTML = `<i class="fa-solid fa-microphone text-amber-400"></i> Senarai Protokol Pentas & Wakil (Emcee)`;
+        thCategoryAward.innerText = "Kategori & Anugerah";
+        categoryFilter.value = 'all';
+      } else {
+        tableHeading.innerHTML = `<i class="fa-solid fa-list-check text-amber-400"></i> Papan Pemuka Utama DIVA 2026`;
+        thCategoryAward.innerText = "Kategori & Anugerah";
+        categoryFilter.value = 'all';
+      }
+
+      updateDashboardStats();
+      filterData();
+    }
+
+    // =========================================================================
+    // MODUL PENGESAHAN KEHADIRAN AWAL (RSVP TETAMU & CARIAN INSTITUSI)
+    // =========================================================================
+    function searchGuestForRsvp() {
+      const query = document.getElementById('rsvpSearchInput').value.trim().toLowerCase();
+      const matchesBox = document.getElementById('rsvpSearchMatches');
+      matchesBox.innerHTML = '';
+      document.getElementById('rsvpFormCard').classList.add('hidden');
+      document.getElementById('rsvpEpassCard').classList.add('hidden');
+
+      if (!query || query.length < 2) {
+        showToast('Sila masukkan sekurang-kurangnya 2 aksara nama institusi, nama penerima atau ID.', 'warning');
+        return;
+      }
+
+      const matches = attendees.filter(g =>
+        g.id.toLowerCase().includes(query) ||
+        g.name.toLowerCase().includes(query) ||
+        (g.institution && g.institution.toLowerCase().includes(query))
+      );
+
+      if (matches.length === 0) {
+        matchesBox.innerHTML = `
+          <div class="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-200">
+            <i class="fa-solid fa-circle-exclamation mr-1.5 text-rose-400"></i>
+            Rekod tidak ditemui. Sila pastikan ejaan nama institusi/penerima tepat atau hubungi Urus Setia DIVA 2026.
+          </div>
+        `;
+        return;
+      }
+
+      if (matches.length === 1 && matches[0].id.toLowerCase() === query) {
+        selectGuestForRsvp(matches[0].id);
+      } else {
+        matchesBox.innerHTML = `<p class="text-[11px] text-amber-300 font-semibold">Ditemui ${matches.length} jemputan sepadan. Klik pada nama untuk mengesahkan RSVP:</p>`;
+        matches.forEach(g => {
+          const rsvpStat = g.rsvpStatus || 'Menunggu RSVP';
+          let statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-600">${rsvpStat}</span>`;
+          if (rsvpStat === 'Sahkan Hadir') {
+            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold"><i class="fa-solid fa-check mr-1"></i>Sahkan Hadir</span>`;
+          } else if (rsvpStat === 'Hantar Wakil') {
+            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold"><i class="fa-solid fa-user-tag mr-1"></i>Hantar Wakil</span>`;
+          } else if (rsvpStat === 'Tidak Hadir') {
+            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">Tidak Hadir</span>`;
+          }
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.onclick = () => selectGuestForRsvp(g.id);
+          btn.className = 'w-full p-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/60 text-left flex items-center justify-between gap-3 transition';
+          btn.innerHTML = `
+            <div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="font-mono text-[11px] text-amber-400 font-bold">${g.id}</span>
+                <span class="text-xs font-bold text-white">${g.name}</span>
+              </div>
+              <p class="text-[11px] text-cyan-300 font-medium mt-0.5"><i class="fa-solid fa-building-columns mr-1"></i>${g.institution || '-'}</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">Tetamu Jemputan Rasmi • ${formatMejaLabel(g.seat)}</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              ${statusTag}
+              <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+            </div>
+          `;
+          matchesBox.appendChild(btn);
+        });
+      }
+    }
+
+    function selectGuestForRsvp(guestId) {
+      const guest = attendees.find(g => g.id === guestId);
+      if (!guest) return;
+
+      selectedGuestIdForRsvp = guest.id;
+      document.getElementById('rsvpSearchMatches').innerHTML = '';
+      document.getElementById('rsvpFormCard').classList.remove('hidden');
+      document.getElementById('rsvpEpassCard').classList.add('hidden');
+
+      document.getElementById('rsvpGuestIdBadge').innerText = guest.id;
+      document.getElementById('rsvpGuestInstitutionBadge').innerHTML = `<i class="fa-solid fa-building-columns mr-1"></i>${guest.institution || '-'}`;
+      document.getElementById('rsvpGuestNameDisplay').innerText = guest.name;
+      document.getElementById('rsvpGuestMetaDisplay').innerText = `Tetamu Jemputan Rasmi • Lokasi: ${formatMejaLabel(guest.seat)}`;
+      document.getElementById('rsvpCurrentStatusPill').innerText = `Status Semasa: ${guest.rsvpStatus || 'Menunggu RSVP'}`;
+
+      const radios = document.querySelectorAll('input[name="rsvpChoice"]');
+      radios.forEach(r => {
+        r.checked = (r.value === (guest.rsvpStatus === 'Hantar Wakil' || guest.rsvpStatus === 'Tidak Hadir' ? guest.rsvpStatus : 'Sahkan Hadir'));
+      });
+      document.getElementById('rsvpProxyNameInput').value = guest.proxyName || '';
+      toggleRsvpProxyInput();
+    }
+
+    function toggleRsvpProxyInput() {
+      const selected = document.querySelector('input[name="rsvpChoice"]:checked')?.value;
+      const box = document.getElementById('rsvpProxyFieldBox');
+      if (selected === 'Hantar Wakil') {
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    function submitGuestRsvp() {
+      if (!selectedGuestIdForRsvp) return;
+      const guest = attendees.find(g => g.id === selectedGuestIdForRsvp);
+      if (!guest) return;
+
+      const choice = document.querySelector('input[name="rsvpChoice"]:checked')?.value || 'Sahkan Hadir';
+      const proxyInputVal = document.getElementById('rsvpProxyNameInput').value.trim();
+
+      if (choice === 'Hantar Wakil' && !proxyInputVal) {
+        showToast('Sila masukkan nama penuh wakil rasmi anda!', 'error');
+        return;
+      }
+
+      guest.rsvpStatus = choice;
+      if (choice === 'Hantar Wakil') {
+        guest.proxyName = proxyInputVal;
+      } else if (choice === 'Sahkan Hadir') {
+        guest.proxyName = '';
+      }
+
+      pushDataToCloud();
+      updateDashboardStats();
+      filterData();
+
+      document.getElementById('rsvpFormCard').classList.add('hidden');
+      const epassCard = document.getElementById('rsvpEpassCard');
+      epassCard.classList.remove('hidden');
+
+      document.getElementById('epassName').innerText = guest.name;
+      document.getElementById('epassInstitution').innerText = guest.institution || '-';
+      document.getElementById('epassCategorySeat').innerText = `Tetamu Jemputan Rasmi • ${formatMejaLabel(guest.seat)}`;
+      document.getElementById('epassIdText').innerText = guest.id;
+
+      const proxyNote = document.getElementById('epassProxyNote');
+      if (choice === 'Hantar Wakil') {
+        proxyNote.classList.remove('hidden');
+        proxyNote.innerText = `Wakil Disahkan: ${guest.proxyName}`;
+      } else if (choice === 'Tidak Hadir') {
+        proxyNote.classList.remove('hidden');
+        proxyNote.innerText = `Status: Tidak Dapat Hadir (Terima kasih atas maklum balas)`;
+      } else {
+        proxyNote.classList.add('hidden');
+      }
+
+      const qrContainer = document.getElementById('rsvpQrContainer');
+      qrContainer.innerHTML = '';
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(qrContainer, {
+          text: guest.id,
+          width: 170,
+          height: 170,
+          colorDark: "#020617",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+
+      showToast('Pengesahan RSVP berjaya dihantar & E-Pas dijana!', 'success');
+    }
+
+    function updateGuestRsvpDirectly(guestId, newRsvpStatus) {
+      const guest = attendees.find(g => g.id === guestId);
+      if (!guest) return;
+      guest.rsvpStatus = newRsvpStatus;
+      pushDataToCloud();
+      updateDashboardStats();
+      filterData();
+      showToast(`Status RSVP ${guest.name} dikemas kini kepada "${newRsvpStatus}".`, 'info');
+    }
+
+    // =========================================================================
+    // PENAPISAN, EDIT REKOD, MUAT NAIK CSV & CETAKAN
+    // =========================================================================
+    function populateTableFilterOptions() {
+      const tableSelect = document.getElementById('tableFilter');
+      if (!tableSelect) return;
+      const currentSelected = tableSelect.value;
+
+      const tableCounts = {};
+      attendees.forEach(g => {
+        const label = formatMejaLabel(g.seat);
+        tableCounts[label] = (tableCounts[label] || 0) + 1;
+      });
+
+      const sortedTables = Object.keys(tableCounts).sort((a, b) =>
+        a.localeCompare(b, 'ms', { numeric: true, sensitivity: 'base' })
+      );
+
+      tableSelect.innerHTML = '<option value="all">Semua Meja</option>';
+      sortedTables.forEach(tbl => {
+        const opt = document.createElement('option');
+        opt.value = tbl;
+        opt.textContent = `${tbl} (${tableCounts[tbl]} org)`;
+        tableSelect.appendChild(opt);
+      });
+
+      if (sortedTables.includes(currentSelected)) {
+        tableSelect.value = currentSelected;
+      }
+    }
+
+    function getFilteredAttendees() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
+      const catVal = document.getElementById('categoryFilter').value;
+      const tableVal = document.getElementById('tableFilter').value;
+      const rsvpVal = document.getElementById('rsvpFilter').value;
+      const statusVal = document.getElementById('statusFilter').value;
+      const hideAward = shouldHideAwardName();
+
+      return attendees.filter(g => {
+        const formattedSeat = formatMejaLabel(g.seat);
+        const matchesSearch = !searchText ||
+          g.name.toLowerCase().includes(searchText) ||
+          (g.institution && g.institution.toLowerCase().includes(searchText)) ||
+          g.id.toLowerCase().includes(searchText) ||
+          formattedSeat.toLowerCase().includes(searchText) ||
+          (!hideAward && g.award.toLowerCase().includes(searchText)) ||
+          (g.proxyName && g.proxyName.toLowerCase().includes(searchText));
+
+        const matchesCat = catVal === 'all' || g.category === catVal;
+        const matchesTable = tableVal === 'all' || formattedSeat === tableVal;
+        const currentRsvp = g.rsvpStatus || 'Menunggu RSVP';
+        const matchesRsvp = rsvpVal === 'all' || currentRsvp === rsvpVal;
+        const matchesStatus = statusVal === 'all' || g.status === statusVal;
+
+        return matchesSearch && matchesCat && matchesTable && matchesRsvp && matchesStatus;
+      });
+    }
+
+    function filterData() {
+      const filtered = getFilteredAttendees();
+      renderTable(filtered);
+    }
+
+    function openEditGuestModal(guestId) {
+      const guest = attendees.find(g => g.id === guestId);
+      if (!guest) return;
+      document.getElementById('editGuestIdDisplay').innerText = guest.id;
+      document.getElementById('editGuestId').value = guest.id;
+      document.getElementById('editGuestCategory').value = guest.category || 'Penerima Anugerah';
+      document.getElementById('editGuestName').value = guest.name || '';
+      document.getElementById('editGuestInstitution').value = guest.institution || '';
+      document.getElementById('editGuestAward').value = guest.award || '';
+      document.getElementById('editGuestSession').value = guest.session || '';
+      document.getElementById('editGuestSeat').value = guest.seat || '';
+      document.getElementById('editGuestProxy').value = guest.proxyName || '';
+      document.getElementById('editGuestNotes').value = guest.notes || '';
+      document.getElementById('editGuestModal').classList.remove('hidden');
+    }
+
+    function closeEditGuestModal() {
+      document.getElementById('editGuestModal').classList.add('hidden');
+    }
+
+    function saveEditedGuest() {
+      const id = document.getElementById('editGuestId').value;
+      const guest = attendees.find(g => g.id === id);
+      if (!guest) return;
+
+      const updatedName = document.getElementById('editGuestName').value.trim();
+      if (!updatedName) {
+        showToast('Nama penuh tidak boleh dikosongkan!', 'error');
+        return;
+      }
+
+      guest.category = document.getElementById('editGuestCategory').value;
+      guest.name = updatedName;
+      guest.institution = document.getElementById('editGuestInstitution').value.trim() || '-';
+      guest.award = document.getElementById('editGuestAward').value.trim() || '-';
+      guest.session = document.getElementById('editGuestSession').value.trim() || 'Sesi 1';
+      guest.seat = document.getElementById('editGuestSeat').value.trim() || 'Zon Umum';
+      guest.proxyName = document.getElementById('editGuestProxy').value.trim();
+      guest.notes = document.getElementById('editGuestNotes').value.trim();
+
+      pushDataToCloud();
+      closeEditGuestModal();
+      populateTableFilterOptions();
+      updateDashboardStats();
+      filterData();
+      populateBoothGuestSuggestions();
+      showToast(`Rekod ${guest.name} (${guest.id}) dikemas kini tanpa mengubah status RSVP!`, 'success');
+    }
+
+    function printRsvpList() {
+      const listToPrint = getFilteredAttendees();
+      if (listToPrint.length === 0) {
+        showToast('Tiada rekod dalam paparan semasa untuk dicetak.', 'warning');
+        return;
+      }
+
+      const catLabel = document.getElementById('categoryFilter').value === 'all' ? 'Semua Kategori' : document.getElementById('categoryFilter').value;
+      const rsvpLabel = document.getElementById('rsvpFilter').value === 'all' ? 'Semua Status RSVP' : document.getElementById('rsvpFilter').value;
+      const nowStr = new Date().toLocaleString('ms-MY', { dateStyle: 'medium', timeStyle: 'short' });
+
+      const countHadir = listToPrint.filter(g => (g.rsvpStatus || 'Menunggu RSVP') === 'Sahkan Hadir').length;
+      const countWakil = listToPrint.filter(g => g.rsvpStatus === 'Hantar Wakil').length;
+      const countMenunggu = listToPrint.filter(g => !g.rsvpStatus || g.rsvpStatus === 'Menunggu RSVP').length;
+      const countTidak = listToPrint.filter(g => g.rsvpStatus === 'Tidak Hadir').length;
+
+      const rowsHtml = listToPrint.map((g, idx) => {
+        const rsvpStat = g.rsvpStatus || 'Menunggu RSVP';
+        let rsvpBadge = `<span style="color:#475569;">Menunggu RSVP</span>`;
+        if (rsvpStat === 'Sahkan Hadir') {
+          rsvpBadge = `<strong style="color:#0369a1;">SAHKAN HADIR</strong>`;
+        } else if (rsvpStat === 'Hantar Wakil') {
+          rsvpBadge = `<strong style="color:#b45309;">HANTAR WAKIL</strong><br><span style="font-size:11px; color:#78350f;">Wakil: ${g.proxyName || '-'}</span>`;
+        } else if (rsvpStat === 'Tidak Hadir') {
+          rsvpBadge = `<strong style="color:#be123c;">TIDAK HADIR</strong>`;
+        }
+
+        return `
+          <tr style="${rsvpStat === 'Tidak Hadir' ? 'background:#fff1f2;' : ''}">
+            <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
+            <td style="font-family:monospace; font-weight:bold;">${g.id}</td>
+            <td><strong>${g.name}</strong><br><span style="font-size:11px; color:#334155;">${g.institution || '-'}</span></td>
+            <td>${g.category}</td>
+            <td>${formatMejaLabel(g.seat)}</td>
+            <td>${rsvpBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const printWin = window.open('', '_blank', 'width=960,height=780');
+      if (!printWin) {
+        showToast('Sila benarkan pop-up pada pelayar untuk membuka paparan cetakan.', 'error');
+        return;
+      }
+
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html lang="ms">
+        <head>
+          <meta charset="UTF-8">
+          <title>Laporan Pengesahan RSVP - DIVA 2026</title>
+          <style>
+            body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; margin: 24px; }
+            .header { border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .header h1 { font-size: 18px; margin: 0 0 4px 0; text-transform: uppercase; }
+            .header p { font-size: 12px; margin: 0; color: #475569; }
+            .summary-bar { display: flex; gap: 16px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 12px; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; vertical-align: top; }
+            th { background-color: #f1f5f9; font-weight: bold; text-transform: uppercase; font-size: 11px; }
+            @media print {
+              .no-print { display: none; }
+              body { margin: 10mm; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="no-print" style="margin-bottom:14px; text-align:right;">
+            <button onclick="window.print()" style="padding:8px 16px; background:#0284c7; color:#ffffff; font-weight:bold; border:none; border-radius:6px; cursor:pointer;">Cetak Laporan RSVP Sekarang</button>
+          </div>
+          <div class="header">
+            <div>
+              <h1>LAPORAN PENGESAHAN KEHADIRAN AWAL (RSVP) - DIVA 2026</h1>
+              <p>Tapisan: <strong>${catLabel}</strong> | Status RSVP: <strong>${rsvpLabel}</strong> | Jumlah Rekod: <strong>${listToPrint.length}</strong></p>
+            </div>
+            <div style="text-align:right; font-size:11px; color:#475569;">
+              Dicetak pada:<br><strong>${nowStr}</strong>
+            </div>
+          </div>
+          <div class="summary-bar">
+            <span>Sahkan Hadir: <strong style="color:#0369a1;">${countHadir}</strong></span>
+            <span>|</span>
+            <span>Hantar Wakil: <strong style="color:#b45309;">${countWakil}</strong></span>
+            <span>|</span>
+            <span>Menunggu Balas: <strong>${countMenunggu}</strong></span>
+            <span>|</span>
+            <span>Tidak Hadir: <strong style="color:#be123c;">${countTidak}</strong></span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:36px; text-align:center;">Bil</th>
+                <th style="width:85px;">ID</th>
+                <th>Nama Tetamu & Institusi</th>
+                <th style="width:120px;">Kategori</th>
+                <th style="width:130px;">Zon / Meja</th>
+                <th style="width:165px;">Status RSVP & Info Wakil</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => printWin.print(), 300);
+    }
+
+    function printEmceeList() {
+      const listToPrint = getFilteredAttendees();
+      if (listToPrint.length === 0) {
+        showToast('Tiada rekod dalam paparan semasa untuk dicetak.', 'warning');
+        return;
+      }
+
+      const catLabel = document.getElementById('categoryFilter').value === 'all' ? 'Semua Kategori' : document.getElementById('categoryFilter').value;
+      const statusLabel = document.getElementById('statusFilter').value === 'all' ? 'Semua Status Kehadiran' : document.getElementById('statusFilter').value;
+      const nowStr = new Date().toLocaleString('ms-MY', { dateStyle: 'medium', timeStyle: 'short' });
+
+      const rowsHtml = listToPrint.map((g, idx) => {
+        let arrivalText = 'BELUM TIBA';
+        let rowStyle = '';
+        if (g.status === 'Hadir') {
+          arrivalText = 'HADIR SENDIRI';
+        } else if (g.status === 'Hadir Wakil') {
+          arrivalText = `HADIR WAKIL:<br><strong>${g.proxyName || 'Wakil'}</strong>`;
+          rowStyle = 'background-color: #fef3c7;';
+        } else if (g.rsvpStatus === 'Tidak Hadir') {
+          arrivalText = 'TIDAK HADIR (RSVP)';
+          rowStyle = 'background-color: #ffe4e6; color: #881337;';
+        }
+
+        return `
+          <tr style="${rowStyle}">
+            <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
+            <td><strong>${g.session}</strong><br><span style="font-size:11px; color:#555;">${g.id}</span></td>
+            <td><strong style="font-size:13px;">${g.name}</strong><br><span style="font-size:11px; color:#333;">${g.institution || '-'}</span></td>
+            <td><strong>${g.award}</strong><br><span style="font-size:11px; color:#555;">${g.category}</span></td>
+            <td>${arrivalText}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const printWin = window.open('', '_blank', 'width=960,height=780');
+      if (!printWin) {
+        showToast('Sila benarkan pop-up pada pelayar untuk membuka paparan cetakan.', 'error');
+        return;
+      }
+
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html lang="ms">
+        <head>
+          <meta charset="UTF-8">
+          <title>Senarai Panggilan Emcee & Stage Manager - DIVA 2026</title>
+          <style>
+            body { font-family: Arial, Helvetica, sans-serif; color: #111; margin: 24px; }
+            .header { border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .header h1 { font-size: 18px; margin: 0 0 4px 0; text-transform: uppercase; }
+            .header p { font-size: 12px; margin: 0; color: #444; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th, td { border: 1px solid #999; padding: 8px 10px; text-align: left; vertical-align: top; }
+            th { background-color: #f1f5f9; font-weight: bold; text-transform: uppercase; font-size: 11px; }
+            @media print {
+              .no-print { display: none; }
+              body { margin: 10mm; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="no-print" style="margin-bottom:14px; text-align:right;">
+            <button onclick="window.print()" style="padding:8px 16px; background:#f59e0b; color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer;">Cetak Sekarang</button>
+          </div>
+          <div class="header">
+            <div>
+              <h1>SENARAI PANGGILAN PENTAS (EMCEE & STAGE MANAGER) - DIVA 2026</h1>
+              <p>Tapisan: <strong>${catLabel}</strong> | Status: <strong>${statusLabel}</strong> | Jumlah Rekod: <strong>${listToPrint.length}</strong></p>
+            </div>
+            <div style="text-align:right; font-size:11px; color:#444;">
+              Dicetak pada:<br><strong>${nowStr}</strong>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:36px; text-align:center;">Bil</th>
+                <th style="width:120px;">Sesi / Giliran</th>
+                <th>Nama Penerima & Institusi</th>
+                <th>Anugerah / Kategori</th>
+                <th style="width:170px;">Status Ketibaan & Wakil</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => printWin.print(), 300);
+    }
+
+    function handleCSVUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const rows = [];
+        let currentRow = [];
+        let curVal = '';
+        let inQuotes = false;
+
+        for (let i = 0; i < text.length; i++) {
+          let char = text[i];
+          let nextChar = text[i + 1];
+
+          if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+              curVal += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === ',' && !inQuotes) {
+            currentRow.push(curVal.trim());
+            curVal = '';
+          } else if ((char === '\r' || char === '\n') && !inQuotes) {
+            if (char === '\r' && nextChar === '\n') {
+              i++;
+            }
+            currentRow.push(curVal.trim());
+            if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== '')) {
+              rows.push(currentRow);
+            }
+            currentRow = [];
+            curVal = '';
+          } else {
+            curVal += char;
+          }
+        }
+        if (curVal !== '' || currentRow.length > 0) {
+          currentRow.push(curVal.trim());
+          if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== '')) {
+            rows.push(currentRow);
+          }
+        }
+
+        if (rows.length <= 1) {
+          showToast('Fail CSV kosong atau tidak sah!', 'error');
+          return;
+        }
+
+        const existingMap = new Map();
+        attendees.forEach(item => existingMap.set(item.id.toUpperCase(), item));
+
+        let preservedRsvpCount = 0;
+        const newAttendees = [];
+
+        for (let i = 1; i < rows.length; i++) {
+          const cols = rows[i];
+          if (!cols || cols.length < 2 || !cols[1]) continue;
+
+          const rowId = cols[0] || `DIVA-${String(i).padStart(3, '0')}`;
+          const prevRecord = existingMap.get(rowId.toUpperCase());
+
+          const csvRsvp = cols[7] && cols[7] !== '' ? cols[7] : 'Menunggu RSVP';
+          const csvStatus = cols[8] && cols[8] !== '' ? cols[8] : 'Belum Hadir';
+          const csvProxy = cols[9] || '';
+          const csvTime = cols[10] || '';
+
+          const finalRsvp = (prevRecord && prevRecord.rsvpStatus && prevRecord.rsvpStatus !== 'Menunggu RSVP') ? prevRecord.rsvpStatus : csvRsvp;
+          const finalStatus = (prevRecord && prevRecord.status && prevRecord.status !== 'Belum Hadir') ? prevRecord.status : csvStatus;
+          const finalProxy = (prevRecord && prevRecord.proxyName) ? prevRecord.proxyName : csvProxy;
+          const finalTime = (prevRecord && prevRecord.checkInTime) ? prevRecord.checkInTime : csvTime;
+
+          if (prevRecord && (finalRsvp !== 'Menunggu RSVP' || finalStatus !== 'Belum Hadir')) {
+            preservedRsvpCount++;
+          }
+
+          newAttendees.push({
+            id: rowId,
+            name: cols[1],
+            institution: cols[2] && cols[2] !== '' ? cols[2] : '-',
+            category: cols[3] && cols[3] !== '' ? cols[3] : 'Jemputan Khas',
+            award: cols[4] && cols[4] !== '' ? cols[4] : '-',
+            session: cols[5] && cols[5] !== '' ? cols[5] : 'Sesi 1',
+            seat: cols[6] && cols[6] !== '' ? cols[6] : 'Zon Umum',
+            rsvpStatus: finalRsvp,
+            status: finalStatus,
+            proxyName: finalProxy,
+            checkInTime: finalTime,
+            notes: cols[11] || ''
+          });
+        }
+
+        if (newAttendees.length > 0) {
+          attendees = newAttendees;
+          pushDataToCloud();
+          populateTableFilterOptions();
+          updateDashboardStats();
+          filterData();
+          populateBoothGuestSuggestions();
+          showToast(`Berjaya muat naik ${newAttendees.length} rekod (${preservedRsvpCount} respon RSVP/kehadiran sedia ada dikekalkan)!`, 'success');
+        } else {
+          showToast('Tiada baris data sah ditemui dalam fail CSV. Sila semak format lajur.', 'error');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function downloadCSVTemplate() {
+      const templateCSV = [
+        "ID,Nama,Institusi,Kategori,Anugerah,Sesi,Meja,Status_RSVP,Status_Foyer,Wakil,Masa_Daftar,Nota",
+        '"VIP-001","YAB Dato\' Sri Contoh VVIP","Pejabat Menteri Besar Pahang","VVIP","Tetamu Kehormat","Perasmian","Meja VVIP 1","Sahkan Hadir","Belum Hadir","","","LO Protokol 1"',
+        '"DIVA-001","Cikgu Ahmad bin Ali","SMK Dato\' Mahmud Mat","Penerima Anugerah","Anugerah Inovasi Digital 2026","Sesi 1 (Giliran #1)","Zon A - Meja 1","Menunggu RSVP","Belum Hadir","","","Sedia di Holding Room"',
+        '"JM-001","Puan Siti Sarah","PPD Pekan","Jemputan Khas","Rakan Strategik","Perasmian","Meja Penaja 2","Sahkan Hadir","Belum Hadir","","",""'
+      ].join("\n");
+
+      const blob = new Blob([templateCSV], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "Templat_Senarai_DIVA2026.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Templat CSV dimuat turun! Buka dengan Excel untuk isi data.', 'info');
+    }
+
+    function exportReportCSV() {
+      const headers = ["ID", "Nama", "Institusi", "Kategori", "Anugerah", "Sesi", "Meja", "Status_RSVP", "Status_Foyer", "Wakil", "Masa_Daftar", "Nota"];
+      const rows = attendees.map(g => [
+        `"${g.id}"`,
+        `"${g.name.replace(/"/g, '""')}"`,
+        `"${(g.institution || '-').replace(/"/g, '""')}"`,
+        `"${g.category}"`,
+        `"${g.award.replace(/"/g, '""')}"`,
+        `"${g.session}"`,
+        `"${formatMejaLabel(g.seat)}"`,
+        `"${g.rsvpStatus || 'Menunggu RSVP'}"`,
+        `"${g.status}"`,
+        `"${(g.proxyName || '').replace(/"/g, '""')}"`,
+        `"${g.checkInTime || ''}"`,
+        `"${(g.notes || '').replace(/"/g, '""')}"`
+      ].join(","));
+
+      const csvContent = [headers.join(","), ...rows].join("\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Laporan_Kehadiran_DIVA2026_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Laporan CSV berjaya dieksport!', 'success');
+    }
+
+    function openResetModal() {
+      document.getElementById('resetConfirmModal').classList.remove('hidden');
+    }
+
+    function closeResetModal() {
+      document.getElementById('resetConfirmModal').classList.add('hidden');
+    }
+
+    function executeResetAllData() {
+      attendees.forEach(g => {
+        g.status = 'Belum Hadir';
+        g.checkInTime = '';
+      });
+      pushDataToCloud();
+      closeResetModal();
+      updateDashboardStats();
+      filterData();
+      showToast('Semua status Pendaftaran Foyer telah ditetapkan semula.', 'info');
+    }
+
+    function executeClearAllGuests() {
+      attendees = [];
+      pushDataToCloud();
+      closeResetModal();
+      populateTableFilterOptions();
+      updateDashboardStats();
+      filterData();
+      populateBoothGuestSuggestions();
+      showToast('Semua data sedia ada telah dipadam! Sila muat naik CSV atau tambah tetamu.', 'warning');
+    }
+
+    function deleteSingleGuest(guestId) {
+      const idx = attendees.findIndex(a => a.id === guestId);
+      if (idx === -1) return;
+      const removed = attendees.splice(idx, 1)[0];
+      pushDataToCloud();
+      populateTableFilterOptions();
+      updateDashboardStats();
+      filterData();
+      populateBoothGuestSuggestions();
+      showToast(`Rekod ${removed.name} (${removed.id}) telah dipadam.`, 'info');
+    }
+
+    function openAddGuestModal() {
+      document.getElementById('newGuestId').value = `DIVA-${String(attendees.length + 1).padStart(3, '0')}`;
+      document.getElementById('newGuestName').value = '';
+      document.getElementById('newGuestInstitution').value = '';
+      document.getElementById('newGuestAward').value = '';
+      document.getElementById('newGuestSession').value = 'Sesi 1';
+      document.getElementById('newGuestSeat').value = '';
+      document.getElementById('newGuestRsvp').value = 'Menunggu RSVP';
+      document.getElementById('newGuestNotes').value = '';
+      document.getElementById('addGuestModal').classList.remove('hidden');
+    }
+
+    function closeAddGuestModal() {
+      document.getElementById('addGuestModal').classList.add('hidden');
+    }
+
+    function saveNewGuest() {
+      const id = document.getElementById('newGuestId').value.trim();
+      const name = document.getElementById('newGuestName').value.trim();
+      if (!id || !name) {
+        showToast('Sila isi sekurang-kurangnya ID Unik dan Nama Penuh!', 'error');
+        return;
+      }
+      if (attendees.some(a => a.id.toUpperCase() === id.toUpperCase())) {
+        showToast(`ID ${id} sudah wujud! Sila guna ID lain.`, 'error');
+        return;
+      }
+      attendees.push({
+        id: id,
+        name: name,
+        institution: document.getElementById('newGuestInstitution').value.trim() || '-',
+        category: document.getElementById('newGuestCategory').value,
+        award: document.getElementById('newGuestAward').value.trim() || '-',
+        session: document.getElementById('newGuestSession').value.trim() || 'Sesi 1',
+        seat: document.getElementById('newGuestSeat').value.trim() || 'Zon Umum',
+        rsvpStatus: document.getElementById('newGuestRsvp').value,
+        status: 'Belum Hadir',
+        proxyName: '',
+        checkInTime: '',
+        notes: document.getElementById('newGuestNotes').value.trim()
+      });
+      pushDataToCloud();
+      closeAddGuestModal();
+      populateTableFilterOptions();
+      updateDashboardStats();
+      filterData();
+      populateBoothGuestSuggestions();
+      showToast(`Berjaya menambah ${name} & diselaraskan ke semua AJK!`, 'success');
+    }
+
+    // =========================================================================
+    // TINDAKAN KEHADIRAN HARI KEJADIAN & WAKIL (PROXY)
+    // =========================================================================
+    function getCurrentTimeStr() {
+      return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function markSelfPresent(guestId) {
+      const guest = attendees.find(g => g.id.toUpperCase() === guestId.toUpperCase());
+      if (!guest) return false;
+      guest.status = 'Hadir';
+      guest.proxyName = '';
+      guest.checkInTime = getCurrentTimeStr();
+      pushDataToCloud();
+      updateDashboardStats();
+      filterData();
+      showToast(`${guest.name} disahkan tiba di dewan!`, 'success');
+      return guest;
+    }
+
+    function resetStatus(guestId) {
+      const guest = attendees.find(g => g.id === guestId);
+      if (!guest) return;
+      guest.status = 'Belum Hadir';
+      guest.checkInTime = '';
+      pushDataToCloud();
+      updateDashboardStats();
+      filterData();
+      showToast(`Status ketibaan ${guest.name} dibatalkan.`, 'info');
+    }
+
+    function openProxyModal(guestId) {
+      const guest = attendees.find(g => g.id === guestId);
+      if (!guest) return;
+      activeTargetIdForProxy = guestId;
+      document.getElementById('modalOriginalName').innerText = guest.name;
+      if (shouldHideAwardName()) {
+        document.getElementById('modalOriginalCategory').innerText = `${guest.institution || '-'} • ${guest.category} • ${formatMejaLabel(guest.seat)}`;
+      } else {
+        document.getElementById('modalOriginalCategory').innerText = `${guest.institution || '-'} • ${guest.category} (${guest.award})`;
+      }
+      document.getElementById('proxyNameInput').value = guest.proxyName || '';
+      document.getElementById('proxyRelationInput').value = '';
+      document.getElementById('proxyModal').classList.remove('hidden');
+    }
+
+    function closeProxyModal() {
+      activeTargetIdForProxy = null;
+      document.getElementById('proxyModal').classList.add('hidden');
+    }
+
+    function submitProxyCheckIn() {
+      if (!activeTargetIdForProxy) return;
+      const proxyName = document.getElementById('proxyNameInput').value.trim();
+      const proxyRel = document.getElementById('proxyRelationInput').value.trim();
+
+      if (!proxyName) {
+        showToast('Sila masukkan nama wakil untuk rujukan Emcee!', 'error');
+        return;
+      }
+
+      const guest = attendees.find(g => g.id === activeTargetIdForProxy);
+      if (guest) {
+        guest.status = 'Hadir Wakil';
+        guest.proxyName = proxyRel ? `${proxyName} (${proxyRel})` : proxyName;
+        guest.checkInTime = getCurrentTimeStr();
+        pushDataToCloud();
+        updateDashboardStats();
+        filterData();
+        showToast(`Wakil bagi ${guest.name} berjaya didaftarkan tiba!`, 'success');
+      }
+      closeProxyModal();
+    }
+
+    // =========================================================================
+    // PENGIMBAS KOD QR & CARIAN NAMA MANUAL (TANPA MENDEDAHKAN NAMA ANUGERAH)
+    // =========================================================================
+    function toggleScanner() {
+      if (isScannerRunning) {
+        if (html5QrScanner) {
+          html5QrScanner.stop().then(() => {
+            html5QrScanner.clear();
+            isScannerRunning = false;
+            document.getElementById('scannerPlaceholder').classList.remove('hidden');
+            showToast('Kamera pengimbas dihentikan.', 'info');
+          }).catch(err => console.warn(err));
+        }
+      } else {
+        document.getElementById('scannerPlaceholder').classList.add('hidden');
+        html5QrScanner = new Html5Qrcode("reader");
+        html5QrScanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          (decodedText) => {
+            processScannedCode(decodedText.trim());
+          },
+          () => {}
+        ).then(() => {
+          isScannerRunning = true;
+          showToast('Kamera pengimbas QR aktif!', 'success');
+        }).catch(() => {
+          document.getElementById('scannerPlaceholder').classList.remove('hidden');
+          showToast('Gagal membuka kamera. Pastikan kebenaran kamera diberikan.', 'error');
+        });
+      }
+    }
+
+    function searchManualCheckInMatches() {
+      const query = document.getElementById('manualInput').value.trim().toLowerCase();
+      const matchesBox = document.getElementById('manualSearchMatches');
+      if (!matchesBox) return;
+      matchesBox.innerHTML = '';
+
+      if (query.length < 2) return;
+
+      const matches = attendees.filter(g =>
+        g.id.toLowerCase().includes(query) ||
+        g.name.toLowerCase().includes(query) ||
+        (g.institution && g.institution.toLowerCase().includes(query))
+      );
+
+      if (matches.length === 0) {
+        matchesBox.innerHTML = `<p class="text-[11px] text-rose-400 italic py-1">Tiada nama atau institusi sepadan dengan "${query}".</p>`;
+        return;
+      }
+
+      matches.slice(0, 12).forEach(g => {
+        const isArrived = g.status !== 'Belum Hadir';
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'p-2.5 rounded-lg bg-slate-800/90 border border-slate-700 flex items-center justify-between gap-2 text-xs';
+        itemDiv.innerHTML = `
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-950 text-amber-400">${g.id}</span>
+              <span class="font-bold text-white truncate">${g.name}</span>
+            </div>
+            <p class="text-[11px] text-cyan-300 truncate mt-0.5">${g.institution || '-'} • ${formatMejaLabel(g.seat)}</p>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            ${isArrived ? `
+              <span class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                <i class="fa-solid fa-check mr-1"></i>${g.status}
+              </span>
+            ` : `
+              <button type="button" onclick="selectManualGuestCheckIn('${g.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold text-[11px] transition">
+                Daftar Tiba
+              </button>
+              <button type="button" onclick="openProxyModal('${g.id}')" class="px-2 py-1 bg-slate-700 hover:bg-amber-600 text-slate-200 hover:text-white rounded font-semibold text-[11px] transition">
+                Wakil
+              </button>
+            `}
+          </div>
+        `;
+        matchesBox.appendChild(itemDiv);
+      });
+    }
+
+    function selectManualGuestCheckIn(guestId) {
+      processScannedCode(guestId);
+      document.getElementById('manualInput').value = '';
+      const matchesBox = document.getElementById('manualSearchMatches');
+      if (matchesBox) matchesBox.innerHTML = '';
+    }
+
+    function handleManualCheckIn() {
+      const input = document.getElementById('manualInput');
+      const code = input.value.trim();
+      if (!code) {
+        showToast('Sila masukkan nama, institusi atau ID tetamu terlebih dahulu.', 'warning');
+        return;
+      }
+
+      const exactIdMatch = attendees.find(g => g.id.toUpperCase() === code.toUpperCase());
+      if (exactIdMatch) {
+        processScannedCode(exactIdMatch.id);
+        input.value = '';
+        const matchesBox = document.getElementById('manualSearchMatches');
+        if (matchesBox) matchesBox.innerHTML = '';
+        return;
+      }
+
+      const nameMatches = attendees.filter(g =>
+        g.name.toLowerCase().includes(code.toLowerCase()) ||
+        (g.institution && g.institution.toLowerCase().includes(code.toLowerCase()))
+      );
+
+      if (nameMatches.length === 1) {
+        processScannedCode(nameMatches[0].id);
+        input.value = '';
+        const matchesBox = document.getElementById('manualSearchMatches');
+        if (matchesBox) matchesBox.innerHTML = '';
+      } else if (nameMatches.length > 1) {
+        searchManualCheckInMatches();
+        showToast(`Ditemui ${nameMatches.length} nama sepadan. Sila pilih daripada senarai di bawah.`, 'info');
+      } else {
+        processScannedCode(code);
+        input.value = '';
+      }
+    }
+
+    function processScannedCode(code) {
+      const resultBox = document.getElementById('scanResultBox');
+      resultBox.classList.remove('hidden', 'bg-emerald-950/70', 'border-emerald-500', 'bg-rose-950/70', 'border-rose-500');
+
+      const guest = attendees.find(g => g.id.toUpperCase() === code.toUpperCase());
+      if (guest) {
+        if (guest.rsvpStatus === 'Hantar Wakil' && guest.proxyName) {
+          guest.status = 'Hadir Wakil';
+          guest.checkInTime = getCurrentTimeStr();
+          pushDataToCloud();
+          updateDashboardStats();
+          filterData();
+          showToast(`Wakil berdaftar (${guest.proxyName}) disahkan tiba!`, 'success');
+        } else {
+          markSelfPresent(guest.id);
+        }
+
+        resultBox.classList.add('bg-emerald-950/70', 'border-emerald-500');
+        resultBox.innerHTML = `
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-xl mt-0.5"></i>
+            <div>
+              <p class="text-xs font-extrabold text-emerald-400 uppercase">Pendaftaran Foyer Berjaya (${guest.id})</p>
+              <p class="text-sm font-bold text-white mt-0.5">${guest.name}</p>
+              <p class="text-xs text-cyan-300 font-semibold mt-0.5"><i class="fa-solid fa-building-columns mr-1"></i>${guest.institution || '-'}</p>
+              <p class="text-xs text-slate-300 mt-1">Kategori: <b>${guest.category}</b> • Lokasi: <b>${formatMejaLabel(guest.seat)}</b></p>
+              <p class="text-xs text-cyan-300 mt-0.5">Status RSVP Awal: <b>${guest.rsvpStatus || 'Menunggu RSVP'}</b></p>
+              ${guest.proxyName ? `<p class="text-xs text-amber-300 mt-0.5">Wakil: <b>${guest.proxyName}</b></p>` : ''}
+              ${guest.notes ? `<p class="text-xs text-amber-300 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${guest.notes}</p>` : ''}
+            </div>
+          </div>
+        `;
+      } else {
+        resultBox.classList.add('bg-rose-950/70', 'border-rose-500');
+        resultBox.innerHTML = `
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-circle-xmark text-rose-400 text-xl mt-0.5"></i>
+            <div>
+              <p class="text-xs font-extrabold text-rose-400 uppercase">ID / Nama Tidak Ditemui: "${code}"</p>
+              <p class="text-xs text-slate-300 mt-0.5">Sila semak ejaan nama atau rujuk Meja Penyelesaian Masalah (Troubleshooting Desk).</p>
+            </div>
+          </div>
+        `;
+        showToast(`Rekod "${code}" tiada dalam pangkalan data!`, 'error');
+      }
     }
 
     // =========================================================================
