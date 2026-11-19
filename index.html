@@ -14,6 +14,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- MediaPipe Selfie Segmentation untuk Tukar Latar Belakang (JPG Virtual Background) -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
+  <!-- MediaPipe Hands untuk Pengesanan Isyarat Tapak Tangan (Palm Gesture Snap) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     body {
@@ -474,19 +476,18 @@
 
               <div>
                 <div class="flex items-center justify-between text-[11px] mb-1">
-                  <span class="text-amber-300 font-semibold"><i class="fa-solid fa-person-walking-arrow-right mr-1"></i>Ketinggian Badan (Zoom Out):</span>
-                  <span id="subjectScaleLabel" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">55% (Penuh Kiri-Kanan)</span>
-                </div>
-                <input type="range" id="subjectScaleSlider" min="40" max="90" value="55" oninput="updateSubjectScaleLabel(this.value)" class="w-full accent-amber-500 cursor-pointer">
-              </div>
-              <p class="text-[10px] text-slate-400">Ruang kamera kini merentangi <b>100% lebar kiri ke kanan</b> supaya peserta berkumpulan tidak terpotong tepi.</p>
-            </div>
-          </div>
-
-          <div class="pt-1">
+          <div class="pt-1 space-y-2">
             <button onclick="capturePhotobooth()" id="btnCapturePhoto" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-camera text-base"></i> SNAP GAMBAR SEKARANG (3s)
+              <i class="fa-solid fa-camera text-base"></i> SNAP GAMBAR SEKARANG
             </button>
+            <div class="flex items-center justify-between bg-slate-800/80 px-3 py-2 rounded-xl border border-cyan-500/30 text-[11px]">
+              <span class="text-cyan-300 font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-hand"></i> Isyarat Tapak Tangan (Palm Snap):
+              </span>
+              <span id="palmGestureStatusBadge" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                Aktif (Tunjuk 5 Jari)
+              </span>
+            </div>
           </div>
         </div>
 
@@ -495,9 +496,10 @@
             <video id="photoboothVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
             <canvas id="virtualBgLiveCanvas" class="w-full h-full object-cover hidden"></canvas>
             <canvas id="photoboothCanvas" class="w-full h-full object-contain hidden"></canvas>
-            
-            <div id="boothCountdown" class="hidden absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-20">
-              <span id="countdownNumber" class="text-7xl font-black text-amber-400 drop-shadow-lg">3</span>
+
+            <!-- Penunjuk Visual Apabila Tapak Tangan Dikesan -->
+            <div id="palmDetectedBanner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-emerald-500/95 text-slate-950 font-extrabold text-xs shadow-lg flex items-center gap-1.5">
+              <i class="fa-solid fa-hand-sparkles"></i> Tapak Tangan Dikesan! Merakam...
             </div>
 
             <div id="boothPlaceholder" class="text-center p-6 space-y-2">
@@ -926,6 +928,11 @@
     let latestSegmentationMask = null;
     let isVirtualBgLoopRunning = false;
     let isSegmentingFrame = false;
+    let handGestureDetector = null;
+    let isDetectingHand = false;
+    let lastHandCheckTime = 0;
+    let lastPalmSnapTime = 0;
+    let palmHoldFrameCount = 0;
     let capturedPhotos = [];
     let jataKpmImgObj = null;
     function shouldHideAwardName() {
@@ -942,17 +949,76 @@
     })();
 
     function initSelfieSegmenter() {
-      if (selfieSegmenter || typeof SelfieSegmentation === 'undefined') return;
-      try {
-        selfieSegmenter = new SelfieSegmentation({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
-        });
-        selfieSegmenter.setOptions({ modelSelection: 1, selfieMode: false });
-        selfieSegmenter.onResults((results) => {
-          latestSegmentationMask = results.segmentationMask;
-        });
-      } catch (e) {
-        console.warn("MediaPipe AI fallback aktif", e);
+      if (!selfieSegmenter && typeof SelfieSegmentation !== 'undefined') {
+        try {
+          selfieSegmenter = new SelfieSegmentation({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
+          });
+          selfieSegmenter.setOptions({ modelSelection: 1, selfieMode: false });
+          selfieSegmenter.onResults((results) => {
+            latestSegmentationMask = results.segmentationMask;
+          });
+        } catch (e) {
+          console.warn("MediaPipe AI fallback aktif", e);
+        }
+      }
+
+      if (!handGestureDetector && typeof Hands !== 'undefined') {
+        try {
+          handGestureDetector = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+          });
+          handGestureDetector.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 0,
+            minDetectionConfidence: 0.65,
+            minTrackingConfidence: 0.6
+          });
+          handGestureDetector.onResults(onHandGestureResults);
+        } catch (e) {
+          console.warn("MediaPipe Hands fallback aktif", e);
+        }
+      }
+    }
+
+    function onHandGestureResults(results) {
+      const liveVbgCanvas = document.getElementById('virtualBgLiveCanvas');
+      const palmBanner = document.getElementById('palmDetectedBanner');
+      if (!boothStream || !liveVbgCanvas || liveVbgCanvas.classList.contains('hidden')) {
+        palmHoldFrameCount = 0;
+        if (palmBanner) palmBanner.classList.add('hidden');
+        return;
+      }
+
+      let openPalmDetected = false;
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        for (const lm of results.multiHandLandmarks) {
+          // Semak sama ada 4 jari utama (telunjuk, tengah, manis, kelingking) terbuka tegak ke atas (tip.y < pip.y)
+          const indexOpen = lm[8].y < lm[6].y;
+          const middleOpen = lm[12].y < lm[10].y;
+          const ringOpen = lm[16].y < lm[14].y;
+          const pinkyOpen = lm[20].y < lm[18].y;
+          const openFingersCount = [indexOpen, middleOpen, ringOpen, pinkyOpen].filter(Boolean).length;
+          if (openFingersCount >= 4) {
+            openPalmDetected = true;
+            break;
+          }
+        }
+      }
+
+      const now = Date.now();
+      if (openPalmDetected && (now - lastPalmSnapTime > 4000)) {
+        palmHoldFrameCount++;
+        if (palmBanner) palmBanner.classList.remove('hidden');
+        if (palmHoldFrameCount >= 2) {
+          palmHoldFrameCount = 0;
+          lastPalmSnapTime = now;
+          if (palmBanner) palmBanner.classList.add('hidden');
+          capturePhotobooth();
+        }
+      } else {
+        palmHoldFrameCount = 0;
+        if (palmBanner) palmBanner.classList.add('hidden');
       }
     }
 
@@ -1603,6 +1669,7 @@
     async function runVirtualBgLoop() {
       if (!isVirtualBgLoopRunning) return;
       const video = document.getElementById('photoboothVideo');
+      const liveVbgCanvas = document.getElementById('virtualBgLiveCanvas');
       if (boothStream && video && video.readyState >= 2) {
         if (sharedBoothStyleMode === 'ai_jpg_background' && selfieSegmenter && !isSegmentingFrame) {
           isSegmentingFrame = true;
@@ -1611,6 +1678,17 @@
           } catch (e) {}
           isSegmentingFrame = false;
         }
+
+        const now = Date.now();
+        if (handGestureDetector && !isDetectingHand && liveVbgCanvas && !liveVbgCanvas.classList.contains('hidden') && (now - lastHandCheckTime > 220)) {
+          isDetectingHand = true;
+          lastHandCheckTime = now;
+          try {
+            await handGestureDetector.send({ image: video });
+          } catch (e) {}
+          isDetectingHand = false;
+        }
+
         renderVirtualBgPreviewFrame();
       }
       if (isVirtualBgLoopRunning) {
@@ -1744,22 +1822,8 @@
         return;
       }
 
-      const countdownEl = document.getElementById('boothCountdown');
-      const numEl = document.getElementById('countdownNumber');
-      let count = 3;
-      numEl.innerText = count;
-      countdownEl.classList.remove('hidden');
-
-      const timer = setInterval(() => {
-        count--;
-        if (count > 0) {
-          numEl.innerText = count;
-        } else {
-          clearInterval(timer);
-          countdownEl.classList.add('hidden');
-          renderFramedPhoto();
-        }
-      }, 1000);
+      // Rakam serta-merta tanpa kiraan 3, 2, 1
+      renderFramedPhoto();
     }
 
     function renderFramedPhoto() {
